@@ -1,0 +1,1621 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>桌上的貓</title>
+<meta name="description" content="主人出門了。你是一隻貓，90 秒內把桌上的東西一件件推下去。黏土質感 3D 小品。">
+<meta name="theme-color" content="#d9c6b1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#f4ebdf; --cream2:#eadccb; --milk:#d9c6b1; --tea:#b08d6e; --cocoa:#5a4335; --ink:#3f3029;
+  --ginger:#d99a5e; --rose:#c9786a; --sage:#93a68a; --sky:#9fb2c4; --warn:#c2553f;
+  --font:"Noto Sans TC","PingFang TC","Microsoft JhengHei","Heiti TC",system-ui,sans-serif;
+  --num:"Fredoka","Noto Sans TC",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#d9c6b1;color:var(--ink);font-family:var(--font);
+  -webkit-user-select:none;user-select:none;touch-action:none;overscroll-behavior:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none}
+#grain{position:fixed;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3 0 0 0 0 .22 0 0 0 0 .16 0 0 0 1.2 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+#vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(120% 95% at 50% 45%,transparent 55%,rgba(70,45,30,.28) 100%)}
+#warnGlow{position:fixed;inset:0;pointer-events:none;display:none;
+  background:radial-gradient(130% 110% at 50% 50%,transparent 62%,rgba(194,85,63,.32) 100%)}
+button{font-family:var(--font);color:inherit}
+.clay{background:var(--cream);border-radius:22px;
+  box-shadow:0 2px 0 rgba(255,255,255,.7) inset,0 -4px 0 rgba(150,115,85,.18) inset,0 10px 24px rgba(90,60,40,.22),0 2px 4px rgba(90,60,40,.18)}
+.btn{appearance:none;border:0;cursor:pointer;font-weight:900;font-size:19px;letter-spacing:.06em;padding:14px 30px;border-radius:999px;
+  background:var(--ginger);color:#fff8ef;text-shadow:0 1px 0 rgba(120,60,20,.35);
+  box-shadow:0 2px 0 rgba(255,235,210,.6) inset,0 -5px 0 rgba(140,70,25,.28) inset,0 7px 0 #a8683a,0 12px 22px rgba(90,50,25,.3);
+  transition:transform .12s cubic-bezier(.3,1.6,.5,1),box-shadow .12s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(5px);box-shadow:0 2px 0 rgba(255,235,210,.6) inset,0 -3px 0 rgba(140,70,25,.28) inset,0 2px 0 #a8683a,0 4px 10px rgba(90,50,25,.3)}
+.btn.ghost{background:var(--cream2);color:var(--cocoa);text-shadow:none;box-shadow:0 2px 0 rgba(255,255,255,.7) inset,0 -4px 0 rgba(150,115,85,.2) inset,0 6px 0 #c2a98f,0 10px 18px rgba(90,60,40,.2)}
+.btn:focus-visible,.ibtn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+
+/* top-right */
+#tr{position:fixed;top:max(12px,env(safe-area-inset-top));right:12px;display:flex;gap:10px;z-index:30}
+.ibtn{width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;background:var(--cream);color:var(--cocoa);
+  box-shadow:0 2px 0 rgba(255,255,255,.75) inset,0 -3px 0 rgba(150,115,85,.22) inset,0 4px 0 #c6ad93,0 8px 16px rgba(90,60,40,.22);transition:transform .12s}
+.ibtn:active{transform:translateY(3px)}
+.ibtn svg{width:22px;height:22px}
+#btnPause{display:none}
+body.playing #btnPause{display:grid}
+
+/* HUD */
+#hud{position:fixed;left:0;top:0;width:0;height:0;pointer-events:none;z-index:10;display:none}
+body.playing #hud{display:block}
+#scoreCard{position:fixed;left:14px;top:max(12px,env(safe-area-inset-top));padding:9px 18px 10px;min-width:150px}
+#scoreCard .lbl{font-size:12px;font-weight:700;color:#8a6d58;letter-spacing:.12em}
+#score{font-family:var(--num);font-weight:700;font-size:34px;line-height:1.05;color:var(--cocoa);font-variant-numeric:tabular-nums}
+#score.bump{animation:bump .28s cubic-bezier(.3,1.8,.5,1)}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+#combo{position:absolute;left:0;top:calc(100% + 8px);padding:6px 14px 8px;width:150px;opacity:0;transform:translateY(-6px) scale(.9);transition:opacity .2s,transform .25s cubic-bezier(.3,1.6,.5,1);background:var(--ginger);color:#fff8ef}
+#combo.on{opacity:1;transform:none}
+#comboTxt{font-weight:900;font-size:16px;letter-spacing:.06em}
+#comboTxt b{font-family:var(--num);font-size:20px}
+#combo .bar{height:6px;border-radius:9px;background:rgba(255,255,255,.3);margin-top:4px;overflow:hidden}
+#comboBar{display:block;height:100%;width:100%;background:#fff6ea;border-radius:9px;transform-origin:left center}
+#clockWrap{position:fixed;left:50%;top:max(10px,env(safe-area-inset-top));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px}
+#clock{width:76px;height:76px;border-radius:50%;position:relative;display:grid;place-items:center}
+#clock svg{position:absolute;inset:6px;width:64px;height:64px;transform:rotate(-90deg)}
+#clock circle{fill:none;stroke-width:7;stroke-linecap:round}
+#time{font-family:var(--num);font-weight:700;font-size:26px;color:var(--cocoa);position:relative;font-variant-numeric:tabular-nums}
+#clock.hurry{animation:hurry .5s ease-in-out infinite alternate}
+#clock.hurry #time{color:var(--warn)}
+@keyframes hurry{to{transform:scale(1.08)}}
+#leftTag{font-size:13px;font-weight:700;padding:4px 12px;border-radius:99px;background:rgba(244,235,223,.85);color:#7b604d;box-shadow:0 3px 8px rgba(90,60,40,.15);white-space:nowrap}
+#warn{position:fixed;left:50%;top:150px;transform:translate(-50%,-10px);opacity:0;padding:10px 20px;font-weight:900;font-size:17px;color:#fff8ef;background:var(--warn);border-radius:99px;white-space:nowrap;
+  box-shadow:0 -3px 0 rgba(0,0,0,.15) inset,0 5px 0 #8f3a2a,0 10px 20px rgba(90,30,20,.3);transition:opacity .3s,transform .4s cubic-bezier(.3,1.6,.5,1);display:flex;gap:10px;align-items:center}
+#warn.on{opacity:1;transform:translate(-50%,0)}
+#warn svg{width:22px;height:22px}
+#warn.on svg{animation:step .5s steps(2) infinite}
+@keyframes step{50%{transform:translateY(-3px) rotate(-8deg)}}
+#pops{position:fixed;left:0;top:0;width:0;height:0;pointer-events:none;z-index:12}
+.pop{position:absolute;left:0;top:0;will-change:transform}
+.pop .in{display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-50%);animation:popIn 1.5s cubic-bezier(.2,1.4,.4,1) forwards}
+.pop b{font-family:var(--num);font-weight:700;font-size:30px;color:#fff8ef;-webkit-text-stroke:6px var(--cocoa);paint-order:stroke fill;line-height:1}
+.pop.big b{font-size:40px;color:#ffe2b8}
+.pop .tags{display:flex;gap:5px;margin-top:4px}
+.pop .tags span{font-size:13px;font-weight:900;padding:3px 9px;border-radius:99px;background:var(--rose);color:#fff;box-shadow:0 3px 0 rgba(90,40,30,.35)}
+.pop .tags span.c{background:var(--sage)}
+.pop .tags span.x{background:var(--ginger)}
+.pop.meow .in{font-weight:900;font-size:22px;color:var(--cocoa);background:#fffaf2;padding:6px 14px;border-radius:18px 18px 18px 4px;box-shadow:0 4px 0 rgba(120,90,60,.25)}
+@keyframes popIn{0%{opacity:0;transform:translate(-50%,-30%) scale(.4)}15%{opacity:1;transform:translate(-50%,-80%) scale(1.12)}30%{transform:translate(-50%,-90%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-190%) scale(.95)}}
+
+/* overlays */
+.ov{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:20;padding:20px}
+.ov.on{display:flex}
+#title{background:linear-gradient(90deg,rgba(217,198,177,.55),rgba(217,198,177,0) 70%)}
+#titleCard{width:min(440px,100%);padding:30px 32px 28px;position:relative;margin-right:auto;margin-left:6vw;animation:cardIn .7s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes cardIn{from{opacity:0;transform:translateY(30px) scale(.95)}}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.3em;color:#a07f66}
+h1{margin:4px 0 6px;font-size:54px;font-weight:900;letter-spacing:.08em;color:var(--cocoa);line-height:1.1;display:flex;align-items:center;gap:12px}
+h1 svg{width:46px;height:46px;flex:none;transform:rotate(-14deg)}
+.lead{font-size:16px;line-height:1.7;color:#6b5243;margin:0 0 16px}
+.ctl{display:grid;grid-template-columns:auto 1fr;gap:9px 14px;align-items:center;font-size:14px;color:#6b5243;margin-bottom:16px;padding:14px 16px;border-radius:16px;background:var(--cream2)}
+.keys{display:flex;gap:4px;flex-wrap:wrap}
+.key{display:inline-grid;place-items:center;min-width:28px;height:28px;padding:0 7px;border-radius:8px;background:#fffaf3;font-family:var(--num);font-weight:700;font-size:13px;color:var(--cocoa);box-shadow:0 -2px 0 rgba(150,115,85,.25) inset,0 3px 0 #c9b39b}
+.only-touch{display:none}
+body.touch .only-touch{display:grid}
+body.touch .only-desk{display:none}
+.tip{font-size:13px;color:#9a7b65;margin:0 0 18px;display:flex;gap:8px;align-items:center}
+.tip svg{width:18px;height:18px;flex:none}
+.row{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+#bestTxt{font-size:14px;color:#8a6d58;font-weight:700}
+#bestTxt b{font-family:var(--num);font-size:18px;color:var(--cocoa)}
+#pause{background:rgba(90,65,50,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+#pauseCard{padding:28px 34px;text-align:center;animation:cardIn .4s cubic-bezier(.2,1.3,.4,1) both}
+#pauseCard h2{margin:0 0 18px;font-size:30px;color:var(--cocoa);letter-spacing:.1em}
+#pauseCard .row{justify-content:center}
+#result{justify-content:flex-end;align-items:center;padding:20px 5vw 20px 20px}
+#resCard{width:min(420px,100%);padding:24px 28px 24px;max-height:calc(100% - 20px);overflow:auto;animation:cardIn .7s cubic-bezier(.2,1.3,.4,1) both}
+#resCard .kicker{color:#b06a50}
+#quote{font-size:22px;font-weight:900;color:var(--cocoa);margin:6px 0 4px;line-height:1.4}
+#resSub{font-size:13px;color:#9a7b65;margin-bottom:12px}
+#resScore{display:flex;align-items:flex-end;gap:12px;margin-bottom:6px}
+#resNum{font-family:var(--num);font-weight:700;font-size:60px;line-height:.95;color:var(--cocoa);font-variant-numeric:tabular-nums}
+#newBest{font-size:13px;font-weight:900;color:#fff;background:var(--rose);padding:4px 10px;border-radius:99px;margin-bottom:8px;display:none;animation:wob 1s ease-in-out infinite alternate}
+@keyframes wob{to{transform:rotate(-5deg) scale(1.06)}}
+#rank{display:inline-flex;align-items:center;gap:8px;font-weight:900;font-size:16px;color:#fff8ef;background:var(--sage);padding:6px 14px;border-radius:99px;margin:4px 0 14px;box-shadow:0 4px 0 #6f8268}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--cream2);border-radius:14px;padding:8px 4px;text-align:center}
+.stat b{display:block;font-family:var(--num);font-size:22px;color:var(--cocoa)}
+.stat span{font-size:11px;color:#8a6d58;font-weight:700}
+#chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;min-height:10px}
+.chip{font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:99px;background:#fffaf3;color:#7b604d;box-shadow:0 2px 0 #d8c4ad}
+.chip.brk{background:#f6dcd3;color:#9b4a38;box-shadow:0 2px 0 #dfb0a2}
+#bestLine{font-size:13px;color:#8a6d58;margin-top:12px}
+
+/* touch controls */
+#touch{position:fixed;inset:0;z-index:15;pointer-events:none;display:none}
+body.touch.playing #touch{display:block}
+#stickZone{position:absolute;left:0;bottom:0;width:55%;height:62%;pointer-events:auto;touch-action:none}
+#stick{position:fixed;width:128px;height:128px;margin:-64px 0 0 -64px;border-radius:50%;background:rgba(244,235,223,.35);border:3px solid rgba(255,250,242,.65);box-shadow:0 6px 18px rgba(90,60,40,.2);transition:opacity .2s}
+#knob{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;background:var(--cream);box-shadow:0 2px 0 #fff inset,0 -4px 0 rgba(150,115,85,.25) inset,0 5px 0 #c6ad93,0 8px 14px rgba(90,60,40,.25)}
+.tbtn{position:absolute;pointer-events:auto;border:0;border-radius:50%;display:grid;place-items:center;font-weight:900;color:#fff8ef;touch-action:none;
+  box-shadow:0 2px 0 rgba(255,235,210,.55) inset,0 -5px 0 rgba(0,0,0,.14) inset,0 6px 0 var(--sh),0 12px 20px rgba(90,50,25,.28);transition:transform .08s}
+.tbtn.down{transform:translateY(5px);box-shadow:0 2px 0 rgba(255,235,210,.55) inset,0 -3px 0 rgba(0,0,0,.14) inset,0 1px 0 var(--sh),0 4px 8px rgba(90,50,25,.28)}
+#btnPaw{right:22px;bottom:calc(46px + var(--safe-b));width:104px;height:104px;background:var(--ginger);--sh:#a8683a;font-size:15px}
+#btnPaw svg{width:44px;height:44px;margin-bottom:-6px}
+#btnPaw span,#btnJump span{display:flex;flex-direction:column;align-items:center}
+#btnJump{right:136px;bottom:calc(30px + var(--safe-b));width:70px;height:70px;background:var(--sage);--sh:#6f8268;font-size:15px}
+#back{position:fixed;left:12px;bottom:calc(8px + var(--safe-b));z-index:40;font-size:12px;color:#7b604d;text-decoration:none;background:rgba(244,235,223,.7);padding:4px 10px;border-radius:99px;font-weight:700}
+#back:hover{background:var(--cream)}
+#loading{position:fixed;inset:0;display:grid;place-items:center;z-index:50;background:#d9c6b1;font-weight:900;color:var(--cocoa);font-size:18px;letter-spacing:.2em;transition:opacity .5s}
+#loading.done{opacity:0;pointer-events:none}
+body.soft #grain,body.soft #vig{display:none}
+
+@media (max-width:700px){
+  #titleCard{margin:auto auto 10px;padding:22px 20px 20px}
+  #title{background:linear-gradient(0deg,rgba(217,198,177,.7),rgba(217,198,177,0) 75%);align-items:flex-end}
+  h1{font-size:40px}
+  h1 svg{width:36px;height:36px}
+  .lead{font-size:14.5px;margin-bottom:12px}
+  .ctl{font-size:13px;padding:10px 12px;margin-bottom:12px}
+  .tip{margin-bottom:14px}
+  #scoreCard{min-width:0;padding:7px 13px 8px;left:10px}
+  #score{font-size:26px}
+  #combo{width:120px}
+  #clockWrap{left:auto;right:124px;transform:none}
+  #clock{width:62px;height:62px}
+  #clock svg{inset:5px;width:52px;height:52px}
+  #time{font-size:21px}
+  #leftTag{font-size:12px}
+  #warn{top:126px;font-size:15px;padding:8px 16px}
+  #result{align-items:flex-end;justify-content:center;padding:10px 10px calc(34px + var(--safe-b))}
+  #resCard{padding:16px 18px 18px;max-height:58%}
+  #quote{font-size:18px}
+  #resNum{font-size:46px}
+  .stat b{font-size:18px}
+  #chips{margin-bottom:12px}
+  #bestLine{margin-top:8px}
+}
+@media (max-height:560px){ #titleCard{padding:16px 22px} h1{font-size:36px} .ctl{margin-bottom:8px} .lead{margin-bottom:8px} }
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01s!important;transition-duration:.01s!important}
+  .pop .in{animation:popRM 1.4s linear forwards!important}
+  @keyframes popRM{0%,85%{opacity:1;transform:translate(-50%,-90%)}100%{opacity:0;transform:translate(-50%,-90%)}}
+}
+</style>
+<script type="importmap">{"imports":{"three":"../lib/three.module.min.js","three/addons/":"../lib/three-addons/","../lib/three.core.min.js":"../lib/three-addons/three.core.min.js"}}</script>
+</head>
+<body>
+<canvas id="c" tabindex="0" aria-label="遊戲畫面"></canvas>
+<div id="vig"></div><div id="grain"></div><div id="warnGlow"></div>
+
+<div id="hud" aria-live="polite">
+  <div id="scoreCard" class="clay"><div class="lbl">搗蛋分數</div><div id="score">0</div>
+    <div id="combo" class="clay"><div id="comboTxt">連擊 <b>×2</b></div><div class="bar"><i id="comboBar"></i></div></div>
+  </div>
+  <div id="clockWrap">
+    <div id="clock" class="clay"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" stroke="#eadccb"/><circle id="clockArc" cx="32" cy="32" r="27" stroke="#d99a5e" stroke-dasharray="169.6" stroke-dashoffset="0"/></svg><span id="time">90</span></div>
+    <div id="leftTag">桌上還有 16 件</div>
+  </div>
+  <div id="warn"><svg viewBox="0 0 24 24" fill="#fff8ef"><ellipse cx="8" cy="15" rx="3.2" ry="5"/><ellipse cx="16" cy="9" rx="3.2" ry="5"/><circle cx="8" cy="22" r="1.6"/><circle cx="16" cy="16" r="1.6"/></svg><span>門外有腳步聲……主人要回來了！</span></div>
+</div>
+<div id="pops"></div>
+
+<div id="tr">
+  <button id="btnPause" class="ibtn" aria-label="暫停"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4.2" height="14" rx="2"/><rect x="13.8" y="5" width="4.2" height="14" rx="2"/></svg></button>
+  <button id="btnSound" class="ibtn" aria-label="聲音開關"><svg id="sndIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></svg></button>
+</div>
+
+<div id="touch">
+  <div id="stickZone"><div id="stick"><div id="knob"></div></div></div>
+  <button id="btnJump" class="tbtn" aria-label="跳"><span><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff8ef" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14l6-6 6 6"/></svg>跳</span></button>
+  <button id="btnPaw" class="tbtn" aria-label="伸爪"><span><svg viewBox="0 0 48 48" fill="#fff8ef"><ellipse cx="24" cy="31" rx="10" ry="8.5"/><ellipse cx="12" cy="20" rx="4.2" ry="5.4"/><ellipse cx="19.5" cy="13" rx="4.2" ry="5.6"/><ellipse cx="28.5" cy="13" rx="4.2" ry="5.6"/><ellipse cx="36" cy="20" rx="4.2" ry="5.4"/></svg>爪子</span></button>
+</div>
+
+<div id="title" class="ov">
+  <div id="titleCard" class="clay">
+    <div class="kicker">主人出門了</div>
+    <h1><svg viewBox="0 0 48 48" fill="#d99a5e"><ellipse cx="24" cy="31" rx="10" ry="8.5"/><ellipse cx="12" cy="20" rx="4.2" ry="5.4"/><ellipse cx="19.5" cy="13" rx="4.2" ry="5.6"/><ellipse cx="28.5" cy="13" rx="4.2" ry="5.6"/><ellipse cx="36" cy="20" rx="4.2" ry="5.4"/></svg>桌上的貓</h1>
+    <p class="lead">這張桌子，現在是你的了。<br>主人回來之前，把東西一件一件推下去。</p>
+    <div class="ctl only-desk">
+      <span class="keys"><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span></span><span>走動（方向鍵也行）</span>
+      <span class="keys"><span class="key">空白鍵</span></span><span>伸爪，往面向的方向推</span>
+      <span class="keys"><span class="key">Shift</span></span><span>跳，落地會震動周圍</span>
+    </div>
+    <div class="ctl only-touch">
+      <span class="keys"><span class="key">左半</span></span><span>拖曳虛擬搖桿走動</span>
+      <span class="keys"><span class="key">爪子</span></span><span>往面向的方向推</span>
+      <span class="keys"><span class="key">跳</span></span><span>跳起來，落地會震動周圍</span>
+    </div>
+    <p class="tip"><svg viewBox="0 0 24 24" fill="#c9786a"><circle cx="12" cy="12" r="10"/><rect x="11" y="6" width="2.4" height="8" rx="1.2" fill="#fff"/><circle cx="12.2" cy="17.4" r="1.4" fill="#fff"/></svg>易碎物有破壞加成；撞倒別的東西算連鎖。最後 10 秒聽門口。</p>
+    <div class="row"><button id="btnStart" class="btn">開始搗蛋</button><span id="bestTxt"></span></div>
+  </div>
+</div>
+
+<div id="pause" class="ov"><div id="pauseCard" class="clay"><h2>暫停中</h2><div class="row"><button id="btnResume" class="btn">繼續</button><button id="btnRestart" class="btn ghost">重新開始</button></div></div></div>
+
+<div id="result" class="ov">
+  <div id="resCard" class="clay">
+    <div class="kicker" id="resKicker">主人回來了</div>
+    <div id="quote">……</div>
+    <div id="resSub"></div>
+    <div id="resScore"><div id="resNum">0</div><div id="newBest">新紀錄！</div></div>
+    <div id="rank">好奇的小毛球</div>
+    <div class="stats">
+      <div class="stat"><b id="stDrop">0</b><span>推下</span></div>
+      <div class="stat"><b id="stBreak">0</b><span>打破</span></div>
+      <div class="stat"><b id="stCombo">0</b><span>最高連擊</span></div>
+      <div class="stat"><b id="stChain">0</b><span>連鎖</span></div>
+    </div>
+    <div id="chips"></div>
+    <div class="row"><button id="btnAgain" class="btn">再搗蛋一次</button></div>
+    <div id="bestLine"></div>
+  </div>
+</div>
+
+<a id="back" href="../index.html">← 遊戲櫃</a>
+<div id="loading">捏黏土中……</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import * as CANNON from '../lib/cannon-es.js';
+
+/* =========================================================================
+   0. 基本設定
+   ========================================================================= */
+const $ = s => document.querySelector(s);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
+};
+const params = new URLSearchParams(location.search);
+const DEMO = params.get('demo') === '1';
+const HQ = params.get('hq') === '1';
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isTouch = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
+const isMobile = isTouch && Math.min(innerWidth, innerHeight) < 820;
+if (isTouch) document.body.classList.add('touch');
+
+const TW = 9.2, TD = 5.8, HW = TW / 2, HD = TD / 2;   // 桌面尺寸（單位約 10 公分）
+const FLOOR = -7;                                  // 地板高度
+const GRAV = -40;
+const STEP = 1 / 60;                               // 固定物理步長
+const GAME_LEN = DEMO ? 45 : 90;
+const WARN_AT = 10;
+const COMBO_WIN = 3.0;
+const DOOR = new THREE.Vector3(-6.6, FLOOR, -9);
+
+/* =========================================================================
+   1. 聲音（Web Audio 即時合成）
+   ========================================================================= */
+const AU = { ctx: null, master: null, sfx: null, mus: null, noise: null, on: store.get('g11.sound', true) };
+function audioInit() {
+  if (AU.ctx) { if (AU.ctx.state === 'suspended' && !G.paused) AU.ctx.resume().catch(() => { }); return; }
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+  try {
+    const ctx = new AC(); AU.ctx = ctx;
+    const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -16; comp.knee.value = 12; comp.ratio.value = 4; comp.connect(ctx.destination);
+    AU.master = ctx.createGain(); AU.master.gain.value = AU.on ? 0.9 : 0; AU.master.connect(comp);
+    AU.sfx = ctx.createGain(); AU.sfx.connect(AU.master);
+    AU.mus = ctx.createGain(); AU.mus.gain.value = 0.55; AU.mus.connect(AU.master);
+    const len = ctx.sampleRate * 2, b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    AU.noise = b;
+  } catch (e) { AU.ctx = null; }
+}
+const aok = () => AU.ctx && AU.ctx.state === 'running' && AU.on;
+const now = () => AU.ctx.currentTime;
+function out(pan) {
+  if (!pan || !AU.ctx.createStereoPanner) return AU.sfx;
+  const p = AU.ctx.createStereoPanner(); p.pan.value = clamp(pan, -1, 1); p.connect(AU.sfx); return p;
+}
+function env(g, t, a, peak, dec) {
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(Math.max(0.0002, peak), t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + dec);
+}
+function tone(type, f, t, dur, peak, o = {}) {
+  const ctx = AU.ctx, os = ctx.createOscillator(); os.type = type; os.frequency.setValueAtTime(f, t);
+  if (o.f2) os.frequency.exponentialRampToValueAtTime(o.f2, t + (o.glide || dur));
+  const g = ctx.createGain(); env(g, t, o.a || 0.004, peak, dur);
+  let n = os;
+  if (o.filter) { const fl = ctx.createBiquadFilter(); fl.type = o.filter[0]; fl.frequency.value = o.filter[1]; fl.Q.value = o.filter[2] || 0.7; os.connect(fl); n = fl; }
+  n.connect(g); g.connect(o.dest || AU.sfx); os.start(t); os.stop(t + (o.a || 0.004) + dur + 0.05);
+}
+function hiss(t, dur, peak, o = {}) {
+  const ctx = AU.ctx, s = ctx.createBufferSource(); s.buffer = AU.noise;
+  const fl = ctx.createBiquadFilter(); fl.type = o.type || 'bandpass'; fl.frequency.setValueAtTime(o.f || 1000, t);
+  if (o.f2) fl.frequency.exponentialRampToValueAtTime(o.f2, t + dur); fl.Q.value = o.Q || 1;
+  const g = ctx.createGain(); env(g, t, o.a || 0.002, peak, dur);
+  s.connect(fl); fl.connect(g); g.connect(o.dest || AU.sfx); s.start(t, Math.random() * 1.5); s.stop(t + (o.a || 0.002) + dur + 0.05);
+}
+const SFX = {
+  // 玻璃：高頻正弦叮噹散落 + 高通噪音碎裂
+  glass(v = 1, pan = 0) {
+    if (!aok()) return; const t = now(), d = out(pan);
+    hiss(t, 0.1, 0.55 * v, { type: 'highpass', f: 3800, dest: d });
+    tone('sine', 300, t, 0.08, 0.25 * v, { f2: 120, dest: d });
+    const n = 8 + (v * 6 | 0);
+    for (let i = 0; i < n; i++) {
+      const tt = t + 0.008 + i * 0.016 + Math.random() * 0.3 * (i / n);
+      tone('sine', rand(2300, 6800), tt, rand(0.1, 0.45), 0.05 * v, { dest: d });
+      if (i % 3 === 0) hiss(tt, 0.03, 0.12 * v, { f: rand(5000, 8000), Q: 3, dest: d });
+    }
+  },
+  // 陶瓷：中頻帶通噪音 + 三個不和諧泛音 + 低頻悶響 + 碎片滴答
+  ceramic(v = 1, pan = 0) {
+    if (!aok()) return; const t = now(), d = out(pan);
+    hiss(t, 0.08, 0.7 * v, { f: 1700, Q: 1, dest: d });
+    tone('sine', 160, t, 0.16, 0.55 * v, { f2: 65, dest: d });
+    [880, 1310, 2050].forEach(f => tone('sine', f * rand(.92, 1.08), t, rand(.14, .26), 0.09 * v, { dest: d }));
+    for (let i = 0; i < 6; i++) { const tt = t + 0.04 + Math.random() * 0.32; hiss(tt, 0.025, 0.2 * v, { f: rand(2200, 5000), Q: 4, dest: d }); tone('triangle', rand(1200, 2800), tt, 0.04, 0.035 * v, { dest: d }); }
+  },
+  // 塑膠：短促方波喀啦 + 彈跳越來越快
+  plastic(v = 1, pan = 0) {
+    if (!aok()) return; const t = now(), d = out(pan);
+    tone('sine', 190, t, 0.07, 0.25 * v, { f2: 90, dest: d });
+    [[0, 1], [0.15, .5], [0.25, .28], [0.31, .14], [0.35, .07]].forEach(([k, g]) => {
+      hiss(t + k, 0.035, 0.4 * v * g, { f: 2600, Q: 2, dest: d });
+      tone('square', rand(600, 850), t + k, 0.035, 0.07 * v * g, { filter: ['bandpass', 1500, 3], dest: d });
+    });
+  },
+  // 紙／書：低頻拍擊 + 低通噪音
+  paper(v = 1, pan = 0) {
+    if (!aok()) return; const t = now(), d = out(pan);
+    tone('sine', 100, t, 0.22, 0.75 * v, { f2: 40, dest: d });
+    hiss(t, 0.14, 0.6 * v, { type: 'lowpass', f: 1000, dest: d });
+    hiss(t + 0.02, 0.22, 0.16 * v, { f: 2400, f2: 800, Q: .8, dest: d });
+  },
+  // 軟：悶悶的噗
+  soft(v = 1, pan = 0) {
+    if (!aok()) return; const t = now(), d = out(pan);
+    hiss(t, 0.16, 0.45 * v, { type: 'lowpass', f: 380, dest: d });
+    tone('sine', 82, t, 0.13, 0.3 * v, { f2: 55, dest: d });
+  },
+  // 桌面上的輕碰
+  knock(mat, v = .5, pan = 0) {
+    if (!aok()) return; const t = now(), d = out(pan); v = clamp(v, 0.05, 1);
+    if (mat === 'glass') { tone('sine', rand(2600, 3400), t, 0.09, 0.08 * v, { dest: d }); hiss(t, 0.02, 0.12 * v, { f: 4000, Q: 2, dest: d }); }
+    else if (mat === 'ceramic') { tone('sine', rand(900, 1200), t, 0.08, 0.12 * v, { dest: d }); hiss(t, 0.03, 0.25 * v, { f: 1800, Q: 1.5, dest: d }); }
+    else if (mat === 'plastic') { hiss(t, 0.03, 0.3 * v, { f: 2500, Q: 2, dest: d }); tone('square', 700, t, 0.025, 0.04 * v, { filter: ['bandpass', 1400, 3], dest: d }); }
+    else if (mat === 'paper') { tone('sine', 140, t, 0.08, 0.3 * v, { f2: 70, dest: d }); hiss(t, 0.05, 0.2 * v, { type: 'lowpass', f: 1200, dest: d }); }
+    else { hiss(t, 0.06, 0.18 * v, { type: 'lowpass', f: 500, dest: d }); }
+  },
+  // 喵：鋸齒波 + 兩個移動的共振峰（i→a→o）+ 顫音
+  meow(p = 1, q = false) {
+    if (!aok()) return; const ctx = AU.ctx, t = now(), b = 520 * p, L = q ? 0.42 : 0.62;
+    const o = ctx.createOscillator(); o.type = 'sawtooth';
+    o.frequency.setValueAtTime(b * 0.85, t);
+    o.frequency.linearRampToValueAtTime(b * 1.32, t + 0.13);
+    if (q) o.frequency.linearRampToValueAtTime(b * 1.55, t + L);
+    else { o.frequency.linearRampToValueAtTime(b * 1.05, t + L * 0.7); o.frequency.linearRampToValueAtTime(b * 0.78, t + L); }
+    const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 6.2; lg.gain.value = 9; lfo.connect(lg); lg.connect(o.frequency);
+    const f1 = ctx.createBiquadFilter(); f1.type = 'bandpass'; f1.Q.value = 5; f1.frequency.setValueAtTime(750, t); f1.frequency.linearRampToValueAtTime(1350, t + 0.16); f1.frequency.linearRampToValueAtTime(q ? 1500 : 720, t + L);
+    const f2 = ctx.createBiquadFilter(); f2.type = 'bandpass'; f2.Q.value = 7; f2.frequency.setValueAtTime(2300, t); f2.frequency.linearRampToValueAtTime(2900, t + 0.18); f2.frequency.linearRampToValueAtTime(2000, t + L);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.32, t + 0.05); g.gain.setValueAtTime(0.3, t + L * 0.7); g.gain.exponentialRampToValueAtTime(0.0001, t + L);
+    o.connect(f1); o.connect(f2); f1.connect(g); f2.connect(g); g.connect(AU.sfx);
+    o.start(t); lfo.start(t); o.stop(t + L + 0.05); lfo.stop(t + L + 0.05);
+    hiss(t, 0.05, 0.04, { type: 'highpass', f: 3000 });
+  },
+  swipe() { if (!aok()) return; hiss(now(), 0.13, 0.22, { f: 700, f2: 2800, Q: 1.4 }); },
+  pawHit() { if (!aok()) return; const t = now(); hiss(t, 0.05, 0.25, { type: 'lowpass', f: 900 }); tone('sine', 220, t, 0.05, 0.12, { f2: 140 }); },
+  catStep() { if (!aok()) return; hiss(now(), 0.03, 0.05, { type: 'lowpass', f: 650 }); },
+  jump() { if (!aok()) return; tone('sine', 280, now(), 0.1, 0.08, { f2: 560 }); },
+  land() { if (!aok()) return; const t = now(); tone('sine', 120, t, 0.12, 0.3, { f2: 55 }); hiss(t, 0.07, 0.15, { type: 'lowpass', f: 500 }); },
+  ownerStep(v) { if (!aok()) return; const t = now(); tone('sine', 78, t, 0.15, 0.6 * v, { f2: 44 }); hiss(t, 0.08, 0.3 * v, { type: 'lowpass', f: 420 }); hiss(t + 0.03, 0.035, 0.08 * v, { f: 1900, Q: 2 }); },
+  keys() { if (!aok()) return; const t = now(); for (let i = 0; i < 10; i++) { const tt = t + i * 0.045 + Math.random() * 0.03; tone('sine', rand(2700, 5600), tt, rand(.12, .3), 0.05); tone('triangle', rand(3800, 6400), tt, 0.05, 0.02); } tone('square', 900, t + 0.55, 0.03, 0.06, { filter: ['bandpass', 1200, 4] }); tone('square', 700, t + 0.62, 0.04, 0.07, { filter: ['bandpass', 900, 4] }); },
+  creak() {
+    if (!aok()) return; const ctx = AU.ctx, t = now(), o = ctx.createOscillator(); o.type = 'sawtooth';
+    for (let k = 0; k < 24; k++) o.frequency.setValueAtTime(rand(95, 170), t + k * 0.03);
+    const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 880; f.Q.value = 7;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.18, t + 0.1); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.75);
+    o.connect(f); f.connect(g); g.connect(AU.sfx); o.start(t); o.stop(t + 0.8);
+  },
+  combo(n) { if (!aok()) return; const sc = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24], f = 523.25 * Math.pow(2, sc[clamp(n - 1, 0, 10)] / 12), t = now() + 0.05; tone('triangle', f, t, 0.3, 0.12); tone('sine', f * 2, t, 0.18, 0.04); },
+  tick(hi) { if (!aok()) return; tone('square', hi ? 1500 : 1100, now(), 0.02, 0.03, { filter: ['bandpass', 1500, 2] }); },
+  ui() { if (!aok()) return; tone('triangle', 620, now(), 0.07, 0.09, { f2: 900 }); },
+  fanfare() { if (!aok()) return; const t = now(); [0, 4, 7, 12].forEach((s, i) => tone('triangle', 392 * Math.pow(2, s / 12), t + i * 0.09, 0.35, 0.09)); }
+};
+const MAT_SFX = { glass: SFX.glass, ceramic: SFX.ceramic, plastic: SFX.plastic, paper: SFX.paper, soft: SFX.soft };
+
+// 背景音樂：偷偷摸摸的撥弦（D 小調），最後 10 秒加速
+const MUS = { on: false, next: 0, step: 0, tempo: 104 };
+const BASS = [50, 0, 45, 0, 50, 53, 0, 52, 50, 0, 45, 0, 48, 0, 52, 0];
+const MEL = [[0, 0, 74, 0, 72, 0, 69, 0, 0, 0, 0, 0, 0, 0, 0, 0], [77, 0, 76, 0, 74, 0, 0, 72, 74, 0, 0, 0, 0, 0, 0, 0], [0, 0, 74, 0, 72, 0, 69, 0, 0, 0, 65, 0, 69, 0, 0, 0], [72, 0, 0, 74, 0, 76, 0, 0, 77, 0, 76, 0, 74, 0, 0, 0]];
+function pluck(m, t, v, dur = 0.24) { const f = 440 * Math.pow(2, (m - 69) / 12); tone('triangle', f, t, dur, v, { dest: AU.mus, filter: ['lowpass', 1700, .7] }); tone('sine', f * 2, t, dur * .45, v * .22, { dest: AU.mus }); }
+function musicPump() {
+  if (!AU.ctx || !MUS.on || AU.ctx.state !== 'running') return;
+  const t0 = now(); if (MUS.next < t0) MUS.next = t0 + 0.05;
+  const urgent = G.state === 'playing' && G.timeLeft <= WARN_AT;
+  MUS.tempo = urgent ? 132 : 104;
+  while (MUS.next < t0 + 0.2) {
+    const s = MUS.step, i = s % 16, bar = (s >> 4) % 4, t = MUS.next;
+    if (BASS[i]) pluck(BASS[i] - 12, t, 0.14, 0.3);
+    if (i % 2 === 1) hiss(t, 0.02, 0.025, { type: 'highpass', f: 7000, dest: AU.mus });
+    if (!urgent && MEL[bar][i]) pluck(MEL[bar][i], t, 0.06, 0.2);
+    if (urgent && i % 4 === 0) tone('sine', 55, t, 0.18, 0.18, { f2: 40, dest: AU.mus });
+    MUS.next += 60 / MUS.tempo / 2; MUS.step++;
+  }
+}
+
+/* =========================================================================
+   2. 程式產生的黏土質感：指紋、凹痕、低頻起伏 → 法線貼圖 + 顏色斑駁
+   ========================================================================= */
+function makeClayMaps(N) {
+  const rnd = mulberry32(11), H = new Float32Array(N * N);
+  const sm = t => t * t * (3 - 2 * t);
+  for (const [f, a] of [[4, .55], [8, .3], [16, .14], [32, .07]]) {
+    const g = new Float32Array(f * f); for (let i = 0; i < f * f; i++) g[i] = rnd() * 2 - 1;
+    for (let y = 0; y < N; y++) {
+      const fy = y / N * f, iy = Math.floor(fy), ty = sm(fy - iy), y0 = iy % f, y1 = (iy + 1) % f;
+      for (let x = 0; x < N; x++) {
+        const fx = x / N * f, ix = Math.floor(fx), tx = sm(fx - ix), x0 = ix % f, x1 = (ix + 1) % f;
+        H[y * N + x] += a * lerp(lerp(g[y0 * f + x0], g[y0 * f + x1], tx), lerp(g[y1 * f + x0], g[y1 * f + x1], tx), ty);
+      }
+    }
+  }
+  const low = H.slice();
+  const wrap = v => ((v % N) + N) % N;
+  // 指紋：橢圓同心環 + 噪音扭曲，邊緣淡出
+  for (let k = 0; k < 11; k++) {
+    const cx = rnd() * N | 0, cy = rnd() * N | 0, R = N * (0.07 + rnd() * 0.08), sp = N / 105 * (0.85 + rnd() * 0.3);
+    const ang = rnd() * Math.PI, ex = 0.62 + rnd() * 0.3, amp = 0.09 + rnd() * 0.07, ca = Math.cos(ang), sa = Math.sin(ang), Ri = Math.ceil(R);
+    for (let dy = -Ri; dy <= Ri; dy++) for (let dx = -Ri; dx <= Ri; dx++) {
+      const u = dx * ca + dy * sa, v = (-dx * sa + dy * ca) / ex, d = Math.hypot(u, v); if (d > R) continue;
+      const i = wrap(cy + dy) * N + wrap(cx + dx), w = 1 - d / R, fall = w * w * (3 - 2 * w);
+      H[i] += amp * fall * Math.sin(d / sp * Math.PI * 2 + low[i] * 4);
+    }
+  }
+  // 小凹痕（工具壓痕）
+  const pit = new Float32Array(N * N);
+  for (let k = 0; k < 80; k++) {
+    const cx = rnd() * N | 0, cy = rnd() * N | 0, s = 1.2 + rnd() * 4.5, dep = 0.12 + rnd() * 0.3, Ri = Math.ceil(s * 3);
+    for (let dy = -Ri; dy <= Ri; dy++) for (let dx = -Ri; dx <= Ri; dx++) {
+      const i = wrap(cy + dy) * N + wrap(cx + dx), e = Math.exp(-(dx * dx + dy * dy) / (2 * s * s)) * dep;
+      H[i] -= e; pit[i] += e;
+    }
+  }
+  const mk = () => { const c = document.createElement('canvas'); c.width = c.height = N; return c; };
+  const cn = mk(), xn = cn.getContext('2d'), im = xn.createImageData(N, N), K = 2.4 * N / 512;
+  const ca = mk(), xa = ca.getContext('2d'), ia = xa.createImageData(N, N);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const i = y * N + x;
+    let nx = -(H[y * N + wrap(x + 1)] - H[y * N + wrap(x - 1)]) * K * 6, ny = (H[wrap(y + 1) * N + x] - H[wrap(y - 1) * N + x]) * K * 6, nz = 1;
+    const l = Math.hypot(nx, ny, nz); nx /= l; ny /= l; nz /= l;
+    im.data[i * 4] = (nx * .5 + .5) * 255; im.data[i * 4 + 1] = (ny * .5 + .5) * 255; im.data[i * 4 + 2] = (nz * .5 + .5) * 255; im.data[i * 4 + 3] = 255;
+    const g = clamp(0.93 + low[i] * 0.07 - pit[i] * 0.18, 0.7, 1) * 255;
+    ia.data[i * 4] = g; ia.data[i * 4 + 1] = g * 0.985; ia.data[i * 4 + 2] = g * 0.97; ia.data[i * 4 + 3] = 255;
+  }
+  xn.putImageData(im, 0, 0); xa.putImageData(ia, 0, 0);
+  const nT = new THREE.CanvasTexture(cn); nT.wrapS = nT.wrapT = THREE.RepeatWrapping; nT.colorSpace = THREE.NoColorSpace;
+  const aT = new THREE.CanvasTexture(ca); aT.wrapS = aT.wrapT = THREE.RepeatWrapping; aT.colorSpace = THREE.SRGBColorSpace;
+  return { nT, aT };
+}
+const CLAY = makeClayMaps(isMobile ? 256 : 512);
+const matCache = new Map();
+function clay(color, o = {}) {
+  const rep = o.rep || 1, key = color + '|' + rep + '|' + (o.double ? 1 : 0) + '|' + (o.rough || .82) + '|' + (o.emissive || 0);
+  if (matCache.has(key)) return matCache.get(key);
+  let nT = CLAY.nT, aT = CLAY.aT;
+  if (rep !== 1) { nT = CLAY.nT.clone(); nT.repeat.set(rep, rep); nT.needsUpdate = true; aT = CLAY.aT.clone(); aT.repeat.set(rep, rep); aT.needsUpdate = true; }
+  const m = new THREE.MeshStandardMaterial({ color, roughness: o.rough || .82, metalness: 0, normalMap: nT, normalScale: new THREE.Vector2(o.ns || .55, o.ns || .55), map: aT, side: o.double ? THREE.DoubleSide : THREE.FrontSide });
+  if (o.emissive) { m.emissive = new THREE.Color(o.emissive); m.emissiveIntensity = o.ei || 1; }
+  m.userData = { clay: !o.emissive && !o.rough, rep };
+  matCache.set(key, m); return m;
+}
+// 合併：把群組裡直接的黏土 Mesh 烘成一個帶頂點色的 Mesh（大幅減少 draw call）
+const vcMats = {};
+function vcMat(double) {
+  const k = double ? 'd' : 's'; if (vcMats[k]) return vcMats[k];
+  return vcMats[k] = new THREE.MeshStandardMaterial({ vertexColors: true, map: CLAY.aT, normalMap: CLAY.nT, normalScale: new THREE.Vector2(.55, .55), roughness: .82, side: double ? THREE.DoubleSide : THREE.FrontSide });
+}
+function bake(group) {
+  const parts = group.children.filter(m => m.isMesh && !m.userData.keep && m.material.userData && m.material.userData.clay);
+  if (parts.length < 2) return null;
+  let total = 0; const double = parts.some(m => m.material.side === THREE.DoubleSide);
+  const geos = parts.map(m => { m.updateMatrix(); const g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone(); g.applyMatrix4(m.matrix); total += g.attributes.position.count; return g; });
+  const pos = new Float32Array(total * 3), nor = new Float32Array(total * 3), uv = new Float32Array(total * 2), col = new Float32Array(total * 3);
+  let o = 0;
+  geos.forEach((g, i) => {
+    const mat = parts[i].material, rep = mat.userData.rep || 1, c = mat.color, n = g.attributes.position.count, u = g.attributes.uv;
+    pos.set(g.attributes.position.array, o * 3); nor.set(g.attributes.normal.array, o * 3);
+    for (let k = 0; k < n; k++) { uv[(o + k) * 2] = u ? u.getX(k) * rep : 0; uv[(o + k) * 2 + 1] = u ? u.getY(k) * rep : 0; col[(o + k) * 3] = c.r; col[(o + k) * 3 + 1] = c.g; col[(o + k) * 3 + 2] = c.b; }
+    o += n; g.dispose();
+  });
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.computeBoundingSphere();
+  const mesh = new THREE.Mesh(geo, vcMat(double)); mesh.castShadow = parts.some(p => p.castShadow); mesh.receiveShadow = true;
+  parts.forEach(p => group.remove(p)); group.add(mesh); return mesh;
+}
+// 讓幾何有手捏的不規則起伏（沿中心放射方向位移，接縫不會裂開）
+function lump(geo, amp, freq = 3, seed = 0) {
+  const p = geo.attributes.position, c = new THREE.Vector3(), v = new THREE.Vector3();
+  geo.computeBoundingBox(); geo.boundingBox.getCenter(c);
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    const x = v.x * freq + seed, y = v.y * freq + seed * 1.7, z = v.z * freq - seed;
+    const n = Math.sin(x * 1.7 + Math.sin(y * 2.3 + z * .7)) * Math.sin(y * 1.3 + Math.sin(z * 1.9 + x * .5)) * Math.sin(z * 1.1 + Math.sin(x * 2.1 + y * .9));
+    const d = v.clone().sub(c); const L = d.length(); if (L < 1e-5) continue;
+    v.addScaledVector(d.divideScalar(L), n * amp); p.setXYZ(i, v.x, v.y, v.z);
+  }
+  p.needsUpdate = true; return geo;
+}
+function M(geo, mat, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; return m; }
+const lathe = (pts, seg = 28) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg);
+function canvasTex(w, h, draw, srgb = true) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
+
+/* =========================================================================
+   3. 渲染器、場景、光
+   ========================================================================= */
+const canvas = $('#c');
+// 偵測軟體渲染（無頭瀏覽器 / 沒有 GPU）：一開始就用低畫質
+function detectSoftware() {
+  try {
+    const c = document.createElement('canvas'), gl = c.getContext('webgl2') || c.getContext('webgl'); if (!gl) return false;
+    const ext = gl.getExtension('WEBGL_debug_renderer_info'), r = String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
+    const lose = gl.getExtension('WEBGL_lose_context'); if (lose) lose.loseContext();
+    return /swiftshader|llvmpipe|softpipe|software/i.test(r);
+  } catch (e) { return false; }
+}
+const SOFT = detectSoftware() && !HQ;
+if (SOFT) document.body.classList.add('soft');
+// 軟體渲染時改用 Lambert（便宜很多），其餘情況用 PBR Standard
+let softMat = SOFT;
+function std(o) {
+  if (!softMat) return new THREE.MeshStandardMaterial(o);
+  const q = { ...o }; delete q.roughness; delete q.metalness; const m = new THREE.MeshLambertMaterial(q); m.userData.rough = o.roughness; return m;
+}
+// 截圖用：把軟體模式的 Lambert 換回 PBR，提高解析度與陰影品質
+function upgradeQuality() {
+  if (!softMat) return; softMat = false; matCache.clear(); for (const k in vcMats) delete vcMats[k];
+  const map = new Map();
+  scene.traverse(o => {
+    if (!o.material || !o.material.isMeshLambertMaterial) return;
+    const L = o.material; let m = map.get(L);
+    if (!m) {
+      m = new THREE.MeshStandardMaterial({ color: L.color, map: L.map, normalMap: L.normalMap, normalScale: L.normalScale, emissive: L.emissive, emissiveMap: L.emissiveMap, emissiveIntensity: L.emissiveIntensity, vertexColors: L.vertexColors, transparent: L.transparent, opacity: L.opacity, side: L.side, depthWrite: L.depthWrite, roughness: L.userData.rough ?? .82, metalness: 0 });
+      m.userData = { ...L.userData }; map.set(L, m);
+    }
+    o.material = m;
+  });
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap; sun.shadow.mapSize.set(2048, 2048); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }
+  dprCap = 1; renderer.setPixelRatio(1); document.body.classList.remove('soft'); resize();
+}
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile && !SOFT, powerPreference: 'high-performance' });
+let dprCap = params.get('dpr') ? +params.get('dpr') : SOFT ? .45 : isMobile ? 1.5 : 2;
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, dprCap));
+renderer.shadowMap.enabled = params.get('sh') !== '0';
+renderer.shadowMap.type = SOFT ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xd9c6b1);
+scene.fog = new THREE.Fog(0xd9c6b1, 34, 62);
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 120);
+
+const hemi = new THREE.HemisphereLight(0xfff3e4, 0xb59c82, 1.15); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0dc, 2.3);
+sun.position.set(-8, 17, 7); sun.target.position.set(0, -2, 0);
+sun.castShadow = true;
+const SM = SOFT ? 1024 : isMobile ? 1024 : 2048;
+sun.shadow.mapSize.set(SM, SM);
+Object.assign(sun.shadow.camera, { left: -15, right: 15, top: 13, bottom: -13, near: 2, far: 50 });
+sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.03; sun.shadow.radius = 5;
+scene.add(sun, sun.target);
+const fill = new THREE.DirectionalLight(0xe4ecf2, 0.55); fill.position.set(10, 8, -6); scene.add(fill);
+const doorLight = new THREE.PointLight(0xffd59a, 0, 16, 1.6); doorLight.position.set(DOOR.x + 0.4, FLOOR + 4.5, DOOR.z + 1.5); scene.add(doorLight);
+
+/* =========================================================================
+   4. 房間：地板、牆、門、地毯、窗光、桌子
+   ========================================================================= */
+const room = new THREE.Group(); scene.add(room);
+{
+  // 木地板
+  const floorTex = canvasTex(1024, 1024, (x, w, h) => {
+    const rows = 8, rh = h / rows, r = mulberry32(5);
+    for (let i = 0; i < rows; i++) {
+      let px = -r() * 300;
+      while (px < w) {
+        const len = 260 + r() * 260, c = 168 + r() * 22;
+        x.fillStyle = `rgb(${c + 12},${c - 10},${c - 38})`; x.fillRect(px, i * rh, len, rh);
+        x.globalAlpha = .08; x.strokeStyle = '#6d5039'; x.lineWidth = 1.5;
+        for (let k = 0; k < 6; k++) { x.beginPath(); const yy = i * rh + rh * (k + .5) / 6 + r() * 4; x.moveTo(px, yy); x.bezierCurveTo(px + len * .3, yy + r() * 8 - 4, px + len * .7, yy + r() * 8 - 4, px + len, yy); x.stroke(); }
+        x.globalAlpha = .35; x.fillStyle = '#8a6a50'; x.fillRect(px, i * rh, 3, rh);
+        x.globalAlpha = 1; px += len;
+      }
+      x.fillStyle = 'rgba(110,80,58,.35)'; x.fillRect(0, i * rh, w, 3);
+    }
+  });
+  floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping; floorTex.repeat.set(3, 3);
+  const fn = CLAY.nT.clone(); fn.repeat.set(36, 36); fn.needsUpdate = true;
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 40), std({ map: floorTex, normalMap: fn, normalScale: new THREE.Vector2(.4, .4), roughness: .85 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = FLOOR; floor.receiveShadow = true; room.add(floor);
+
+  // 地毯（同心環）
+  const rugTex = canvasTex(512, 512, (x, w) => {
+    const cols = ['#c9a78a', '#ddc5aa', '#c08f7a', '#e6d4bf', '#b9997f', '#d8bfa4'];
+    for (let i = 0; i < 12; i++) { x.fillStyle = cols[i % cols.length]; x.beginPath(); x.arc(w / 2, w / 2, w / 2 * (1 - i / 12), 0, 7); x.fill(); }
+    x.strokeStyle = 'rgba(255,255,255,.25)'; x.setLineDash([6, 8]); x.lineWidth = 3;
+    for (let i = 1; i < 12; i += 2) { x.beginPath(); x.arc(w / 2, w / 2, w / 2 * (1 - i / 12) - 8, 0, 7); x.stroke(); }
+  });
+  const rug = new THREE.Mesh(new THREE.CircleGeometry(1, 64), std({ map: rugTex, normalMap: (() => { const t = CLAY.nT.clone(); t.repeat.set(9, 9); t.needsUpdate = true; return t; })(), normalScale: new THREE.Vector2(.6, .6), roughness: 1 }));
+  rug.rotation.x = -Math.PI / 2; rug.scale.set(10.5, 7.2, 1); rug.position.set(0.3, FLOOR + 0.02, 0.4); rug.receiveShadow = true; room.add(rug);
+
+  // 窗光（地板上的光斑）
+  const lightTex = canvasTex(256, 256, (x, w) => {
+    x.filter = 'blur(6px)'; x.fillStyle = '#fff';
+    for (let i = 0; i < 2; i++) for (let j = 0; j < 3; j++) x.fillRect(30 + i * 100, 20 + j * 74, 88, 64);
+  });
+  const lp = new THREE.Mesh(new THREE.PlaneGeometry(7, 9), new THREE.MeshBasicMaterial({ map: lightTex, color: 0xffe9c7, transparent: true, opacity: .22, blending: THREE.AdditiveBlending, depthWrite: false }));
+  lp.rotation.x = -Math.PI / 2; lp.rotation.z = 0.5; lp.position.set(8.5, FLOOR + 0.03, 1.5); room.add(lp);
+
+  // 牆
+  const wallMat = clay(0xdccab6, { rep: 22, ns: .18 });
+  const back = M(new THREE.PlaneGeometry(60, 30), wallMat, 0, FLOOR + 15, -9); back.castShadow = false; room.add(back);
+  const wainscot = M(new RoundedBoxGeometry(60, 3.2, 0.3, 2, 0.12), clay(0xc8b097, { rep: 24, ns: .4 }), 0, FLOOR + 1.6, -8.9); room.add(wainscot);
+  const sideL = M(new THREE.PlaneGeometry(40, 30), wallMat, -15, FLOOR + 15, 0); sideL.rotation.y = Math.PI / 2; room.add(sideL);
+  const sideR = M(new THREE.PlaneGeometry(40, 30), wallMat, 15, FLOOR + 15, 0); sideR.rotation.y = -Math.PI / 2; room.add(sideR);
+
+  // 門（左後方）
+  const frame = new THREE.Group(); frame.position.set(DOOR.x, FLOOR, DOOR.z + 0.2); room.add(frame);
+  const fm = clay(0xb08a68, { rep: 2 });
+  frame.add(M(new RoundedBoxGeometry(0.45, 9.4, 0.5, 2, .15), fm, -2.45, 4.7, 0), M(new RoundedBoxGeometry(0.45, 9.4, 0.5, 2, .15), fm, 2.45, 4.7, 0), M(new RoundedBoxGeometry(5.35, 0.45, 0.5, 2, .15), fm, 0, 9.4, 0));
+  // 門縫透光（腳步聲時會閃）
+  const gap = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 0.16), new THREE.MeshBasicMaterial({ color: 0xffe2b0, transparent: true, opacity: 0.55 }));
+  gap.position.set(0, 0.08, -0.05); frame.add(gap); room.userData.gap = gap;
+  // 門板（樞紐在左邊）
+  const hinge = new THREE.Group(); hinge.position.set(-2.2, 0, 0.05); frame.add(hinge); room.userData.hinge = hinge;
+  const door = new THREE.Group(); hinge.add(door);
+  door.add(M(new RoundedBoxGeometry(4.4, 9.1, 0.28, 2, 0.1), clay(0xc29a74, { rep: 2 }), 2.2, 4.62, 0));
+  [[1.2, 6.6], [3.2, 6.6], [1.2, 2.6], [3.2, 2.6]].forEach(([x, y]) => door.add(M(new RoundedBoxGeometry(1.5, 3.1, 0.12, 2, 0.08), clay(0xb58c66), x, y, 0.16)));
+  door.add(M(lump(new THREE.SphereGeometry(0.2, 16, 12), .015), clay(0xd8b56c, { rough: .45 }), 3.95, 4.4, 0.32));
+  // 門後的走廊光（門打開時看到）
+  const hall = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 9.2), new THREE.MeshBasicMaterial({ color: 0xffe7c0 }));
+  hall.position.set(0, 4.6, -0.3); frame.add(hall);
+  // 主人的影子（門開後投在地上）
+  const shadowTex = canvasTex(128, 512, (x, w, h) => {
+    x.fillStyle = '#000'; x.filter = 'blur(5px)';
+    x.beginPath(); x.ellipse(w / 2, 52, 26, 30, 0, 0, 7); x.fill();
+    x.beginPath(); x.moveTo(w / 2 - 40, 92); x.quadraticCurveTo(w / 2, 70, w / 2 + 40, 92); x.lineTo(w / 2 + 34, 300); x.lineTo(w / 2 - 34, 300); x.fill();
+    x.fillRect(w / 2 - 30, 290, 24, 210); x.fillRect(w / 2 + 6, 290, 24, 210);
+  }, false);
+  const ownerShadow = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 10), new THREE.MeshBasicMaterial({ map: shadowTex, color: 0x000000, transparent: true, opacity: 0, depthWrite: false }));
+  ownerShadow.rotation.x = -Math.PI / 2; ownerShadow.position.set(DOOR.x + 0.3, FLOOR + 0.04, DOOR.z + 5.4); room.add(ownerShadow); room.userData.ownerShadow = ownerShadow;
+  const doorPool = new THREE.Mesh(new THREE.PlaneGeometry(5, 7), new THREE.MeshBasicMaterial({ map: lightTex, color: 0xffd9a0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+  doorPool.rotation.x = -Math.PI / 2; doorPool.position.set(DOOR.x, FLOOR + 0.035, DOOR.z + 3.6); room.add(doorPool); room.userData.doorPool = doorPool;
+
+  // 右後方：矮書櫃 + 貓抓柱
+  const shelf = new THREE.Group(); shelf.position.set(6.5, FLOOR, -7.6); room.add(shelf);
+  shelf.add(M(new RoundedBoxGeometry(6, 3.6, 2.2, 3, .25), clay(0xa98466, { rep: 2 }), 0, 1.8, 0));
+  shelf.add(M(new RoundedBoxGeometry(5.3, 1.3, 1.2, 2, .12), clay(0x7f6250), 0, 2.4, 0.6));
+  ['#8fa1b5', '#c9887a', '#d6c08c', '#93a68a', '#b7a1c0', '#8fa1b5', '#c9887a'].forEach((c, i) => shelf.add(M(new RoundedBoxGeometry(0.42, 1.1 - (i % 3) * .12, 0.9, 2, .08), clay(new THREE.Color(c).getHex()), -2.2 + i * 0.6, 2.3 - (i % 3) * .06, 0.85)));
+  shelf.add(M(lump(new THREE.SphereGeometry(0.55, 20, 14), .03), clay(0xc07a5c), 2.0, 4.0, 0.2));
+  const post = new THREE.Group(); post.position.set(11, FLOOR, -3.5); room.add(post);
+  post.add(M(new THREE.CylinderGeometry(0.45, 0.45, 5, 20), clay(0xcbb38f, { rep: 3 }), 0, 2.5, 0));
+  post.add(M(new RoundedBoxGeometry(2.2, 0.4, 2.2, 2, .15), clay(0xb39478), 0, 0.2, 0), M(new RoundedBoxGeometry(2, 0.35, 2, 2, .15), clay(0xb39478), 0, 5.1, 0));
+  // 左前方大盆栽
+  const big = new THREE.Group(); big.position.set(-11.5, FLOOR, 2); room.add(big);
+  big.add(M(lump(lathe([[0, 0], [1, 0], [1.25, 1.8], [1.35, 2], [0, 2]]), .03), clay(0xc6886a), 0, 0, 0));
+  for (let i = 0; i < 9; i++) { const l = M(lump(new THREE.SphereGeometry(1, 14, 10), .03), clay(i % 2 ? 0x8ea47a : 0x9db28a)); const a = i / 9 * Math.PI * 2; l.scale.set(.35, 1.8, .12); l.position.set(Math.cos(a) * .6, 3.4, Math.sin(a) * .6); l.rotation.set(Math.sin(a) * .5, -a, Math.cos(a) * .5 * -1); big.add(l); }
+
+  // 桌子
+  const tableMat = clay(0xa47c5b, { rep: 8 });
+  const top = M(new RoundedBoxGeometry(TW + 0.3, 0.5, TD + 0.3, 3, 0.18), tableMat, 0, -0.25, 0); room.add(top);
+  const apron = M(new RoundedBoxGeometry(TW - 0.6, 0.6, TD - 0.6, 2, 0.12), clay(0x91694b, { rep: 4 }), 0, -0.75, 0); room.add(apron);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    const leg = M(lump(new THREE.CylinderGeometry(0.28, 0.22, 6.6, 16), .02), tableMat, sx * (HW - 0.55), FLOOR + 3.3, sz * (HD - 0.55)); room.add(leg);
+  }
+  // 桌巾（窄長條）
+  const runner = M(new RoundedBoxGeometry(2.4, 0.04, TD + 0.5, 2, .02), clay(0xd8c8b2, { rep: 4 }), 1.4, 0.0, 0); runner.castShadow = false; room.add(runner);
+  [frame, door, shelf, post, big].forEach(bake);
+  back.userData.keep = sideL.userData.keep = sideR.userData.keep = true;
+  bake(room);
+}
+const R = room.userData;
+
+/* =========================================================================
+   5. 物理世界（cannon-es，固定步長）
+   ========================================================================= */
+const world = new CANNON.World({ gravity: new CANNON.Vec3(0, GRAV, 0) });
+world.broadphase = new CANNON.SAPBroadphase(world);
+world.allowSleep = true;
+world.solver.iterations = 12;
+const mTable = new CANNON.Material('table'), mFloor = new CANNON.Material('floor'), mObj = new CANNON.Material('obj'), mCat = new CANNON.Material('cat');
+world.addContactMaterial(new CANNON.ContactMaterial(mObj, mTable, { friction: 0.32, restitution: 0.12 }));
+world.addContactMaterial(new CANNON.ContactMaterial(mObj, mFloor, { friction: 0.5, restitution: 0.36 }));
+world.addContactMaterial(new CANNON.ContactMaterial(mObj, mObj, { friction: 0.3, restitution: 0.15 }));
+world.addContactMaterial(new CANNON.ContactMaterial(mCat, mObj, { friction: 0.05, restitution: 0 }));
+world.addContactMaterial(new CANNON.ContactMaterial(mCat, mTable, { friction: 0, restitution: 0 }));
+const tableBody = new CANNON.Body({ type: CANNON.Body.STATIC, material: mTable });
+tableBody.addShape(new CANNON.Box(new CANNON.Vec3(HW + 0.15, 0.25, HD + 0.15)), new CANNON.Vec3(0, -0.25, 0));
+for (const sx of [-1, 1]) for (const sz of [-1, 1]) tableBody.addShape(new CANNON.Box(new CANNON.Vec3(0.25, 3.3, 0.25)), new CANNON.Vec3(sx * (HW - 0.55), FLOOR + 3.3, sz * (HD - 0.55)));
+world.addBody(tableBody);
+const floorBody = new CANNON.Body({ type: CANNON.Body.STATIC, material: mFloor });
+floorBody.addShape(new CANNON.Plane()); floorBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0); floorBody.position.set(0, FLOOR, 0);
+world.addBody(floorBody);
+[[0, 0, -8.7, 0], [0, 0, 9, Math.PI], [-14.7, 0, 0, Math.PI / 2], [14.7, 0, 0, -Math.PI / 2]].forEach(([x, , z, ry]) => {
+  const w = new CANNON.Body({ type: CANNON.Body.STATIC, material: mFloor }); w.addShape(new CANNON.Plane()); w.quaternion.setFromEuler(0, ry, 0); w.position.set(x, 0, z); world.addBody(w);
+});
+
+/* =========================================================================
+   6. 十種桌上物件
+   ========================================================================= */
+const DEFS = {
+  mug: { name: '杯子', mat: 'ceramic', pts: 120, fragile: 'shatter', mass: .5, push: 1, r: .32, hh: .25 },
+  pen: { name: '筆', mat: 'plastic', pts: 40, mass: .15, push: 1, r: .42, hh: .055 },
+  plant: { name: '盆栽', mat: 'ceramic', pts: 160, fragile: 'shatter', mass: 1, push: .85, r: .41, hh: .275 },
+  remote: { name: '遙控器', mat: 'plastic', pts: 70, mass: .35, push: 1, r: .5, hh: .08 },
+  book: { name: '書', mat: 'paper', pts: 60, mass: 1.2, push: .8, r: .6, hh: .14 },
+  glasses: { name: '眼鏡', mat: 'glass', pts: 140, fragile: 'crack', mass: .15, push: 1, r: .36, hh: .15 },
+  yarn: { name: '毛線球', mat: 'soft', pts: 30, mass: .25, push: 1, r: .34, hh: .34 },
+  phone: { name: '手機', mat: 'glass', pts: 150, fragile: 'crack', mass: .35, push: 1, r: .48, hh: .035 },
+  frame: { name: '相框', mat: 'glass', pts: 110, fragile: 'crack', mass: .4, push: 1, r: .42, hh: .48 },
+  jar: { name: '餅乾罐', mat: 'ceramic', pts: 200, fragile: 'shatter', mass: 1.4, push: .75, r: .45, hh: .4 },
+};
+const crackTex = canvasTex(256, 256, (x, w) => {
+  const r = mulberry32(3), cx = w * .42, cy = w * .55; x.strokeStyle = 'rgba(255,255,255,.95)'; x.lineCap = 'round';
+  for (let i = 0; i < 13; i++) {
+    let a = i / 13 * Math.PI * 2 + r() * .3, px = cx, py = cy; x.lineWidth = 2.2; x.beginPath(); x.moveTo(px, py);
+    for (let k = 0; k < 7; k++) { a += (r() - .5) * .7; px += Math.cos(a) * 22; py += Math.sin(a) * 22; x.lineTo(px, py); if (r() < .3) { x.moveTo(px, py); } } x.stroke();
+  }
+  x.lineWidth = 1.4; for (let k = 1; k < 4; k++) { x.beginPath(); for (let i = 0; i <= 14; i++) { const a = i / 14 * Math.PI * 2, rr = k * 26 + r() * 10; i ? x.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr) : x.moveTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); } x.stroke(); }
+});
+const crackMat = new THREE.MeshBasicMaterial({ map: crackTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+function photoTex(kind) {
+  return canvasTex(160, 200, (x, w, h) => {
+    if (kind === 0) {
+      const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#bcd0d8'); g.addColorStop(1, '#f1e1c8'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+      x.fillStyle = '#f3d79a'; x.beginPath(); x.arc(122, 40, 18, 0, 7); x.fill();
+      x.fillStyle = '#a7b98f'; x.fillRect(0, 150, w, 50);
+      x.fillStyle = '#7d8fa8'; x.beginPath(); x.ellipse(62, 132, 26, 40, 0, 0, 7); x.fill();
+      x.fillStyle = '#f0cfb4'; x.beginPath(); x.arc(62, 78, 20, 0, 7); x.fill();
+      x.fillStyle = '#5a4335'; x.beginPath(); x.arc(62, 70, 20, Math.PI, 0); x.fill();
+      x.fillStyle = '#d99a5e'; x.beginPath(); x.ellipse(108, 158, 22, 16, 0, 0, 7); x.fill(); x.beginPath(); x.arc(118, 140, 12, 0, 7); x.fill();
+      x.beginPath(); x.moveTo(110, 132); x.lineTo(113, 120); x.lineTo(118, 130); x.moveTo(122, 130); x.lineTo(127, 120); x.lineTo(129, 133); x.fill();
+      x.fillStyle = '#c9786a'; x.font = 'bold 22px sans-serif'; x.fillText('♥', 86, 112);
+    } else {
+      const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#e8c9a8'); g.addColorStop(1, '#f6e8d5'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+      x.fillStyle = '#9fae9a'; x.beginPath(); x.moveTo(0, 150); x.lineTo(50, 80); x.lineTo(95, 140); x.lineTo(130, 100); x.lineTo(160, 140); x.lineTo(160, 200); x.lineTo(0, 200); x.fill();
+      x.fillStyle = '#7f927c'; x.beginPath(); x.moveTo(0, 175); x.quadraticCurveTo(80, 150, 160, 178); x.lineTo(160, 200); x.lineTo(0, 200); x.fill();
+      x.fillStyle = '#fff3dc'; x.beginPath(); x.arc(40, 46, 14, 0, 7); x.fill();
+    }
+  });
+}
+const PHOTOS = [photoTex(0), photoTex(1)];
+const screenTex = canvasTex(128, 256, (x, w, h) => {
+  const g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#5d7f86'); g.addColorStop(1, '#2f3f4a'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+  x.fillStyle = 'rgba(255,248,235,.9)'; x.font = '600 34px sans-serif'; x.textAlign = 'center'; x.fillText('10:42', w / 2, 70);
+  x.font = '13px sans-serif'; x.fillText('週四 · 10月15日', w / 2, 92);
+  x.fillStyle = 'rgba(255,248,235,.85)'; x.beginPath(); x.roundRect(14, 120, 100, 34, 10); x.fill();
+  x.fillStyle = '#3e4d55'; x.font = '11px sans-serif'; x.textAlign = 'left'; x.fillText('媽媽：記得餵貓喔', 22, 141);
+});
+const jarLabel = canvasTex(256, 48, (x, w, h) => {
+  x.fillStyle = '#efe3cf'; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 4; i++) { const cx = 32 + i * 64; x.fillStyle = '#c99a62'; x.beginPath(); x.arc(cx, h / 2, 15, 0, 7); x.fill(); x.fillStyle = '#6b4a35'; [[-5, -4], [4, 2], [-2, 6], [6, -6]].forEach(([a, b]) => { x.beginPath(); x.arc(cx + a, h / 2 + b, 2.4, 0, 7); x.fill(); }); }
+});
+
+function buildMesh(type, variant) {
+  const g = new THREE.Group(); const S = mulberry32(variant * 31 + type.length)() * 10;
+  if (type === 'mug') {
+    const col = [0xe9dfd2, 0x9fb2c4][variant % 2], acc = [0x9fb09a, 0xe9dfd2][variant % 2];
+    g.add(M(lump(lathe([[0, -.25], [.22, -.25], [.28, -.235], [.3, -.2], [.3, .21], [.295, .245], [.275, .252], [.255, .238], [.255, -.17], [0, -.17]]), .006, 6, S), clay(col, { double: true })));
+    g.add(M(new THREE.CylinderGeometry(.304, .304, .08, 28, 1, true), clay(acc), 0, .04, 0));
+    g.add(M(new THREE.CircleGeometry(.25, 24).rotateX(-Math.PI / 2), clay(0x6b4632, { rough: .35 }), 0, .14, 0));
+    g.add(M(lump(new THREE.TorusGeometry(.11, .036, 8, 18), .004), clay(col), .31, .01, 0));
+  } else if (type === 'pen') {
+    const col = [0xc96f5f, 0x6d86a8, 0xd8b25a][variant % 3];
+    g.add(M(new THREE.CylinderGeometry(.05, .05, .7, 12).rotateZ(Math.PI / 2), clay(0xeee3d3), -0.02, 0, 0));
+    g.add(M(new THREE.CylinderGeometry(.056, .056, .26, 12).rotateZ(Math.PI / 2), clay(col), .27, 0, 0));
+    g.add(M(new THREE.ConeGeometry(.05, .13, 12).rotateZ(Math.PI / 2), clay(col), -.43, 0, 0));
+    g.add(M(new RoundedBoxGeometry(.22, .025, .03, 1, .01), clay(col), .25, .06, 0));
+  } else if (type === 'plant') {
+    g.add(M(lump(lathe([[0, -.275], [.27, -.275], [.3, -.25], [.36, .17], [.41, .19], [.41, .275], [.36, .275], [.34, .22], [0, .22]]), .008, 5, S), clay(0xc27c5c, { double: true })));
+    g.add(M(new THREE.CircleGeometry(.34, 20).rotateX(-Math.PI / 2), clay(0x5b4434), 0, .225, 0));
+    for (let i = 0; i < 10; i++) {
+      const a = i / 10 * Math.PI * 2 + (i % 2) * .3, inner = i % 2;
+      const leaf = M(lump(new THREE.SphereGeometry(1, 12, 10), .04, 3, i), clay(inner ? 0xa3b48b : 0x8ea47a));
+      leaf.scale.set(.085, inner ? .2 : .26, .055); leaf.position.set(Math.cos(a) * (inner ? .08 : .15), .38, Math.sin(a) * (inner ? .08 : .15));
+      leaf.rotation.set(0, -a, 0); leaf.rotateZ(inner ? -.35 : -.75); g.add(leaf);
+    }
+    g.add(M(new THREE.SphereGeometry(.07, 10, 8), clay(0xb9c79f), 0, .42, 0));
+  } else if (type === 'remote') {
+    g.add(M(lump(new RoundedBoxGeometry(1, .16, .34, 3, .07), .006, 4, S), clay(0x5f5c66)));
+    g.add(M(new THREE.SphereGeometry(.045, 10, 8).scale(1, .5, 1), clay(0xc9786a, { rough: .5 }), .38, .08, 0));
+    g.add(M(new THREE.TorusGeometry(.07, .022, 6, 16).rotateX(Math.PI / 2), clay(0x8c8893), .16, .08, 0));
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) g.add(M(new THREE.SphereGeometry(.028, 8, 6).scale(1, .5, 1), clay(0xb6b0b8), -.06 - i * .1, .08, -.08 + j * .08));
+  } else if (type === 'book') {
+    const col = [0x7d8fa8, 0xc48c7a][variant % 2];
+    g.add(M(new RoundedBoxGeometry(1.05, .22, .76, 2, .03), clay(0xefe5d3), .02, 0, 0));
+    g.add(M(lump(new RoundedBoxGeometry(1.1, .045, .8, 2, .02), .004, 4, S), clay(col), 0, .123, 0));
+    g.add(M(lump(new RoundedBoxGeometry(1.1, .045, .8, 2, .02), .004, 4, S + 1), clay(col), 0, -.123, 0));
+    g.add(M(new RoundedBoxGeometry(.06, .29, .8, 2, .025), clay(col), -.54, 0, 0));
+    g.add(M(new RoundedBoxGeometry(.065, .06, .5, 1, .02), clay(0xd8c08a), -.545, .03, 0));
+  } else if (type === 'glasses') {
+    const fc = clay(0x3d3735, { rough: .5 });
+    const lensMat = std({ color: 0xcfe2ea, transparent: true, opacity: .35, roughness: .1, side: THREE.DoubleSide });
+    for (const sx of [-1, 1]) {
+      g.add(M(new THREE.TorusGeometry(.125, .026, 8, 24), fc, sx * .165, 0, .19));
+      const lens = new THREE.Mesh(new THREE.CircleGeometry(.12, 20), lensMat); lens.position.set(sx * .165, 0, .19); lens.name = 'lens'; g.add(lens);
+      g.add(M(new RoundedBoxGeometry(.03, .035, .4, 1, .012), fc, sx * .3, .07, -.02));
+      g.add(M(new RoundedBoxGeometry(.03, .09, .035, 1, .012).rotateX(.5), fc, sx * .3, .03, -.22));
+    }
+    g.add(M(new THREE.TorusGeometry(.05, .018, 6, 12, Math.PI), fc, 0, .03, .19));
+  } else if (type === 'yarn') {
+    const col = [0xd49a9a, 0x9fb39a][variant % 2], c2 = new THREE.Color(col).multiplyScalar(.85).getHex(), c3 = new THREE.Color(col).lerp(new THREE.Color(0xffffff), .2).getHex();
+    g.add(M(lump(new THREE.SphereGeometry(.31, 20, 16), .012, 6, S), clay(col)));
+    const r = mulberry32(variant + 9);
+    for (let i = 0; i < 9; i++) { const t = M(new THREE.TorusGeometry(.315, .022, 6, 40), clay(i % 2 ? c2 : c3)); t.rotation.set(r() * 6, r() * 6, r() * 6); g.add(t); }
+    const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(.2, -.24, .1), new THREE.Vector3(.4, -.33, .25), new THREE.Vector3(.7, -.33, .2), new THREE.Vector3(.95, -.33, .45)]);
+    g.add(M(new THREE.TubeGeometry(curve, 20, .022, 6), clay(col)));
+  } else if (type === 'phone') {
+    g.add(M(new RoundedBoxGeometry(.48, .07, .92, 2, .03), clay(0x4a4850, { rough: .5 })));
+    const scr = new THREE.Mesh(new THREE.PlaneGeometry(.42, .84).rotateX(-Math.PI / 2), std({ map: screenTex, emissiveMap: screenTex, emissive: 0xffffff, emissiveIntensity: .35, roughness: .2 }));
+    scr.position.y = .037; g.add(scr);
+    const cr = new THREE.Mesh(new THREE.PlaneGeometry(.42, .84).rotateX(-Math.PI / 2), crackMat); cr.position.y = .04; cr.visible = false; cr.name = 'crack'; g.add(cr);
+  } else if (type === 'frame') {
+    const fcol = [0xc9a26b, 0x8e9c86][variant % 2];
+    g.add(M(lump(new RoundedBoxGeometry(.76, .96, .1, 2, .04), .006, 4, S), clay(fcol)));
+    const ph = new THREE.Mesh(new THREE.PlaneGeometry(.58, .78), std({ map: PHOTOS[variant % 2], roughness: .55 })); ph.position.z = .052; g.add(ph);
+    const cr = new THREE.Mesh(new THREE.PlaneGeometry(.58, .78), crackMat); cr.position.z = .056; cr.visible = false; cr.name = 'crack'; g.add(cr);
+    const st = M(new RoundedBoxGeometry(.18, .7, .04, 1, .015), clay(fcol), 0, -.12, -.12); st.rotation.x = -.35; g.add(st);
+  } else if (type === 'jar') {
+    g.add(M(lump(lathe([[0, -.4], [.33, -.4], [.4, -.36], [.43, -.2], [.43, .12], [.38, .2], [.3, .24], [0, .24]]), .01, 5, S), clay(0xa9bfb8)));
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(.436, .436, .17, 32, 1, true), std({ map: jarLabel, normalMap: CLAY.nT, roughness: .85 })); band.position.y = -.06; band.castShadow = true; g.add(band);
+    g.add(M(lump(lathe([[0, .23], [.33, .23], [.345, .26], [.29, .32], [.12, .35], [0, .355]]), .008, 5, S), clay(0xe7d9c5)));
+    g.add(M(lump(new THREE.SphereGeometry(.075, 12, 10), .006), clay(0xc9786a), 0, .4, 0));
+  }
+  bake(g);
+  return g;
+}
+function buildShape(type) {
+  const V = (x, y, z) => new CANNON.Vec3(x, y, z);
+  switch (type) {
+    case 'mug': return [new CANNON.Cylinder(.3, .3, .5, 12)];
+    case 'pen': return [new CANNON.Box(V(.45, .055, .055))];
+    case 'plant': return [new CANNON.Cylinder(.41, .3, .55, 12)];
+    case 'remote': return [new CANNON.Box(V(.5, .08, .17))];
+    case 'book': return [new CANNON.Box(V(.55, .14, .4))];
+    case 'glasses': return [new CANNON.Box(V(.33, .15, .2))];
+    case 'yarn': return [new CANNON.Sphere(.33)];
+    case 'phone': return [new CANNON.Box(V(.24, .035, .46))];
+    case 'frame': return [new CANNON.Box(V(.38, .48, .08))];
+    case 'jar': return [new CANNON.Cylinder(.43, .4, .8, 14)];
+  }
+}
+// 桌面佈置（x, z, 旋轉, 疊放的底高）
+const LAYOUT = [
+  ['jar', 0, .6, -.3, 0],
+  ['book', 0, -2.6, -1.1, .2, 0], ['book', 1, -2.55, -1.12, -.15, .28], ['mug', 0, -2.5, -1.1, .4, .56],
+  ['plant', 0, -3.75, -2.25, 0],
+  ['frame', 0, -1.15, -2.35, .08], ['frame', 1, 2.7, -2.4, -.22],
+  ['glasses', 0, -1.6, .8, .35],
+  ['phone', 0, 2.65, 1.75, -.45],
+  ['remote', 0, 1.9, .35, .8],
+  ['pen', 0, -3.6, 2.1, .35], ['pen', 1, 1.8, -1.45, -1.0], ['pen', 2, 4.0, -.3, 1.45],
+  ['mug', 1, 3.85, 2.25, -2.2],
+  ['yarn', 0, -.85, 2.25, 0], ['yarn', 1, 4.0, -2.35, 1],
+];
+const objs = [];
+function spawnObjects() {
+  for (const o of objs) { world.removeBody(o.body); scene.remove(o.mesh); }
+  objs.length = 0;
+  LAYOUT.forEach(([type, variant, x, z, ry, base = 0], idx) => {
+    const def = DEFS[type];
+    const mesh = buildMesh(type, variant); scene.add(mesh);
+    const body = new CANNON.Body({ mass: def.mass, material: mObj, linearDamping: .05, angularDamping: type === 'yarn' ? .35 : .15, allowSleep: true, sleepSpeedLimit: .15, sleepTimeLimit: .5 });
+    buildShape(type).forEach(s => body.addShape(s));
+    body.position.set(x, base + def.hh + .004, z);
+    body.quaternion.setFromEuler(0, ry, 0);
+    world.addBody(body); body.sleep();
+    const o = { id: idx, type, variant, def, mesh, body, onTable: true, fallen: false, landed: false, gone: false, broken: false, pendingLand: 0, lastCatTouch: -99, lastObjHit: -99, lastSnd: 0 };
+    body.userData = { obj: o };
+    body.addEventListener('collide', e => onCollide(o, e));
+    objs.push(o);
+  });
+}
+function onCollide(o, e) {
+  const other = e.body; let v = 0; try { v = Math.abs(e.contact.getImpactVelocityAlongNormal()); } catch (_) { }
+  if (other === floorBody) { if (!o.landed) { o.pendingLand = Math.max(o.pendingLand, v, 1); return; } }
+  else if (other === catBody) { o.lastCatTouch = G.time; return; }
+  else if (other.userData && other.userData.obj && v > .6) { o.lastObjHit = G.time; }
+  if (v > 2.2 && G.time - o.lastSnd > .12 && !o.gone) { o.lastSnd = G.time; SFX.knock(o.def.mat, v / 10 * (o.landed ? .7 : 1), panOf(o.body.position)); }
+}
+const panOf = p => clamp(p.x / 9, -.8, .8);
+
+/* =========================================================================
+   7. 貓（黏土拼裝 + 骨架動畫）
+   ========================================================================= */
+const catBody = new CANNON.Body({ mass: 3, material: mCat, fixedRotation: true, allowSleep: false, linearDamping: 0 });
+catBody.addShape(new CANNON.Sphere(.45));
+catBody.addShape(new CANNON.Sphere(.26), new CANNON.Vec3(0, .38, .45));
+world.addBody(catBody);
+const cat = { yaw: 0, tYaw: 0, pawCD: 0, pawT: 9, grounded: true, air: false, airT: 0, mood: 0, walk: 0, stepAcc: 0, jumpQ: false, pawQ: false, blink: 2, look: 0, puff: 0, squash: 0 };
+const C = {};
+{
+  const fur = clay(0xd99a5e), cream = clay(0xf2e2cb), stripe = clay(0xbc7845), pink = clay(0xe3a3a0), dark = clay(0x2e2522, { rough: .3 }), white = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const root = new THREE.Group(); scene.add(root); C.root = root;
+  const bod = new THREE.Group(); root.add(bod); C.bod = bod;
+  const torso = M(lump(new THREE.CapsuleGeometry(.3, .56, 6, 16).rotateX(Math.PI / 2), .012, 4, 2), fur, 0, .55, -.05); torso.scale.set(1, .96, 1); bod.add(torso);
+  const chest = M(lump(new THREE.SphereGeometry(.24, 16, 12), .01), cream, 0, .5, .3); chest.scale.set(1, 1.05, .8); bod.add(chest);
+  [-.28, -.05, .16].forEach(z => { const s = M(new THREE.TorusGeometry(.3, .038, 6, 18, Math.PI * .9).rotateZ(Math.PI * .05), stripe, 0, .555, z); bod.add(s); });
+  const head = new THREE.Group(); head.position.set(0, .9, .48); bod.add(head); C.head = head;
+  const skull = M(lump(new THREE.SphereGeometry(.29, 20, 16), .012, 4, 5), fur); skull.scale.set(1.12, .96, 1); head.add(skull);
+  head.add(M(new THREE.TorusGeometry(.2, .03, 6, 14, Math.PI * .6).rotateZ(Math.PI * .2).rotateX(-.3), stripe, 0, .1, .08));
+  for (const sx of [-1, 1]) {
+    const ch = M(lump(new THREE.SphereGeometry(.11, 12, 10), .006), cream, sx * .075, -.09, .22); ch.scale.set(1, .85, .9); head.add(ch);
+    const eye = M(new THREE.SphereGeometry(.055, 12, 10), dark, sx * .125, .045, .245); eye.scale.set(1, 1.2, .55); head.add(eye); (C.eyes = C.eyes || []).push(eye);
+    const hl = new THREE.Mesh(new THREE.SphereGeometry(.016, 6, 6), white); hl.position.set(sx * .125 + .018, .07, .274); head.add(hl); (C.hls = C.hls || []).push(hl);
+    const ear = new THREE.Group(); ear.position.set(sx * .17, .2, -.02); ear.rotation.z = -sx * .32; head.add(ear); (C.ears = C.ears || []).push(ear);
+    ear.add(M(lump(new THREE.ConeGeometry(.12, .22, 10), .01), fur, 0, .08, 0));
+    ear.add(M(new THREE.ConeGeometry(.07, .14, 8), pink, 0, .06, .05));
+    for (let k = 0; k < 2; k++) { const w = M(new THREE.CylinderGeometry(.006, .006, .3, 4).rotateZ(Math.PI / 2), cream, sx * .25, -.08 + k * .04, .2); w.rotation.y = sx * (.15 - k * .1); w.rotation.z = sx * (k ? -.12 : .1); w.castShadow = false; head.add(w); }
+  }
+  head.add(M(new THREE.SphereGeometry(.038, 10, 8), pink, 0, -.03, .285));
+  const legs = [];
+  [[-1, .3], [1, .3], [-1, -.32], [1, -.32]].forEach(([sx, z]) => {
+    const hip = new THREE.Group(); hip.position.set(sx * .165, .42, z); bod.add(hip);
+    hip.add(M(lump(new THREE.CapsuleGeometry(.088, .24, 4, 10), .005), fur, 0, -.18, 0));
+    const paw = M(lump(new THREE.SphereGeometry(.1, 12, 10), .005), cream, 0, -.36, .03); paw.scale.set(1, .7, 1.2); hip.add(paw);
+    legs.push(hip);
+  });
+  C.legs = legs;
+  // 尾巴：一串黏土球，逐節延遲擺動
+  const tail = new THREE.Group(); tail.position.set(0, .62, -.58); bod.add(tail); C.tail = tail; C.tailSeg = [];
+  let parent = tail;
+  for (let i = 0; i < 9; i++) {
+    const seg = new THREE.Group(); seg.position.y = i ? .1 : 0; parent.add(seg);
+    const r = .085 - i * .004;
+    seg.add(M(new THREE.SphereGeometry(r, 10, 8), i > 6 ? cream : (i % 3 === 1 ? stripe : fur), 0, .05, 0));
+    C.tailSeg.push(seg); parent = seg;
+  }
+  C.eyes.forEach(e => e.userData.keep = true);
+  bake(bod); bake(head); C.ears.forEach(bake); legs.forEach(bake);
+}
+function resetCat() {
+  catBody.position.set(.3, .45, 1.35); catBody.velocity.set(0, 0, 0);
+  cat.yaw = cat.tYaw = Math.PI * .8; cat.pawCD = 0; cat.pawT = 9; cat.air = false; cat.mood = 0; cat.look = 0; cat.puff = 0;
+}
+
+/* =========================================================================
+   8. 粒子：灰塵、碎片（落地後留在地上，成為結算畫面的「一團亂」）
+   ========================================================================= */
+const dustTex = canvasTex(64, 64, (x, w) => { const g = x.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.5, 'rgba(255,255,255,.5)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, w, w); });
+const DUST_MAX = reduceMotion ? 20 : (isMobile ? 36 : 70);
+const dust = [];
+for (let i = 0; i < DUST_MAX; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: dustTex, color: 0xece0cf, transparent: true, depthWrite: false, opacity: 0 })); s.visible = false; scene.add(s); dust.push({ s, life: 0, t: 0, v: new THREE.Vector3(), s0: 1, s1: 1 }); }
+let dustI = 0;
+function puff(p, n, size = 1, col = 0xece0cf) {
+  n = Math.ceil(n * (reduceMotion ? .4 : 1));
+  for (let i = 0; i < n; i++) {
+    const d = dust[dustI++ % DUST_MAX]; const a = Math.random() * Math.PI * 2, sp = rand(1.2, 3.2) * size;
+    d.s.visible = true; d.s.material.color.setHex(col); d.s.position.set(p.x + Math.cos(a) * .2, p.y + rand(.05, .3), p.z + Math.sin(a) * .2);
+    d.v.set(Math.cos(a) * sp, rand(.4, 1.4), Math.sin(a) * sp); d.t = 0; d.life = rand(.7, 1.1); d.s0 = .35 * size; d.s1 = rand(1.2, 1.9) * size;
+  }
+}
+// 碎片用 InstancedMesh：每種形狀一個 draw call
+const SHARD_CAP = isMobile ? 90 : 160;
+const shards = [];
+const shardMat = std({ map: CLAY.aT, normalMap: CLAY.nT, roughness: .8 });
+const glassShardMat = std({ color: 0xdff0f5, transparent: true, opacity: .75, roughness: .05 });
+const SG = {
+  chip: lump(new THREE.IcosahedronGeometry(1, 0), .15, 2, 1),
+  cookie: new THREE.CylinderGeometry(.13, .13, .045, 14),
+  soil: lump(new THREE.IcosahedronGeometry(1, 1), .2, 2, 4),
+  leaf: lump(new THREE.SphereGeometry(1, 10, 8), .05),
+};
+const IM = {}; const _col0 = new THREE.Color(1, 1, 1);
+for (const [k, g] of Object.entries(SG)) { IM[k] = new THREE.InstancedMesh(g, shardMat, SHARD_CAP); }
+IM.glass = new THREE.InstancedMesh(SG.chip, glassShardMat, 60);
+for (const im of Object.values(IM)) { im.count = 0; im.castShadow = true; im.receiveShadow = true; im.frustumCulled = false; im.userData.n = 0; im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); if (im !== IM.glass) { im.setColorAt(0, _col0); } scene.add(im); }
+const _m4 = new THREE.Matrix4(), _qq = new THREE.Quaternion(), _e = new THREE.Euler(), _col = new THREE.Color();
+function spawnShard(kind, p, color, sc, vel, h) {
+  const im = IM[kind], cap = im.instanceMatrix.count, idx = im.userData.n % cap; im.userData.n++; im.count = Math.min(cap, im.userData.n);
+  const old = shards.findIndex(q => q.im === im && q.idx === idx); if (old >= 0) shards.splice(old, 1);
+  const sh = { im, idx, p: p.clone(), r: new THREE.Euler(rand(0, 6), rand(0, 6), rand(0, 6)), s: new THREE.Vector3(...sc), v: vel, av: new THREE.Vector3(rand(-9, 9), rand(-9, 9), rand(-9, 9)), rest: false, h };
+  if (kind !== 'glass') { im.setColorAt(idx, _col.setHex(color)); im.instanceColor.needsUpdate = true; }
+  shards.push(sh); writeShard(sh);
+}
+function writeShard(sh) { _m4.compose(sh.p, _qq.setFromEuler(sh.r), sh.s); sh.im.setMatrixAt(sh.idx, _m4); sh.im.instanceMatrix.needsUpdate = true; }
+function clearShards() { shards.length = 0; for (const im of Object.values(IM)) { im.count = 0; im.userData.n = 0; } }
+const SHARD_COL = { mug: [0xe9dfd2, 0x9fb2c4], plant: 0xc27c5c, jar: 0xa9bfb8 };
+function burstShards(o, p) {
+  const t = o.type, base = new THREE.Vector3(p.x, FLOOR + .2, p.z);
+  const vel = (k = 1) => { const a = Math.random() * Math.PI * 2, s = rand(1.5, 5) * k; return new THREE.Vector3(Math.cos(a) * s, rand(2, 6) * k, Math.sin(a) * s); };
+  const chip = (col, sz) => { sz *= 1.5; const sc = [sz * rand(.6, 1.3), sz * rand(.25, .6), sz * rand(.6, 1.3)]; spawnShard('chip', base, col, sc, vel(), sc[1] * .8); };
+  const crumb = (col, sz, k = .7) => spawnShard('soil', base, col, [sz, sz * .7, sz], vel(k), sz * .6);
+  if (t === 'mug') { for (let i = 0; i < 9; i++) chip(SHARD_COL.mug[o.variant % 2], rand(.08, .16)); for (let i = 0; i < 6; i++) crumb(0x6b4632, .06); }
+  if (t === 'plant') {
+    for (let i = 0; i < 10; i++) chip(SHARD_COL.plant, rand(.1, .18));
+    for (let i = 0; i < 14; i++) crumb(0x5b4434, rand(.05, .1));
+    for (let i = 0; i < 7; i++) spawnShard('leaf', base, i % 2 ? 0xa3b48b : 0x8ea47a, [.085, .07, .24], vel(.8), .06);
+  }
+  if (t === 'jar') {
+    for (let i = 0; i < 12; i++) chip(i % 4 ? SHARD_COL.jar : 0xe7d9c5, rand(.1, .2));
+    for (let i = 0; i < 9; i++) spawnShard('cookie', base, 0xc99a62, [1, 1, 1], vel(.9), .025);
+    for (let i = 0; i < 10; i++) crumb(0xc99a62, .05);
+  }
+  if (o.def.fragile === 'crack') for (let i = 0; i < 6; i++) { const sz = rand(.04, .08); spawnShard('glass', base, 0, [sz, sz * .4, sz], vel(.8), sz * .35); }
+}
+
+/* =========================================================================
+   9. 遊戲狀態
+   ========================================================================= */
+const G = {
+  state: 'title', paused: false, time: 0, timeLeft: GAME_LEN, score: 0, shown: 0, combo: 0, comboT: 0, maxCombo: 0, chains: 0,
+  dropped: 0, broken: 0, endT: 0, endReason: '', warned: false, nextStep: 0, stepsDone: 0, best: store.get('g11.best', 0),
+  shake: 0, lastMeow: -9, lastTick: 99, brokenList: [], droppedList: [], userTook: false
+};
+const AP = { on: false, target: null, t: 0, wp: null, pushes: 0 };
+
+function startGame() {
+  audioInit(); SFX.ui();
+  spawnObjects(); resetCat();
+  clearShards();
+  for (const p of pops) p.el.remove(); pops.length = 0;
+  Object.assign(G, { state: 'playing', paused: false, timeLeft: GAME_LEN, score: 0, shown: 0, combo: 0, comboT: 0, maxCombo: 0, chains: 0, dropped: 0, broken: 0, endT: 0, warned: false, stepsDone: 0, lastTick: 99, brokenList: [], droppedList: [], userTook: false });
+  AP.on = DEMO; AP.target = null; AP.done = 0;
+  R.hinge.rotation.y = 0; doorLight.intensity = 0; R.ownerShadow.material.opacity = 0; R.doorPool.material.opacity = 0;
+  camera.clearViewOffset();
+  showOv(null); document.body.classList.add('playing');
+  $('#warn').classList.remove('on'); $('#warnGlow').style.display = 'none'; $('#clock').classList.remove('hurry');
+  updateHud(true);
+  MUS.on = true; MUS.step = 0; if (AU.ctx) MUS.next = now() + .1;
+  canvas.focus({ preventScroll: true });
+}
+function endGame(reason) {
+  if (G.state !== 'playing') return;
+  G.state = 'ending'; G.endT = 0; G.endReason = reason; MUS.on = false;
+  document.body.classList.remove('playing');
+  $('#warn').classList.remove('on'); $('#warnGlow').style.display = 'none';
+  stick.active = false; keys.clear();
+  if (reason === 'clear') { const bonus = Math.round(G.timeLeft) * 10; if (bonus > 0) { G.score += bonus; addPop(new THREE.Vector3(catBody.position.x, 1.6, catBody.position.z), bonus, ['全清'], true); } SFX.fanfare(); }
+  SFX.keys();
+}
+function showResult() {
+  G.state = 'result';
+  const has = t => G.brokenList.includes(t);
+  let q = '今天好乖喔……（有點失望）', sub = '桌上一件也沒少。';
+  if (G.dropped > 0) { q = '嗯？桌上好像少了什麼……'; sub = '地上有一些可疑的東西。'; }
+  const lines = [['jar', '餅乾罐！！那是阿嬤送的耶！'], ['glasses', '我的眼鏡呢……？我看不到啦！'], ['phone', '手機……螢幕……'], ['plant', '我養了兩年的多肉……'], ['frame', '我們的合照……'], ['mug', '我最愛的杯子……']];
+  for (const [t, s] of lines) if (has(t)) { q = s; break; }
+  if (G.broken >= 4) sub = `一共碎了 ${G.broken} 樣東西。主人深吸了一口氣。`;
+  else if (G.broken > 0) sub = '主人默默去拿掃把了。';
+  if (G.endReason === 'clear') { q = '……桌上怎麼什麼都沒有了？'; sub = '整張桌子被清空了。真是專業。'; }
+  const ranks = [[0, '乖巧的室友'], [300, '好奇的小毛球'], [900, '桌面清潔員'], [1800, '重力實驗家'], [2800, '混沌之王']];
+  let rk = ranks[0][1]; for (const [s, n] of ranks) if (G.score >= s) rk = n;
+  $('#quote').textContent = '「' + q + '」'; $('#resSub').textContent = sub; $('#rank').textContent = '稱號：' + rk;
+  $('#resKicker').textContent = G.endReason === 'clear' ? '全清！主人提早回來了' : '主人回來了';
+  $('#stDrop').textContent = G.dropped + '/' + objs.length; $('#stBreak').textContent = G.broken; $('#stCombo').textContent = G.maxCombo; $('#stChain').textContent = G.chains;
+  const cnt = {}; G.droppedList.forEach(t => cnt[t] = (cnt[t] || 0) + 1);
+  $('#chips').innerHTML = Object.keys(cnt).map(t => `<span class="chip ${DEFS[t].fragile ? 'brk' : ''}">${DEFS[t].name}${cnt[t] > 1 ? ' ×' + cnt[t] : ''}${DEFS[t].fragile === 'shatter' ? '・碎了' : DEFS[t].fragile === 'crack' ? '・裂了' : ''}</span>`).join('') || '<span class="chip">（什麼都沒掉）</span>';
+  const isBest = G.score > G.best && G.score > 0;
+  if (isBest && !DEMO) { G.best = G.score; store.set('g11.best', G.best); }
+  $('#newBest').style.display = isBest ? 'block' : 'none';
+  $('#bestLine').textContent = '最高紀錄：' + Math.max(G.best, G.score) + (DEMO ? '（展示模式不記錄）' : '');
+  showOv('#result');
+  const n = $('#resNum'), target = G.score, t0 = performance.now();
+  (function cnt2() { const k = Math.min(1, (performance.now() - t0) / 1100); n.textContent = Math.round(target * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(cnt2); })();
+  if (isBest) SFX.fanfare();
+  setTimeout(() => $('#btnAgain').focus({ preventScroll: true }), 50);
+}
+function showOv(sel) { ['#title', '#pause', '#result'].forEach(s => $(s).classList.toggle('on', s === sel)); }
+function setPause(p) {
+  if (G.state !== 'playing' || G.paused === p) return;
+  G.paused = p; showOv(p ? '#pause' : null);
+  if (AU.ctx) { if (p) AU.ctx.suspend().catch(() => { }); else AU.ctx.resume().catch(() => { }); }
+  if (p) { keys.clear(); stick.active = false; } else canvas.focus({ preventScroll: true });
+}
+
+/* ---------- 計分 ---------- */
+function onLand(o, v) {
+  if (o.landed) return; o.landed = true;
+  const p = o.body.position, t = G.time;
+  if (!o.fallen) { o.fallen = true; }
+  const playing = G.state === 'playing';
+  const vol = clamp(.45 + v / 30, .4, 1.1);
+  (MAT_SFX[o.def.mat] || SFX.soft)(vol, panOf(p));
+  puff(new THREE.Vector3(p.x, FLOOR, p.z), o.def.mass > .8 ? 12 : 7, o.def.mass > .8 ? 1.2 : .9);
+  addShake(o.def.mass > .8 ? .35 : .18);
+  if (o.def.fragile) { o.broken = true; queueBreak.push(o); }
+  if (!playing) return;
+  let pts = o.def.pts; const tags = [];
+  if (o.def.fragile) { pts *= 1.5; tags.push(['破壞', '']); G.broken++; G.brokenList.push(o.type); }
+  const chain = t - o.lastCatTouch > 1.5 && (o.lastObjHit > o.lastCatTouch || o.lastCatTouch < 0);
+  if (chain) { pts *= 1.5; tags.push(['連鎖', 'c']); G.chains++; }
+  G.combo = (G.comboT > 0) ? G.combo + 1 : 1; G.comboT = COMBO_WIN; G.maxCombo = Math.max(G.maxCombo, G.combo);
+  const mult = Math.min(3, 1 + .25 * (G.combo - 1));
+  if (G.combo > 1) tags.push(['連擊×' + mult, 'x']);
+  pts = Math.round(pts * mult / 5) * 5;
+  G.score += pts; G.dropped++; G.droppedList.push(o.type);
+  SFX.combo(G.combo);
+  $('#score').classList.remove('bump'); void $('#score').offsetWidth; $('#score').classList.add('bump');
+  addPop(new THREE.Vector3(p.x, FLOOR + 1.6, p.z), pts, tags, pts >= 250);
+  if ((G.combo >= 3 || o.def.fragile === 'shatter') && t - G.lastMeow > 2.5) { G.lastMeow = t; setTimeout(() => SFX.meow(rand(1.05, 1.25)), 220); catSay(G.combo >= 3 ? '喵～！' : '喵。'); }
+  if (objs.every(q => q.landed || q.gone)) setTimeout(() => endGame('clear'), 900);
+}
+const queueBreak = [];
+function processBreaks() {
+  while (queueBreak.length) {
+    const o = queueBreak.shift(); const p = o.body.position.clone();
+    burstShards(o, p);
+    if (o.def.fragile === 'shatter') { world.removeBody(o.body); scene.remove(o.mesh); o.gone = true; }
+    else { o.mesh.traverse(c => { if (c.name === 'crack') c.visible = true; if (c.name === 'lens' && Math.random() < .7) c.visible = false; }); }
+  }
+}
+
+/* ---------- 分數飄字 ---------- */
+const pops = [];
+const popLayer = $('#pops');
+function addPop(pos, pts, tags, big) {
+  const el = document.createElement('div'); el.className = 'pop' + (big ? ' big' : '');
+  el.innerHTML = `<div class="in"><b>+${pts}</b>${tags.length ? `<div class="tags">${tags.map(([t, c]) => `<span class="${c}">${t}</span>`).join('')}</div>` : ''}</div>`;
+  popLayer.appendChild(el); pops.push({ el, pos: pos.clone(), t: 0, life: 1.5 });
+  while (pops.length > 8) pops.shift().el.remove();
+}
+function catSay(txt) {
+  const el = document.createElement('div'); el.className = 'pop meow'; el.innerHTML = `<div class="in">${txt}</div>`;
+  popLayer.appendChild(el); pops.push({ el, pos: null, follow: true, t: 0, life: 1.4 });
+}
+const _v = new THREE.Vector3();
+function updatePops(dt) {
+  const w = innerWidth, h = innerHeight;
+  for (let i = pops.length - 1; i >= 0; i--) {
+    const p = pops[i]; p.t += dt;
+    if (p.t > p.life) { p.el.remove(); pops.splice(i, 1); continue; }
+    if (p.follow) _v.set(catBody.position.x, catBody.position.y + 1.4, catBody.position.z); else _v.copy(p.pos);
+    _v.project(camera);
+    const x = clamp((_v.x * .5 + .5) * w, 60, w - 60), y = clamp((-_v.y * .5 + .5) * h, 120, h - 90);
+    p.el.style.transform = `translate(${x}px,${y}px)`;
+  }
+}
+
+/* =========================================================================
+   10. 輸入：鍵盤、虛擬搖桿、按鈕
+   ========================================================================= */
+const keys = new Set();
+const stick = { active: false, id: -1, cx: 0, cy: 0, x: 0, y: 0 };
+function takeControl() { if (AP.on && G.state === 'playing') { AP.on = false; G.userTook = true; } }
+addEventListener('keydown', e => {
+  if (e.repeat && (e.code === 'Space' || e.key === 'Shift')) { e.preventDefault(); return; }
+  audioInit();
+  if (e.code === 'Escape' || e.code === 'KeyP') { if (G.state === 'playing') setPause(!G.paused); return; }
+  if (G.state === 'title' && (e.code === 'Enter' || e.code === 'Space')) { e.preventDefault(); startGame(); return; }
+  if (G.state === 'result' && e.code === 'Enter') { e.preventDefault(); startGame(); return; }
+  if (G.state !== 'playing' || G.paused) return;
+  const mv = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+  if (mv.includes(e.code)) { keys.add(e.code); takeControl(); e.preventDefault(); }
+  if (e.code === 'Space') { cat.pawQ = true; takeControl(); e.preventDefault(); }
+  if (e.key === 'Shift') { cat.jumpQ = true; takeControl(); e.preventDefault(); }
+});
+addEventListener('keyup', e => keys.delete(e.code));
+addEventListener('blur', () => keys.clear());
+canvas.addEventListener('pointerdown', e => { audioInit(); if (e.pointerType === 'mouse' && e.button === 0 && G.state === 'playing' && !G.paused) { cat.pawQ = true; takeControl(); } });
+const zone = $('#stickZone'), stickEl = $('#stick'), knob = $('#knob');
+function placeStick(x, y) { stickEl.style.left = x + 'px'; stickEl.style.top = y + 'px'; }
+function homeStick() { placeStick(96, innerHeight - 170); knob.style.transform = ''; stickEl.style.opacity = .6; }
+zone.addEventListener('pointerdown', e => {
+  audioInit(); if (G.state !== 'playing' || G.paused) return; e.preventDefault();
+  stick.active = true; stick.id = e.pointerId; stick.cx = e.clientX; stick.cy = e.clientY; stick.x = stick.y = 0;
+  placeStick(e.clientX, e.clientY); stickEl.style.opacity = 1; zone.setPointerCapture(e.pointerId); takeControl();
+});
+zone.addEventListener('pointermove', e => {
+  if (!stick.active || e.pointerId !== stick.id) return;
+  let dx = e.clientX - stick.cx, dy = e.clientY - stick.cy; const L = Math.hypot(dx, dy), MX = 52;
+  if (L > MX) { dx *= MX / L; dy *= MX / L; }
+  stick.x = dx / MX; stick.y = dy / MX; knob.style.transform = `translate(${dx}px,${dy}px)`;
+});
+const endStick = e => { if (e.pointerId !== stick.id) return; stick.active = false; stick.x = stick.y = 0; homeStick(); };
+zone.addEventListener('pointerup', endStick); zone.addEventListener('pointercancel', endStick);
+function holdBtn(el, fn) {
+  el.addEventListener('pointerdown', e => { e.preventDefault(); audioInit(); el.classList.add('down'); if (G.state === 'playing' && !G.paused) { fn(); takeControl(); } if (navigator.vibrate && !reduceMotion) try { navigator.vibrate(12); } catch (_) { } });
+  const up = () => el.classList.remove('down'); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); el.addEventListener('pointerleave', up);
+}
+holdBtn($('#btnPaw'), () => cat.pawQ = true);
+holdBtn($('#btnJump'), () => cat.jumpQ = true);
+function inputVec() {
+  let x = 0, z = 0;
+  if (keys.has('KeyA') || keys.has('ArrowLeft')) x -= 1; if (keys.has('KeyD') || keys.has('ArrowRight')) x += 1;
+  if (keys.has('KeyW') || keys.has('ArrowUp')) z -= 1; if (keys.has('KeyS') || keys.has('ArrowDown')) z += 1;
+  if (stick.active) { x += stick.x; z += stick.y; }
+  const L = Math.hypot(x, z); if (L > 1) { x /= L; z /= L; }
+  return [x, z];
+}
+
+/* ---------- 展示模式自動駕駛：走到物件內側、面向最近的桌邊、伸爪 ---------- */
+function autopilot(h) {
+  AP.t += h;
+  const cp = catBody.position;
+  if (!AP.target || AP.target.fallen || AP.target.gone || AP.t > 7) {
+    let best = null, bs = 1e9;
+    for (const o of objs) {
+      if (o.fallen || o.gone || o === AP.target && AP.t > 7) continue;
+      const p = o.body.position; if (p.y > 1.2) continue;
+      const e = Math.min(HW - p.x, p.x + HW, (HD - p.z) * .8, (p.z + HD) * 1.7);
+      const s = Math.hypot(p.x - cp.x, p.z - cp.z) + e * 2.2 + (o.def.fragile ? -1.2 : 0);
+      if (s < bs) { bs = s; best = o; }
+    }
+    AP.target = best; AP.t = 0; if (!best) return [0, 0];
+  }
+  const p = AP.target.body.position;
+  const cands = [[1, 0, HW - p.x], [-1, 0, p.x + HW], [0, 1, (HD - p.z) * .8], [0, -1, (p.z + HD) * 1.7]];
+  cands.sort((a, b) => a[2] - b[2]);
+  const [dx, dz] = cands[0];
+  const off = AP.target.def.r + .75;
+  let ax = clamp(p.x - dx * off, -HW + .45, HW - .45), az = clamp(p.z - dz * off, -HD + .45, HD - .45);
+  // 如果貓在物件的另一邊，先繞過去
+  const rel = (cp.x - p.x) * dx + (cp.z - p.z) * dz;
+  if (rel > -.3) { const px = -dz, pz = dx, side = ((cp.x - p.x) * px + (cp.z - p.z) * pz) >= 0 ? 1 : -1; ax = clamp(p.x + px * side * (off + .5) - dx * .4, -HW + .45, HW - .45); az = clamp(p.z + pz * side * (off + .5) - dz * .4, -HD + .45, HD - .45); }
+  const ex = ax - cp.x, ez = az - cp.z, d = Math.hypot(ex, ez);
+  if (d > .22) return [ex / d * Math.min(1, d * 1.6 + .25), ez / d * Math.min(1, d * 1.6 + .25)];
+  cat.tYaw = Math.atan2(dx * .75 + (p.x - cp.x) * .25, dz * .75 + (p.z - cp.z) * .25);
+  if (Math.abs(angDiff(cat.yaw, cat.tYaw)) < .25 && cat.pawCD <= 0) cat.pawQ = true;
+  return [0, 0];
+}
+const angDiff = (a, b) => { let d = b - a; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; };
+
+/* =========================================================================
+   11. 固定步長更新
+   ========================================================================= */
+const _imp = new CANNON.Vec3(), _rel = new CANNON.Vec3();
+function doPaw() {
+  cat.pawCD = .3; cat.pawT = 0; SFX.swipe();
+  const fx = Math.sin(cat.yaw), fz = Math.cos(cat.yaw), cp = catBody.position; let hit = 0;
+  for (const o of objs) {
+    if (o.gone || o.fallen) continue;
+    const p = o.body.position, dx = p.x - cp.x, dz = p.z - cp.z, dy = p.y - cp.y, d = Math.hypot(dx, dz) || .001;
+    const reach = .45 + o.def.r + .8;
+    if (d > reach || dy > 1.4 || dy < -1) continue;
+    if ((dx * fx + dz * fz) / d < .4) continue;
+    let ux = fx * .72 + dx / d * .28, uz = fz * .72 + dz / d * .28; const ul = Math.hypot(ux, uz); ux /= ul; uz /= ul;
+    const s = 6.4 * o.def.push * (1 - .25 * d / reach), m = o.body.mass;
+    o.body.wakeUp();
+    _imp.set(ux * s * m, 1.7 * m * o.def.push, uz * s * m); _rel.set(-ux * .08, .12, -uz * .08);
+    o.body.applyImpulse(_imp, _rel);
+    o.lastCatTouch = G.time; hit++;
+    SFX.knock(o.def.mat, .5, panOf(p));
+  }
+  if (hit) { SFX.pawHit(); cat.mood = Math.min(1, cat.mood + .12); }
+}
+function pounce() {
+  SFX.land(); addShake(.12); cat.squash = 1;
+  const cp = catBody.position; puff(new THREE.Vector3(cp.x, cp.y - .45, cp.z), 5, .55, 0xe8d6bf);
+  for (const o of objs) {
+    if (o.gone || o.fallen) continue;
+    const p = o.body.position, dx = p.x - cp.x, dz = p.z - cp.z, d = Math.hypot(dx, dz) || .001;
+    if (d > 2 || Math.abs(p.y - cp.y) > 1.2) continue;
+    const k = 1 - d / 2, m = o.body.mass; o.body.wakeUp();
+    _imp.set(dx / d * 2.4 * k * m, 3 * k * m, dz / d * 2.4 * k * m); _rel.set(rand(-.05, .05), .1, rand(-.05, .05));
+    o.body.applyImpulse(_imp, _rel); o.lastCatTouch = G.time;
+  }
+}
+function catGrounded() {
+  for (const c of world.contacts) {
+    if (c.bi === catBody && c.ni.y < -.5) return true;
+    if (c.bj === catBody && c.ni.y > .5) return true;
+  }
+  return false;
+}
+function fixedUpdate(h) {
+  G.time += h;
+  let mx = 0, mz = 0;
+  if (G.state === 'playing' && !G.paused) {
+    if (AP.on) [mx, mz] = autopilot(h); else[mx, mz] = inputVec();
+  }
+  // 貓的移動：速度追隨輸入（地面反應快、空中慢）
+  const v = catBody.velocity, SPEED = 4.6, k = 1 - Math.exp(-h * (cat.grounded ? 14 : 4));
+  v.x += (mx * SPEED - v.x) * k; v.z += (mz * SPEED - v.z) * k;
+  const ml = Math.hypot(mx, mz);
+  if (ml > .15) cat.tYaw = Math.atan2(mx, mz);
+  if (G.state === 'ending') cat.tYaw = Math.atan2(DOOR.x - catBody.position.x, DOOR.z - catBody.position.z);
+  cat.yaw += angDiff(cat.yaw, cat.tYaw) * (1 - Math.exp(-h * 13));
+  // 頭部碰撞球跟著面向轉
+  catBody.shapeOffsets[1].set(Math.sin(cat.yaw) * .45, .38, Math.cos(cat.yaw) * .45); catBody.updateBoundingRadius(); catBody.aabbNeedsUpdate = true;
+  if (cat.jumpQ) { cat.jumpQ = false; if (cat.grounded && !cat.air) { v.y = 10.5; cat.air = true; cat.airT = 0; SFX.jump(); } }
+  if (cat.pawQ) { cat.pawQ = false; if (cat.pawCD <= 0) doPaw(); }
+  cat.pawCD -= h;
+
+  world.step(h);
+
+  // 限制貓在桌面上
+  const cp = catBody.position, LX = HW - .42, LZ = HD - .42;
+  if (cp.x > LX) { cp.x = LX; if (v.x > 0) v.x = 0; } if (cp.x < -LX) { cp.x = -LX; if (v.x < 0) v.x = 0; }
+  if (cp.z > LZ) { cp.z = LZ; if (v.z > 0) v.z = 0; } if (cp.z < -LZ) { cp.z = -LZ; if (v.z < 0) v.z = 0; }
+  if (cp.y < -.5) { cp.set(0, 1, 0); v.set(0, 0, 0); }
+  cat.grounded = catGrounded();
+  // 東西落在貓背上時，把它往外撥下去（貓會抖掉身上的東西）
+  for (const c of world.contacts) {
+    const other = c.bi === catBody ? c.bj : c.bj === catBody ? c.bi : null;
+    if (!other || !other.userData || !other.userData.obj) continue;
+    const op = other.position; if (op.y < cp.y + .3) continue;
+    let dx = op.x - cp.x, dz = op.z - cp.z; const d = Math.hypot(dx, dz) || 1; if (d < .05) { dx = Math.sin(cat.yaw + 1.6); dz = Math.cos(cat.yaw + 1.6); }
+    other.velocity.x += dx / d * 0.35; other.velocity.z += dz / d * 0.35; other.wakeUp();
+  }
+  if (cat.air) { cat.airT += h; if (cat.grounded && cat.airT > .12) { cat.air = false; pounce(); } }
+  // 走路聲
+  const sp = Math.hypot(v.x, v.z);
+  if (cat.grounded && sp > .8) { cat.stepAcc += sp * h; if (cat.stepAcc > .55) { cat.stepAcc = 0; SFX.catStep(); } }
+
+  // 物件狀態
+  for (const o of objs) {
+    if (o.gone) continue;
+    const p = o.body.position;
+    if (!o.fallen && p.y < -.9) { o.fallen = true; o.fallT = G.time; }
+    if (o.pendingLand && !o.landed) { onLand(o, o.pendingLand); }
+    else if (o.fallen && !o.landed && (p.y < FLOOR + .5 || G.time - o.fallT > 2.5)) onLand(o, 8);
+    if (p.y < FLOOR - 3) { p.y = FLOOR + 1; o.body.velocity.set(0, 0, 0); }
+  }
+  processBreaks();
+
+  if (G.state === 'playing' && !G.paused) {
+    G.timeLeft -= h;
+    if (G.comboT > 0) { G.comboT -= h; if (G.comboT <= 0) G.combo = 0; }
+    // 主人回來前 10 秒：門外腳步聲
+    if (G.timeLeft <= WARN_AT && !G.warned) { G.warned = true; G.nextStep = G.timeLeft; $('#warn').classList.add('on'); $('#clock').classList.add('hurry'); if (!reduceMotion && !SOFT) $('#warnGlow').style.display = 'block'; }
+    if (G.warned && G.timeLeft < WARN_AT - 4.5) $('#warn').classList.remove('on');
+    if (G.warned && G.timeLeft <= G.nextStep && G.timeLeft > .3) {
+      const k = 1 - G.timeLeft / WARN_AT;
+      SFX.ownerStep(.25 + k * .85); G.stepsDone++; G.gapFlick = .25;
+      G.nextStep = G.timeLeft - lerp(.75, .42, k);
+    }
+    const sec = Math.ceil(G.timeLeft);
+    if (sec <= 5 && sec !== G.lastTick && sec > 0) { G.lastTick = sec; SFX.tick(sec <= 3); }
+    if (G.timeLeft <= 0) { G.timeLeft = 0; endGame('owner'); }
+  }
+  cat.mood = lerp(cat.mood, G.combo >= 2 ? clamp((G.combo - 1) / 4, .3, 1) : 0, 1 - Math.exp(-h * (G.combo >= 2 ? 3 : .6)));
+}
+
+/* =========================================================================
+   12. 每幀：動畫、鏡頭、HUD
+   ========================================================================= */
+function addShake(a) { if (!reduceMotion) G.shake = Math.min(.6, G.shake + a); }
+const tUp = new THREE.Vector3(0, 1, 0), camUp = new THREE.Vector3(0, 1, 0);
+const camPos = new THREE.Vector3(6, 4, 9), camLook = new THREE.Vector3(0, 0, 0), tPos = new THREE.Vector3(), tLook = new THREE.Vector3();
+let camFov = 42, tFov = 42, resultBlend = 0;
+function fitFov(halfW, dist, minV = 38, maxV = 75) {
+  const hf = 2 * Math.atan(halfW / dist), vf = 2 * Math.atan(Math.tan(hf / 2) / camera.aspect) * 180 / Math.PI;
+  return clamp(vf, minV, maxV);
+}
+function cameraTargets(dt) {
+  const a = camera.aspect, portrait = a < .85, cp = catBody.position;
+  if (G.state === 'title') {
+    const t = performance.now() / 1000 * .07, ang = .5 + Math.sin(t) * .35;
+    const rad = portrait ? 15 : 10.5;
+    tLook.set(portrait ? 0 : -1.4, portrait ? -.6 : .2, 0); tPos.set(Math.sin(ang) * rad, portrait ? 7.5 : 4.6, Math.cos(ang) * rad + 1);
+    tFov = portrait ? 58 : 40; return;
+  }
+  const ending = G.state === 'ending' ? G.endT : (G.state === 'result' ? 99 : -1);
+  tUp.set(0, 1, 0);
+  if (ending > 2.3) {
+    // 主人視角的俯視圖（結算）。直式畫面把鏡頭轉 90°，讓桌子長邊對齊螢幕長邊
+    const fovV = 40, th = Math.tan(fovV / 2 * Math.PI / 180);
+    if (portrait) {
+      const f = .5, H = Math.max(6 / (th * a), 8.4 / (th * (1 - f)));
+      tUp.set(-1, 0, .001); const ox = f * H * th;
+      tLook.set(ox - .4, FLOOR, .3); tPos.set(ox - .4, FLOOR + H, .3); tFov = fovV;
+    } else {
+      const f = innerWidth > 900 ? (Math.min(460, innerWidth * .4) + innerWidth * .05) / innerWidth : .45;
+      const H = Math.max(10 / ((1 - f) * th * a), 8.2 / th), ox = f * H * th * a;
+      tLook.set(ox - .6, FLOOR, 0); tPos.set(ox - .6, FLOOR + H, .01); tFov = fovV;
+    }
+    return;
+  }
+  const follow = portrait ? .72 : .28;
+  const tx = cp.x * follow, tz = cp.z * (portrait ? .25 : .12);
+  if (portrait) { tLook.set(tx, -1.2, tz + .2); tPos.set(tLook.x, tLook.y + 16, tLook.z + 8.6); tFov = fitFov(4.6, 18.2, 40, 74); }
+  else { tLook.set(tx, -1.5, tz + .6); tPos.set(tLook.x, tLook.y + 13.2, tLook.z + 10.2); tFov = fitFov(6.3, 16.7, 38, 60); }
+  if (G.state === 'ending' && ending < 2.3) { // 看向門口
+    const k = easeInOut(clamp(ending / 1.2, 0, 1));
+    tLook.lerp(new THREE.Vector3(-3.5, -3.2, -5.5), k * .55);
+  }
+}
+function updateCamera(dt) {
+  cameraTargets(dt);
+  const fast = G.state === 'ending' && G.endT > 2.3 || G.state === 'result';
+  const k = 1 - Math.exp(-dt * (fast ? 2.2 : 4));
+  camPos.lerp(tPos, k); camLook.lerp(tLook, k); camFov = lerp(camFov, tFov, k); camUp.lerp(tUp, k).normalize();
+  camera.position.copy(camPos); camera.up.copy(camUp);
+  const cd = camPos.distanceTo(camLook); scene.fog.near = cd + 17; scene.fog.far = cd + 46;
+  if (G.shake > 0) { const s = G.shake * G.shake; camera.position.x += rand(-1, 1) * s; camera.position.y += rand(-1, 1) * s * .6; G.shake = Math.max(0, G.shake - dt * 1.6); }
+  camera.lookAt(camLook);
+  if (Math.abs(camera.fov - camFov) > .01) { camera.fov = camFov; camera.updateProjectionMatrix(); }
+}
+function animateCat(dt, t) {
+  const cp = catBody.position, v = catBody.velocity;
+  C.root.position.set(cp.x, cp.y - .45, cp.z);
+  C.root.rotation.y = cat.yaw;
+  const sp = Math.hypot(v.x, v.z), walkAmt = clamp(sp / 4.6, 0, 1);
+  cat.walk += dt * (4 + sp * 3.2);
+  const wl = cat.air ? 0 : walkAmt;
+  C.legs.forEach((leg, i) => {
+    const ph = cat.walk + (i === 0 || i === 3 ? 0 : Math.PI);
+    let rx = Math.sin(ph) * .65 * wl;
+    if (cat.air) rx = (i < 2 ? -.7 : .6);
+    if (i === 1 && cat.pawT < .35) { const e = cat.pawT < .07 ? cat.pawT / .07 : 1 - clamp((cat.pawT - .12) / .23, 0, 1); rx = -1.5 * e; leg.position.y = .42 + .12 * e; leg.position.z = .3 + .1 * e; } else { leg.position.y = .42; leg.position.z = i < 2 ? .3 : -.32; }
+    leg.rotation.x = lerp(leg.rotation.x, rx, 1 - Math.exp(-dt * 25));
+  });
+  cat.pawT += dt;
+  // 身體彈跳、擠壓
+  cat.squash = Math.max(0, cat.squash - dt * 4);
+  const breathe = Math.sin(t * 2.2) * .015, bob = Math.abs(Math.sin(cat.walk)) * .05 * wl;
+  const sq = Math.sin(cat.squash * Math.PI) * .18 * (reduceMotion ? .3 : 1);
+  C.bod.position.y = bob - sq * .3; C.bod.scale.set(1 + sq * .5, 1 - sq + breathe, 1 + sq * .3);
+  C.bod.rotation.x = cat.air ? clamp(-v.y * .03, -.3, .3) : 0;
+  if (cat.pawT < .35) C.bod.rotation.z = Math.sin(cat.pawT / .35 * Math.PI) * -.08;
+  // 頭：腳步聲時轉向門口、耳朵豎起
+  let look = 0;
+  if (G.warned && (G.state === 'playing' || G.state === 'ending')) {
+    const want = Math.atan2(DOOR.x - cp.x, DOOR.z - cp.z); look = clamp(angDiff(cat.yaw, want), -1.1, 1.1) * (G.state === 'ending' ? 1 : (G.gapFlick > 0 ? .9 : .35));
+  }
+  cat.look = lerp(cat.look, look, 1 - Math.exp(-dt * 6));
+  C.head.rotation.y = cat.look + Math.sin(t * .7) * .06;
+  C.head.rotation.x = cat.pawT < .35 ? .25 : Math.sin(t * .5) * .05;
+  const alert = G.warned ? 1 : 0;
+  C.ears.forEach((e, i) => { const sx = i ? 1 : -1; e.rotation.z = -sx * lerp(.32, .12, alert) + Math.sin(t * 9 + i) * .03 * cat.mood; e.rotation.x = lerp(0, -.2, alert); });
+  // 眨眼
+  cat.blink -= dt; let ey = 1.2; if (cat.blink < 0) { ey = .12; if (cat.blink < -.12) cat.blink = rand(1.8, 4.5); }
+  if (cat.mood > .6) ey = Math.min(ey, .55);
+  C.eyes.forEach(e => e.scale.y = lerp(e.scale.y, ey, 1 - Math.exp(-dt * 30)));
+  // 尾巴：心情（連擊）越高 → 越翹、擺越快
+  const m = cat.mood, ending = G.state === 'ending' || G.state === 'result';
+  cat.puff = lerp(cat.puff, ending ? 1 : 0, 1 - Math.exp(-dt * 5));
+  const freq = lerp(1.6, 7.5, m), amp = lerp(.16, .3, m);
+  C.tail.rotation.x = lerp(-1.95, -.75, m) + (ending ? .9 : 0) * cat.puff;
+  C.tailSeg.forEach((s, i) => {
+    s.rotation.z = Math.sin(t * freq - i * .55) * amp * (.4 + i * .12);
+    s.rotation.x = lerp(.16, .05, m) + (i > 5 ? lerp(.15, .35, m) : 0) - (ending ? .1 : 0);
+    s.children[0].scale.setScalar(1 + cat.puff * (.25 + i * .03));
+  });
+}
+const _q = new THREE.Quaternion();
+function syncObjects() {
+  for (const o of objs) { if (o.gone) continue; o.mesh.position.copy(o.body.position); o.mesh.quaternion.copy(o.body.quaternion); }
+}
+function updateParticles(dt) {
+  for (const d of dust) {
+    if (!d.s.visible) continue; d.t += dt; const k = d.t / d.life;
+    if (k >= 1) { d.s.visible = false; continue; }
+    d.s.position.addScaledVector(d.v, dt); d.v.multiplyScalar(Math.exp(-dt * 4)); d.v.y -= dt * .3;
+    const e = 1 - Math.pow(1 - k, 3); d.s.scale.setScalar(lerp(d.s0, d.s1, e)); d.s.material.opacity = .6 * Math.pow(1 - k, 1.6);
+  }
+  for (const s of shards) {
+    if (s.rest) continue;
+    s.v.y += GRAV * dt; s.p.addScaledVector(s.v, dt);
+    s.r.x += s.av.x * dt; s.r.y += s.av.y * dt; s.r.z += s.av.z * dt;
+    const fy = FLOOR + s.h;
+    if (s.p.y < fy) {
+      s.p.y = fy; s.v.y = -s.v.y * .3; s.v.x *= .55; s.v.z *= .55; s.av.multiplyScalar(.4);
+      if (Math.abs(s.v.y) < .9) { s.v.y = 0; if (Math.hypot(s.v.x, s.v.z) < .3) { s.rest = true; s.r.x = s.r.z = 0; } }
+    }
+    s.p.x = clamp(s.p.x, -14.2, 14.2); s.p.z = clamp(s.p.z, -8.4, 8.6);
+    writeShard(s);
+  }
+}
+// HUD：只有數值改變時才寫 DOM（避免每幀重繪）
+const hudCache = {};
+function setHud(key, val, fn) { if (hudCache[key] === val) return; hudCache[key] = val; fn(val); }
+const elScore = $('#score'), elTime = $('#time'), elArc = $('#clockArc'), elLeft = $('#leftTag'), elCombo = $('#combo'), elComboTxt = $('#comboTxt'), elComboBar = $('#comboBar');
+function updateHud(force, dt = .016) {
+  if (force) for (const k in hudCache) delete hudCache[k];
+  G.shown = lerp(G.shown, G.score, 1 - Math.exp(-dt * 12)); if (Math.abs(G.shown - G.score) < 1) G.shown = G.score;
+  setHud('score', Math.round(G.shown), v => elScore.textContent = v);
+  setHud('sec', Math.ceil(G.timeLeft), v => elTime.textContent = v);
+  setHud('arc', Math.round(G.timeLeft * 4), () => elArc.style.strokeDashoffset = (169.6 * (1 - G.timeLeft / GAME_LEN)).toFixed(1));
+  setHud('arcCol', G.timeLeft <= WARN_AT, v => elArc.style.stroke = v ? '#c2553f' : '#d99a5e');
+  setHud('left', objs.filter(o => !o.fallen && !o.gone).length, v => elLeft.textContent = v ? `桌上還有 ${v} 件` : '桌上淨空！');
+  const on = G.combo >= 2 && G.comboT > 0;
+  setHud('comboOn', on, v => elCombo.classList.toggle('on', v));
+  if (on) {
+    setHud('comboN', G.combo, () => elComboTxt.innerHTML = `連擊 <b>×${Math.min(3, 1 + .25 * (G.combo - 1))}</b>`);
+    setHud('comboBar', Math.round(G.comboT * 10), () => elComboBar.style.transform = `scaleX(${(G.comboT / COMBO_WIN).toFixed(3)})`);
+  }
+}
+function updateEnding(dt) {
+  if (G.state !== 'ending') return;
+  const t0 = G.endT; G.endT += dt; const t = G.endT;
+  if (t0 < .55 && t >= .55) SFX.creak();
+  if (t0 < 1.0 && t >= 1.0) { SFX.meow(1.15, true); catSay('喵？'); }
+  const k = easeInOut(clamp((t - .55) / 1.1, 0, 1));
+  R.hinge.rotation.y = -k * 1.35; doorLight.intensity = k * 60;
+  R.ownerShadow.material.opacity = clamp((t - 1.0) / .8, 0, 1) * .5; R.doorPool.material.opacity = k * .35;
+  if (t0 < 4.1 && t >= 4.1) showResult();
+}
+
+/* ---------- 品質自動調整（軟體渲染 / 低階手機） ---------- */
+const Q = { acc: 0, n: 0, level: 0, t: 0 };
+function qualityGovernor(dt) {
+  // 只調整解析度（不動陰影設定，避免重新編譯 shader 造成卡頓）；軟體渲染時一開始就是低畫質，不再調整
+  if (HQ || SOFT || params.get('dpr')) return;
+  if (G.state === 'title' && Q.t < 2) { Q.t += dt; return; }
+  Q.acc += dt; Q.n++;
+  if (Q.acc > 2.5) {
+    const avg = Q.acc / Q.n; Q.acc = 0; Q.n = 0;
+    if (avg > .034 && Q.level < 2) {
+      Q.level++; dprCap = Q.level === 1 ? Math.min(dprCap, 1.25) : 1;
+      renderer.setPixelRatio(Math.min(devicePixelRatio || 1, dprCap)); resize();
+    }
+  }
+}
+
+/* ---------- 主迴圈 ---------- */
+let last = performance.now(), acc = 0;
+const MAX_SUB = SOFT ? 30 : 5;
+let FREEZE = false, FREEZE_ON_FALL = false;   // 只給截圖用
+const PERF = { phys: 0, render: 0, frames: 0, total: 0, a: 0, b: 0, q: 0 };
+function frame(nowMs) {
+  requestAnimationFrame(frame);
+  const fa = performance.now();
+  const rawDt = (nowMs - last) / 1000;
+  let dt = Math.min(SOFT ? .5 : .1, rawDt); last = nowMs;
+  if (document.hidden) return;
+  const running = !G.paused && !FREEZE;
+  if (running) {
+    acc += dt; let n = 0;
+    const pa = performance.now();
+    while (acc >= STEP && n < MAX_SUB && !FREEZE) { fixedUpdate(STEP); acc -= STEP; n++; if (FREEZE_ON_FALL && objs.some(o => !o.landed && o.body.position.y < -1.6 && o.body.position.y > -4)) FREEZE = true; }
+    PERF.phys += performance.now() - pa;
+    if (n >= MAX_SUB) acc = 0;
+    const sa = performance.now(); syncObjects(); updateParticles(dt); updateEnding(dt); PERF.a += performance.now() - sa;
+    G.gapFlick = Math.max(0, (G.gapFlick || 0) - dt);
+    R.gap.material.opacity = G.state === 'ending' ? 0 : (G.gapFlick > 0 ? .12 : .55);
+  }
+  const t = nowMs / 1000; const sb = performance.now();
+  animateCat(running ? dt : 0, t);
+  updateCamera(running ? dt : 0);
+  if (G.state === 'playing') updateHud(false, dt);
+  updatePops(running ? dt : 0);
+  musicPump(); PERF.b += performance.now() - sb;
+  const ra = performance.now(); renderer.render(scene, camera); PERF.render += performance.now() - ra; PERF.frames++;
+  const sq = performance.now(); qualityGovernor(Math.min(rawDt, 1)); PERF.q += performance.now() - sq;
+  PERF.total += performance.now() - fa;
+}
+
+/* =========================================================================
+   13. 外殼：按鈕、聲音、暫停、尺寸
+   ========================================================================= */
+function sndIcon() {
+  $('#sndIcon').innerHTML = AU.on ? '<path d="M4 9h3l5-4v14l-5-4H4z" fill="currentColor" stroke="none"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a7.5 7.5 0 0 1 0 11"/>'
+    : '<path d="M4 9h3l5-4v14l-5-4H4z" fill="currentColor" stroke="none"/><path d="M16 9l5 6M21 9l-5 6"/>';
+  $('#btnSound').setAttribute('aria-pressed', AU.on);
+}
+$('#btnSound').addEventListener('click', () => { AU.on = !AU.on; store.set('g11.sound', AU.on); audioInit(); if (AU.master) AU.master.gain.setTargetAtTime(AU.on ? .9 : 0, AU.ctx.currentTime, .02); sndIcon(); SFX.ui(); });
+$('#btnPause').addEventListener('click', () => setPause(!G.paused));
+$('#btnStart').addEventListener('click', startGame);
+$('#btnResume').addEventListener('click', () => setPause(false));
+$('#btnRestart').addEventListener('click', () => { G.paused = false; if (AU.ctx) AU.ctx.resume().catch(() => { }); G.state = 'title'; startGame(); });
+$('#btnAgain').addEventListener('click', startGame);
+document.addEventListener('visibilitychange', () => { if (document.hidden) setPause(true); last = performance.now(); });
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  if (!stick.active) homeStick();
+}
+addEventListener('resize', resize);
+resize(); sndIcon();
+$('#bestTxt').innerHTML = G.best ? `最高紀錄 <b>${G.best}</b>` : '';
+
+spawnObjects(); resetCat();
+cat.yaw = cat.tYaw = .6;
+requestAnimationFrame(t => { last = t; frame(t); setTimeout(() => { $('#loading').classList.add('done'); setTimeout(() => $('#loading').remove(), 600); }, 60); });
+if (DEMO) { startGame(); } else showOv('#title');
+
+// 測試掛鉤
+window.__g11 = {
+  get state() { return G.state; }, get score() { return G.score; }, get timeLeft() { return G.timeLeft; },
+  get fallen() { return objs.filter(o => o.fallen).length; }, get broken() { return G.broken; }, get combo() { return G.maxCombo; },
+  get autopilot() { return AP.on; }, set autopilot(v) { AP.on = v; AP.target = null; },
+  get cat() { const p = catBody.position; return { x: p.x, y: p.y, z: p.z, yaw: cat.yaw }; },
+  get quality() { return Q.level; }, get warned() { return G.warned; }, get perf() { return { ...PERF, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, soft: SOFT }; }, get shards() { return shards.length; },
+  objs: () => objs.map(o => ({ type: o.type, x: o.body.position.x, y: o.body.position.y, z: o.body.position.z, fallen: o.fallen })),
+  skip(sec) { G.timeLeft = Math.min(G.timeLeft, sec); },
+  hq() { upgradeQuality(); },
+  freeze(v) { FREEZE = v; last = performance.now(); }, freezeOnFall() { FREEZE_ON_FALL = true; }, get frozen() { return FREEZE; }
+};
+</script>
+</body>
+</html>

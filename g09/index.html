@@ -1,0 +1,1918 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>陽台小盆栽</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=LXGW+WenKai+TC:wght@400;700&display=swap">
+<style>
+:root{
+  --paper:#F4EDDF; --paper2:#EAE0CB; --paper3:#E1D4B8;
+  --ink:#2E2721; --ink2:#5C5145; --ink3:#8C8072;
+  --sepia:#8A6B4A; --red:#B04A36; --water:#5E8CB0; --leaf:#6F9A58; --gold:#C9A24A;
+  --zh:"LXGW WenKai TC","Noto Serif TC","Noto Serif CJK TC","Songti TC","PMingLiU",serif;
+  --latin:"IM Fell English","Iowan Old Style",Georgia,serif;
+  --sc:"IM Fell English SC","IM Fell English",Georgia,serif;
+  --hand:"Caveat","Segoe Print","Bradley Hand","Comic Sans MS",cursive;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#E8DFCC;color:var(--ink);font-family:var(--zh);
+  -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
+button{font-family:inherit;color:inherit}
+.layer{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;will-change:transform}
+#scene{touch-action:none;cursor:grab;pointer-events:auto}
+.tint{background:#1C2348;opacity:0}
+#litsvg,#beamsvg,#lampsvg{opacity:0}
+#scene.dragging{cursor:grabbing}
+#scene.snip{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke='%232E2721' stroke-width='1.8'%3E%3Ccircle cx='8' cy='24' r='4' fill='%23F4EDDF'/%3E%3Ccircle cx='20' cy='26' r='4' fill='%23F4EDDF'/%3E%3Cpath d='M10.5 21 L26 3 M17.5 23 L13 6'/%3E%3C/g%3E%3C/svg%3E") 16 4,crosshair}
+#grain{position:fixed;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.5;z-index:1}
+#vign{position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at 50% 45%,transparent 55%,rgba(90,64,36,.22) 100%)}
+.hud{position:fixed;z-index:5;pointer-events:none}
+.hud > *{pointer-events:auto}
+.card{background:var(--paper);border:1px solid rgba(46,39,33,.6);border-radius:3px;
+  box-shadow:0 0 0 3px var(--paper),0 0 0 4px rgba(46,39,33,.22),0 10px 24px -12px rgba(60,40,20,.45)}
+/* top-left plate */
+#plate{top:calc(14px + env(safe-area-inset-top));left:16px;padding:9px 14px 9px;min-width:190px;max-width:calc(100vw - 190px)}
+#plate .zh{font-size:19px;font-weight:700;letter-spacing:.06em;line-height:1.2}
+#plate .la{font-family:var(--hand);font-size:19px;line-height:1.05;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#plate .meta{font-size:12.5px;color:var(--ink2);margin-top:4px;display:flex;gap:8px;align-items:center;white-space:nowrap}
+#plate .no{font-family:var(--sc);font-size:13px;letter-spacing:.08em;color:var(--sepia)}
+#growbar{height:5px;background:var(--paper3);border:1px solid rgba(46,39,33,.4);margin-top:6px;border-radius:3px;overflow:hidden}
+#growbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#9DBB78,#6F9A58)}
+/* top-right buttons */
+#tr{top:calc(14px + env(safe-area-inset-top));right:14px;display:flex;gap:8px;align-items:center}
+.ibtn{width:42px;height:42px;border-radius:50%;border:1.3px solid var(--ink);background:var(--paper);display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 3px 0 rgba(46,39,33,.25);transition:transform .12s,background .2s;padding:0}
+.ibtn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(46,39,33,.25)}
+.ibtn svg{width:22px;height:22px}
+#ffBtn{width:auto;border-radius:22px;padding:0 13px 0 10px;gap:6px;display:flex;font-size:14px;letter-spacing:.04em}
+#ffBtn.on{background:#2E2721;color:var(--paper)}
+#ffBtn.on svg path{stroke:var(--paper)}
+#ffBtn .lbl small{display:block;font-size:10px;opacity:.75;line-height:1}
+#ffBtn .lbl{line-height:1.05;text-align:left}
+/* journal */
+#journal{top:calc(76px + env(safe-area-inset-top));right:16px;width:236px;padding:10px 14px 12px;transform:rotate(.6deg)}
+#journal h4{margin:0 0 4px;font-size:13px;letter-spacing:.2em;color:var(--sepia);font-weight:700;border-bottom:1px solid rgba(46,39,33,.25);padding-bottom:4px}
+#journal ol{list-style:none;margin:0;padding:0;font-size:13.5px;line-height:1.45;color:var(--ink2)}
+#journal li{padding:3px 0;border-bottom:1px dashed rgba(46,39,33,.15)}
+#journal li b{font-family:var(--hand);font-size:16px;color:var(--sepia);font-weight:700;margin-right:5px}
+#journal li.new{animation:ink .9s ease-out}
+@keyframes ink{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+/* toolbar */
+#bar{left:50%;bottom:calc(30px + env(safe-area-inset-bottom));transform:translateX(-50%);padding:10px 14px;display:flex;gap:16px;align-items:center;flex-wrap:nowrap}
+.tool{display:flex;flex-direction:column;align-items:center;gap:2px;border:1.4px solid var(--ink);background:var(--paper);border-radius:12px;
+  padding:7px 12px 5px;cursor:pointer;min-width:70px;font-size:14px;box-shadow:0 3px 0 rgba(46,39,33,.3);transition:transform .1s,background .2s}
+.tool:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(46,39,33,.3)}
+.tool svg{width:34px;height:30px}
+.tool.on{background:#2E2721;color:var(--paper)}
+.tool.on svg *{stroke:var(--paper)}
+.tool.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 3px 0 rgba(46,39,33,.3),0 0 0 0 rgba(94,140,176,.5)}50%{box-shadow:0 3px 0 rgba(46,39,33,.3),0 0 0 9px rgba(94,140,176,0)}}
+.gauge{width:150px}
+.gauge .lab{font-size:12.5px;color:var(--ink2);display:flex;justify-content:space-between}
+.gauge .lab b{color:var(--ink);font-weight:700}
+.gtrack{position:relative;height:12px;border:1.2px solid var(--ink);border-radius:7px;margin-top:4px;background:var(--paper2);overflow:hidden}
+.gtrack .zone{position:absolute;top:0;bottom:0;background:rgba(111,154,88,.28);border-left:1px dashed rgba(46,39,33,.5);border-right:1px dashed rgba(46,39,33,.5)}
+.gtrack .fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#9FBCD3,#5E8CB0);opacity:.85;transition:width .25s}
+.cal{display:flex;gap:5px;margin-top:6px}
+.cal span{width:17px;height:17px;border-radius:50%;border:1px solid rgba(46,39,33,.45);display:grid;place-items:center;font-size:9.5px;color:var(--ink3);font-family:var(--latin);position:relative}
+.cal span.today{border:1.6px solid var(--ink);color:var(--ink)}
+.cal span.w1{background:rgba(94,140,176,.45);color:#fff;border-color:#3E6A8E}
+.cal span.w2{background:rgba(94,140,176,.85);color:#fff;border-color:#2E4F6B}
+.cal span.w3{background:#C6A63E;color:#fff;border-color:#8A6B1E}
+#hint{position:absolute;left:50%;bottom:calc(100% + 12px);transform:translateX(-50%);white-space:nowrap;font-size:14px;color:var(--ink);
+  background:rgba(244,237,223,.92);padding:4px 12px;border-radius:14px;border:1px dashed rgba(46,39,33,.45);transition:opacity .4s}
+#hint:empty{opacity:0}
+#pressBtn{position:absolute;left:50%;bottom:calc(100% + 12px);transform:translateX(-50%);display:none;white-space:nowrap;
+  font-size:18px;font-weight:700;letter-spacing:.1em;padding:10px 22px;border-radius:28px;border:1.6px solid var(--ink);background:#B04A36;color:#FBF4E6;cursor:pointer;
+  box-shadow:0 4px 0 #6E2A1C;animation:bob 2s ease-in-out infinite}
+#pressBtn:active{transform:translate(-50%,3px);box-shadow:0 1px 0 #6E2A1C}
+@keyframes bob{0%,100%{box-shadow:0 4px 0 #6E2A1C,0 0 0 0 rgba(176,74,54,.45)}50%{box-shadow:0 4px 0 #6E2A1C,0 0 0 12px rgba(176,74,54,0)}}
+#back{position:fixed;left:14px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:6;font-size:12.5px;color:var(--ink2);text-decoration:none;
+  background:rgba(244,237,223,.75);padding:2px 8px;border-radius:10px}
+#back:hover{color:var(--ink)}
+.toast{position:fixed;z-index:4;pointer-events:none;font-family:var(--hand);font-size:24px;font-weight:700;color:var(--ink);
+  text-shadow:0 0 6px var(--paper),0 0 2px var(--paper);animation:toast 1.8s ease-out forwards;white-space:nowrap;transform:translate(-50%,-50%)}
+.toast.zh{font-family:var(--zh);font-size:16px}
+@keyframes toast{0%{opacity:0;margin-top:8px}15%{opacity:1;margin-top:0}75%{opacity:1}100%{opacity:0;margin-top:-34px}}
+/* overlays */
+.ov{position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;padding:12px;
+  background:rgba(232,223,204,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.ov.show{display:flex}
+.sheet{position:relative;background:var(--paper);border:1px solid rgba(46,39,33,.6);border-radius:3px;max-height:100%;overflow:auto;
+  box-shadow:0 0 0 5px var(--paper),0 0 0 6px rgba(46,39,33,.3),0 24px 50px -20px rgba(60,40,20,.55);animation:sheetIn .6s cubic-bezier(.2,.8,.2,1)}
+@keyframes sheetIn{from{opacity:0;transform:translateY(18px) rotate(-.6deg)}to{opacity:1;transform:none}}
+#startSheet{width:min(760px,100%);padding:26px 30px 22px}
+.eyebrow{font-family:var(--sc);letter-spacing:.22em;font-size:13px;color:var(--sepia);display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid rgba(46,39,33,.35);padding-bottom:6px}
+h1{font-size:44px;margin:14px 0 2px;letter-spacing:.12em;font-weight:700;line-height:1.15}
+h1 em{font-family:var(--hand);font-style:normal;font-size:28px;color:var(--sepia);letter-spacing:0;margin-left:10px;font-weight:500}
+.tag{font-size:16px;color:var(--ink2);margin:6px 0 14px;line-height:1.6}
+.seeds{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.seed{border:1.2px solid rgba(46,39,33,.5);background:#F8F2E6;border-radius:4px;padding:8px 8px 10px;cursor:pointer;text-align:left;position:relative;transition:transform .2s,box-shadow .2s}
+.seed:hover{transform:translateY(-2px)}
+.seed.sel{border:2px solid var(--ink);box-shadow:0 6px 16px -8px rgba(60,40,20,.5);background:#FBF6EC}
+.seed.sel::after{content:"選";position:absolute;right:8px;top:8px;width:28px;height:28px;border-radius:50%;border:2px solid var(--red);color:var(--red);
+  font-size:14px;display:grid;place-items:center;transform:rotate(-12deg);font-weight:700;background:rgba(251,246,236,.7)}
+.seed svg{width:100%;height:140px;display:block}
+.seed .n{font-size:17px;font-weight:700;margin-top:2px}
+.seed .l{font-family:var(--hand);font-size:17px;color:var(--ink2);line-height:1}
+.seed .h{font-size:12.5px;color:var(--ink2);margin-top:5px;line-height:1.45}
+.seedrow{display:flex;align-items:center;gap:10px;margin:14px 0 4px;flex-wrap:wrap}
+.seedrow label{font-size:14px;color:var(--ink2)}
+.seedrow input{font-family:var(--sc);font-size:18px;width:90px;padding:4px 8px;border:none;border-bottom:1.4px solid var(--ink);background:transparent;color:var(--ink);letter-spacing:.12em}
+.seedrow input:focus{outline:none;border-bottom-color:var(--red)}
+.how{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:13.5px;color:var(--ink2);margin:12px 0 16px;padding:10px 0;border-top:1px dashed rgba(46,39,33,.3);border-bottom:1px dashed rgba(46,39,33,.3);line-height:1.5}
+.how b{color:var(--ink)}
+.btn{border:1.6px solid var(--ink);background:var(--paper);border-radius:26px;padding:10px 22px;font-size:17px;cursor:pointer;letter-spacing:.08em;
+  box-shadow:0 3px 0 rgba(46,39,33,.35);transition:transform .1s}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(46,39,33,.35)}
+.btn.pri{background:#2E2721;color:#F7F0E2}
+.btn.sm{font-size:14px;padding:6px 14px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.small{font-size:12.5px;color:var(--ink3)}
+#pauseSheet{padding:28px 34px;text-align:center;min-width:280px}
+#pauseSheet h2{margin:0 0 6px;font-size:30px;letter-spacing:.3em}
+#pauseSheet p{color:var(--ink2);margin:0 0 18px;font-size:14px}
+#specOv{background:rgba(46,39,33,.55)}
+#specWrap{display:flex;gap:22px;align-items:center;max-height:100%;max-width:100%}
+#specCanvasBox{position:relative;line-height:0}
+#specCanvas{max-height:calc(100vh - 40px);max-width:min(62vw,720px);width:auto;height:auto;box-shadow:0 30px 60px -20px rgba(0,0,0,.6);border-radius:2px;animation:sheetIn .9s cubic-bezier(.2,.8,.2,1)}
+#specSide{width:300px;padding:20px 22px}
+#specSide h2{margin:0;font-size:24px;letter-spacing:.12em}
+#specSide .grade{font-family:var(--hand);font-size:58px;line-height:1;color:var(--red);margin:6px 0 0}
+#specSide .gl{font-size:14px;color:var(--ink2);margin-bottom:10px}
+#specSide ul{margin:8px 0 16px;padding-left:18px;font-size:13.5px;color:var(--ink2);line-height:1.6}
+#press{position:fixed;inset:0;z-index:9;pointer-events:none;display:none}
+#press div{position:absolute;left:-5%;width:110%;height:52%;background:#EDE3CF;border:1px solid rgba(46,39,33,.5);
+  background-image:repeating-linear-gradient(0deg,rgba(46,39,33,.04) 0 2px,transparent 2px 7px)}
+#press .t{top:-55%;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+#press .b{bottom:-55%;box-shadow:0 -10px 30px rgba(0,0,0,.3)}
+@media (max-width:860px){
+  #journal{display:none}
+}
+@media (max-width:640px){
+  #plate{left:10px;padding:7px 10px;min-width:0;max-width:calc(100vw - 172px)}
+  #plate .zh{font-size:16px}
+  #plate .la{font-size:15px}
+  #plate .meta{font-size:11.5px;gap:6px}
+  #tr{right:10px;gap:6px}
+  .ibtn{width:38px;height:38px}
+  #ffBtn{padding:0 9px 0 7px;font-size:12.5px}
+  #ffBtn .lbl small{display:none}
+  #bar{width:calc(100vw - 20px);bottom:calc(30px + env(safe-area-inset-bottom));padding:8px 10px;gap:8px;justify-content:space-between}
+  .tool{min-width:62px;padding:6px 6px 4px;font-size:13px}
+  .tool svg{width:28px;height:26px}
+  .gauge{width:auto;flex:1;min-width:0}
+  .cal{gap:3px}
+  .cal span{width:15px;height:15px;font-size:8.5px}
+  #hint{font-size:12.5px}
+  #startSheet{padding:18px 16px 16px}
+  h1{font-size:32px;margin-top:10px}
+  h1 em{display:block;margin:0;font-size:22px}
+  .tag{font-size:14px}
+  .seeds{gap:6px}
+  .seed{padding:5px 4px 7px}
+  .seed svg{height:96px}
+  .seed .n{font-size:14px}
+  .seed .l{font-size:13px}
+  .seed .h{font-size:11px}
+  .seed.sel::after{width:22px;height:22px;font-size:11px;right:4px;top:4px}
+  .how{grid-template-columns:1fr;font-size:12.5px}
+  .eyebrow{font-size:10.5px;letter-spacing:.12em}
+  #specWrap{flex-direction:column;gap:10px;overflow:auto;max-height:100%;justify-content:flex-start}
+  #specCanvas{max-width:100%;max-height:62vh}
+  #specSide{width:100%;padding:12px 14px}
+  #specSide .grade{font-size:40px}
+  #specSide ul{margin:4px 0 10px;font-size:12.5px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<svg id="skysvg" class="layer" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+      <stop id="sk0" offset="0"/><stop id="sk1" offset=".62"/><stop id="sk2" offset="1"/>
+    </linearGradient>
+    <radialGradient id="sunG"><stop offset="0" stop-color="#FFF6DC" stop-opacity=".95"/><stop offset=".22" stop-color="#FFE8B0" stop-opacity=".55"/><stop offset="1" stop-color="#FFE0A0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="washG"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".9"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect id="sky" x="0" y="0" width="100%" height="100%" fill="url(#skyG)"/>
+  <g id="washes"></g>
+  <circle id="sun" r="160" fill="url(#sunG)"/>
+  <circle id="sunDisc" r="26" fill="#FFF3D6" stroke="#2E2721" stroke-opacity=".35" stroke-width="1"/>
+  <g id="moon"></g>
+  <g id="clouds"></g>
+</svg>
+<svg id="citysvg" class="layer" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="hazeG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4EDDF" stop-opacity="0"/><stop offset="1" stop-color="#F4EDDF" stop-opacity=".35"/></linearGradient>
+    <radialGradient id="vigG" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#5A4024" stop-opacity="0"/><stop offset="1" stop-color="#5A4024" stop-opacity=".22"/></radialGradient>
+    <pattern id="grainP" width="256" height="256" patternUnits="userSpaceOnUse"><image id="grainImg" width="256" height="256"/></pattern>
+  </defs>
+  <g id="cityFar" opacity=".42"></g>
+  <g id="cityNear" opacity=".9"></g>
+  <g id="balcony"></g>
+  <rect id="grainR" x="0" y="0" width="100%" height="100%" opacity=".5"/>
+  <rect x="0" y="0" width="100%" height="100%" fill="url(#vigG)"/>
+</svg>
+<svg id="litsvg" class="layer" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><g id="cityLit" fill="#FFD98A"></g></svg>
+<div id="bgTint" class="layer tint"></div>
+<svg id="beamsvg" class="layer" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+  <defs><linearGradient id="beamG" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF1C8" stop-opacity=".55"/><stop offset="1" stop-color="#FFF1C8" stop-opacity="0"/></linearGradient></defs>
+  <path id="beam" fill="url(#beamG)"/>
+</svg>
+<svg id="lampsvg" class="layer" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+  <defs><radialGradient id="lampG"><stop offset="0" stop-color="#FFD58A" stop-opacity=".55"/><stop offset=".5" stop-color="#FFC774" stop-opacity=".18"/><stop offset="1" stop-color="#FFC774" stop-opacity="0"/></radialGradient></defs>
+  <ellipse id="lamp" fill="url(#lampG)"/>
+</svg>
+<svg id="scene" class="layer" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="potG" x1="0" y1="0" x2="1" y2="0">
+      <stop id="pg0" offset="0"/><stop id="pg1" offset=".35"/><stop id="pg2" offset=".72"/><stop id="pg3" offset="1"/>
+    </linearGradient>
+  </defs>
+  <g id="birds"></g>
+  <g id="potBack"></g>
+  <g id="plant"></g>
+  <g id="potFront"></g>
+  <g id="fx"></g>
+</svg>
+<div id="fgTint" class="layer tint"></div>
+
+<div class="hud" id="hud" style="display:none;inset:0">
+  <div id="plate" class="card hud" style="position:fixed">
+    <div class="zh" id="pZh">晨曦牽藤</div>
+    <div class="la" id="pLa">Lianella aurorae</div>
+    <div class="meta"><span class="no" id="pNo">No. 0000</span><span id="pDay">第 1 天</span><span id="pClock">06:00</span></div>
+    <div id="growbar" title="成熟度"><i id="growFill"></i></div>
+  </div>
+  <div id="tr" class="hud" style="position:fixed">
+    <button class="ibtn" id="ffBtn" aria-label="快轉"><svg viewBox="0 0 24 24"><path d="M3 6 L11 12 L3 18 Z M12 6 L20 12 L12 18 Z" fill="none" stroke="#2E2721" stroke-width="1.7" stroke-linejoin="round"/></svg><span class="lbl">快轉<small>1 天＝10 秒</small></span></button>
+    <button class="ibtn" id="pauseBtn" aria-label="暫停"><svg viewBox="0 0 24 24"><path d="M8 5 V19 M16 5 V19" stroke="#2E2721" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+    <button class="ibtn" id="sndBtn" aria-label="聲音"><svg viewBox="0 0 24 24" id="sndIcon"></svg></button>
+  </div>
+  <div id="journal" class="card hud" style="position:fixed"><h4>觀察筆記</h4><ol id="jList"></ol></div>
+  <div id="bar" class="card hud" style="position:fixed">
+    <div id="hint"></div>
+    <button id="pressBtn">壓成標本 →</button>
+    <button class="tool" id="waterBtn" aria-label="澆水"><svg viewBox="0 0 40 34" fill="none" stroke="#2E2721" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13 h17 l-2 16 h-13 z"/><path d="M25 17 L36 9 M34 7 l4 3"/><path d="M11 13 c0-7 11-7 11 0"/><path d="M12 21 h9" stroke-opacity=".4"/></svg>澆水</button>
+    <div class="gauge">
+      <div class="lab"><span>土壤濕度</span><b id="mState">剛好</b></div>
+      <div class="gtrack"><div class="zone" id="mZone"></div><div class="fill" id="mFill"></div></div>
+      <div class="cal" id="cal"></div>
+    </div>
+    <button class="tool" id="snipBtn" aria-label="修剪"><svg viewBox="0 0 40 34" fill="none" stroke="#2E2721" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="25" r="5"/><circle cx="25" cy="27" r="5"/><path d="M14 21 L33 4 M22 23 L17 6"/></svg>修剪</button>
+  </div>
+</div>
+<a id="back" href="../index.html">← 遊戲櫃</a>
+
+<div class="ov" id="startOv">
+  <div class="sheet" id="startSheet">
+    <div class="eyebrow"><span>HERBARIUM BALCONIENSE</span><span id="cabinet">標本櫃 · 0</span></div>
+    <h1>陽台小盆栽<em>a balcony herbarium</em></h1>
+    <div class="tag">選一顆種子，每天回來澆一次水。植物用真實時間慢慢長，七天後把它壓成一張只屬於你的博物館標本。</div>
+    <div class="seeds" id="seeds"></div>
+    <div class="seedrow"><label for="seedIn">種子編號 No.</label><input id="seedIn" inputmode="numeric" maxlength="4" value="0000"><button class="btn sm" id="reroll">↻ 換一顆</button><span class="small">同一個編號，長出來的樣子永遠一樣。</span></div>
+    <div class="how">
+      <div><b>澆水</b>　點「澆水」或直接點盆土。太多水，葉子會變黃。</div>
+      <div><b>轉盆</b>　左右拖曳盆栽。光從右邊來，不轉就長歪。</div>
+      <div><b>修剪</b>　開剪刀再點枝葉。剪掉頂芽會冒出側枝。</div>
+      <div><b>快轉</b>　右上角按鈕：一天＝10 秒。暫停：Esc。</div>
+    </div>
+    <div class="actions"><button class="btn pri" id="goBtn">播種</button><button class="btn" id="contBtn" style="display:none"></button></div>
+  </div>
+</div>
+<div class="ov" id="pauseOv"><div class="sheet" id="pauseSheet"><h2>暫停</h2><p>陽台的時間停下來了。<br>（關掉網頁後，真實時間仍會流動。）</p>
+  <div class="actions" style="justify-content:center"><button class="btn pri" id="resumeBtn">繼續</button><button class="btn" id="toTitle">回標題</button></div></div></div>
+<div class="ov" id="specOv"><div id="specWrap">
+  <div id="specCanvasBox"><canvas id="specCanvas" width="1200" height="1650"></canvas></div>
+  <div class="sheet" id="specSide">
+    <h2>標本完成</h2>
+    <div class="grade" id="sGrade">A</div><div class="gl" id="sGradeL">館藏級</div>
+    <ul id="sList"></ul>
+    <div class="actions"><button class="btn pri" id="dlBtn">下載 PNG</button><button class="btn" id="againBtn">再種一盆</button></div>
+  </div>
+</div></div>
+<div id="press"><div class="t"></div><div class="b"></div></div>
+
+<script>
+'use strict';
+/* =========================================================
+   陽台小盆栽 · g09
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const QS = new URLSearchParams(location.search);
+const DEMO = QS.get('demo') === '1';
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const DAY_MS = 86400000, FAST_DAY_MS = 10000;
+const SKEY = DEMO ? 'g09.balcony.demo.v1' : 'g09.balcony.v1';
+const AKEY = 'g09.archive.v1', PKEY = 'g09.prefs.v1';
+const D2R = Math.PI / 180;
+const clamp = (v, a = 0, b = 1) => v < a ? a : v > b ? b : v;
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t * t * (3 - 2 * t);
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+const r1 = n => Math.round(n * 10) / 10;
+const store = {
+  get(k) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+/* ---------- seeded PRNG ---------- */
+function xmur3(s) { let h = 1779033703 ^ s.length; for (let i = 0; i < s.length; i++) { h = Math.imul(h ^ s.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+  return () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return (h ^= h >>> 16) >>> 0; }; }
+function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const rngFor = s => mulberry32(xmur3(String(s))());
+/* ---------- vectors ---------- */
+const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const sc = (a, s) => [a[0] * s, a[1] * s, a[2] * s];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const vlen = a => Math.hypot(a[0], a[1], a[2]);
+const norm = a => { const l = vlen(a) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+function rot(v, k, ang) { const c = Math.cos(ang), s = Math.sin(ang), d = dot(k, v) * (1 - c), x = cross(k, v);
+  return [v[0] * c + x[0] * s + k[0] * d, v[1] * c + x[1] * s + k[1] * d, v[2] * c + x[2] * s + k[2] * d]; }
+const rotY = (v, a) => { const c = Math.cos(a), s = Math.sin(a); return [v[0] * c + v[2] * s, v[1], -v[0] * s + v[2] * c]; };
+/* ---------- colors ---------- */
+const hex2 = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const rgb2hex = c => '#' + c.map(v => Math.round(clamp(v, 0, 255)).toString(16).padStart(2, '0')).join('');
+const mixc = (a, b, t) => { const A = hex2(a), B = hex2(b); return rgb2hex([lerp(A[0], B[0], t), lerp(A[1], B[1], t), lerp(A[2], B[2], t)]); };
+
+/* =========================================================
+   Species
+   ========================================================= */
+const SP = {
+  vine: { key: 'vine', zh: '晨曦牽藤', genus: 'Lianella', ep: 'aurorae', hint: '攀著竹枝往上爬，第四天起清晨會開喇叭花。喜水：每天澆一次。',
+    k: 0.9, add: 0.5, wet: 1.0, dry: 0.15, sens: 1.0, ideal: '每天一次',
+    trop: 0.3, up: 0.2, grav: 0.05, leafLight: 0.55, droop: 0.3,
+    leaf: '#83AC66', leafYoung: '#BCD67F', stem: '#8EAD5E', wood: '#8EAD5E', woody: 0,
+    pot: { body: '#EEE8DA', dark: '#C7BEA9', pat: '#3D5A8A', name: '青花瓷盆' }, ps: 0.95, flowerFrom: 0.48 },
+  succ: { key: 'succ', zh: '霧玉', genus: 'Crassulina', ep: 'nebulosa', hint: '肉肉的葉子很會存水。最怕濕：兩三天澆一次就好。',
+    k: 0.45, add: 0.45, wet: 0.8, dry: 0.04, sens: 1.8, ideal: '兩三天一次',
+    trop: 0.09, up: 0.55, grav: 0, leafLight: 0.25, droop: 0,
+    leaf: '#8FB39B', leafYoung: '#BCD5B2', stem: '#9DB487', wood: '#9A8970', woody: 1,
+    pot: { body: '#B0C6B3', dark: '#7D9785', pat: '#4A6B58', name: '青瓷小缽' }, ps: 0.74, flowerFrom: 0.8 },
+  tree: { key: 'tree', zh: '窗台小楓', genus: 'Acerella', ep: 'fenestralis', hint: '會分枝的小樹，新葉帶紅。剪掉頂芽會更茂密。一兩天澆一次。',
+    k: 0.7, add: 0.45, wet: 0.95, dry: 0.1, sens: 1.2, ideal: '一兩天一次',
+    trop: 0.1, up: 0.5, grav: 0, leafLight: 0.45, droop: 0.12,
+    leaf: '#7BA157', leafYoung: '#CE9064', stem: '#9A7B5B', wood: '#7F6347', woody: 1,
+    pot: { body: '#C98A62', dark: '#97603F', pat: '#6E3A24', name: '素燒陶盆' }, ps: 1, flowerFrom: 0.78 }
+};
+const SP_KEYS = ['vine', 'succ', 'tree'];
+const FLOWER_COLS = ['#6F8FD0', '#9A70C2', '#D27896', '#E0896A', '#5FA3B8'];
+const EPITHETS = ['serena', 'matutina', 'vesperina', 'pumila', 'gracilis', 'lucida', 'urbana', 'tenuis', 'modesta', 'fenestralis', 'pluvialis', 'ventosa', 'nitida', 'borealis', 'aurea', 'crispa', 'silentia', 'minor', 'lenta', 'candida'];
+
+/* =========================================================
+   L-system: derivation (parametric, stochastic, seeded)
+   ========================================================= */
+const F_ = (l, w) => ({ s: 'F', l, w });
+const T_ = (s, a) => ({ s, a });
+const BR = () => ({ s: '[' }), ER = () => ({ s: ']' });
+function rulesFor(sp, R) {
+  const j = (a, b) => a + (b - a) * R();
+  const Lf = (size, az, pitch, k, o = {}) => Object.assign({ s: 'L', size, az, pitch, k, r: R() }, o);
+  if (sp === 'tree') {
+    const lsz = j(2.3, 2.8);
+    return {
+      axiom: [{ s: 'L', size: 1.3, az: 0, pitch: 70, k: 'cot', life: 0.32, r: R() }, { s: 'L', size: 1.3, az: 180, pitch: 70, k: 'cot', life: 0.32, r: R() }, { s: 'A', l: 3.5, w: 0.66, d: 0, o: 0 }],
+      A(m) {
+        const { l, w, d, o } = m, maxD = [9, 4, 2][o];
+        if (d >= maxD) {
+          const out = [F_(l * 0.55, w * 0.8), Lf(lsz * 0.95, 0, 30, 'lobed'), T_('/', 150), Lf(lsz * 0.8, 0, 55, 'lobed')];
+          if (o >= 1 && R() < 0.22) out.push(BR(), T_('&', 70), { s: 'Y', r: R() }, ER());
+          return out;
+        }
+        const out = [F_(l * 0.55, w)];
+        out.push(Lf(lsz * j(0.8, 1) * (o === 0 && d < 3 ? 0.85 : 1), j(0, 360), 58, 'lobed', o === 0 && d < 2 ? { life: 0.7 } : {}));
+        out.push(F_(l * 0.45, w * 0.96));
+        const can = (o === 0 && d >= 1) || (o === 1 && d >= 1);
+        if (can) {
+          const n = o === 0 ? (R() < 0.35 ? 2 : 1) : (R() < 0.5 ? 1 : 0);
+          for (let k = 0; k < n; k++) out.push(T_('/', 137.5 + j(-25, 25)), BR(), T_('&', j(32, 50) + o * 8), { s: 'A', l: l * j(0.7, 0.85), w: w * 0.6, d: 0, o: o + 1, z: m.z }, ER());
+        }
+        if (d >= 1 && !m.z && R() < 0.75) out.push(T_('/', j(60, 120)), BR(), { s: '?' }, T_('&', j(45, 62)), { s: 'A', l: l * 0.75, w: w * 0.55, d: 0, o: Math.min(2, o + 1), z: 1 }, ER());
+        out.push(T_('+', j(-9, 9)), T_('&', j(-5, 5)), { s: 'A', l: l * j(0.86, 0.94), w: w * 0.82, d: d + 1, o, z: m.z });
+        return out;
+      }
+    };
+  }
+  if (sp === 'succ') {
+    const lsz = j(2.6, 3.1);
+    const P = (size, life) => [Lf(size, 0, 52, 'succ', { life }), Lf(size, 180, 52, 'succ', { life })];
+    return {
+      axiom: [{ s: 'L', size: 0.9, az: 0, pitch: 60, k: 'cot', life: 0.28, r: R() }, { s: 'L', size: 0.9, az: 180, pitch: 60, k: 'cot', life: 0.28, r: R() }, { s: 'S', l: 1.75, w: 1.15, d: 0, o: 0 }],
+      S(m) {
+        const { l, w, d, o } = m, maxD = [8, 5, 3][o];
+        if (d >= maxD) {
+          const out = [F_(l * 0.45, w * 0.85), ...P(lsz * 0.8, 0), T_('/', 90), ...P(lsz * 0.55, 0)];
+          if (o < 2 && R() < 0.65) out.push({ s: 'K', k: 'star', r: R() });
+          return out;
+        }
+        const out = [F_(l, w), T_('/', 90), ...P(lsz * (d < 2 ? 0.75 : 1) * j(0.9, 1.05), (o === 0 && d < 3) ? 0.5 + d * 0.12 : 0)];
+        if ((o === 0 && d >= 2 && d <= 6 && R() < (d % 2 ? 0.3 : 0.9)) || (o === 1 && (d === 1 || d === 3) && R() < 0.55))
+          out.push(BR(), T_('/', j(0, 360)), T_('&', j(48, 64)), { s: 'S', l: l * 0.88, w: w * 0.72, d: 0, o: o + 1, z: m.z }, ER());
+        if (d >= 1 && !m.z && R() < 0.55) out.push(BR(), { s: '?' }, T_('/', j(0, 360)), T_('&', j(38, 52)), { s: 'S', l: l * 0.8, w: w * 0.62, d: 0, o: Math.min(2, o + 1), z: 1 }, ER());
+        out.push(T_('+', j(-7, 7)), { s: 'S', l: l * 0.95, w: w * 0.93, d: d + 1, o, z: m.z });
+        return out;
+      }
+    };
+  }
+  // vine
+  const N = 20 + Math.floor(R() * 5), lsz = j(3.5, 4.2);
+  const flower = () => ({ s: 'K', k: 'trumpet', r: R() });
+  return {
+    N, stakeH: 29, rad: 1.05, dphi: j(34, 42) * D2R, phi0: R() * Math.PI * 2,
+    axiom: [{ s: 'L', size: 1.4, az: 0, pitch: 65, k: 'cot', life: 0.3, r: R() }, { s: 'L', size: 1.4, az: 180, pitch: 65, k: 'cot', life: 0.3, r: R() }, F_(1.0, 0.3), { s: 'V', i: 0 }],
+    V(m) {
+      const i = m.i;
+      if (i >= N) return [{ s: 'W', k: 0 }];
+      const out = [{ s: 'H', i }];
+      if (i >= 1) out.push(BR(), Lf(lsz * j(0.8, 1.05) * (i < 4 ? 0.75 : 1), (i % 2 ? 90 : -90) + j(-25, 25), 62, 'heart', { pet: 1.1 }), ER());
+      if (i >= 3 && (i % 3 === 1 || (i % 3 === 2 && R() < 0.35)) && R() < 0.85) out.push(BR(), T_('&', j(48, 62)), { s: 'G', k: 0, n: 3 + Math.floor(R() * 3) }, ER());
+      else if (i >= 3 && R() < 0.45) out.push(BR(), { s: '?' }, T_('&', 55), { s: 'G', k: 0, n: 3 }, ER());
+      if (i >= 9 && R() < 0.3) out.push(BR(), T_('&', 52), { s: 'F', l: 0.9, w: 0.13, ped: 1 }, flower(), ER());
+      out.push({ s: 'V', i: i + 1 });
+      return out;
+    },
+    G(m) {
+      if (m.k >= m.n) { const o = [F_(0.8, 0.16), BR(), Lf(lsz * 0.6, 90, 55, 'heart', { pet: 0.6 }), ER()]; if (R() < 0.7) o.push(flower()); return o; }
+      return [F_(1.5, 0.2), BR(), Lf(lsz * 0.85, (m.k % 2 ? 90 : -90) + j(-20, 20), 60, 'heart', { pet: 0.9 }), ER(), T_('+', j(-12, 12)), { s: 'G', k: m.k + 1, n: m.n }];
+    },
+    W(m) {
+      if (m.k >= 5) return [F_(0.8, 0.16), BR(), Lf(lsz * 0.6, 90, 50, 'heart', { pet: 0.6 }), ER(), flower()];
+      const o = [F_(1.7, 0.24), BR(), Lf(lsz * 0.9, (m.k % 2 ? 90 : -90), 60, 'heart', { pet: 1 }), ER()];
+      if (m.k === 2 && R() < 0.7) o.push(BR(), T_('&', 42), { s: 'F', l: 0.8, w: 0.13, ped: 1 }, flower(), ER());
+      o.push(T_('/', 25), { s: 'W', k: m.k + 1 });
+      return o;
+    }
+  };
+}
+function derive(rules, R) {
+  let str = rules.axiom;
+  for (let it = 0; it < 40; it++) {
+    let changed = false; const out = [];
+    for (const m of str) {
+      const fn = rules[m.s];
+      if (typeof fn === 'function' && m.s.length === 1 && /[A-Z]/.test(m.s) && !'FLKHY'.includes(m.s)) { out.push(...fn(m, R)); changed = true; }
+      else out.push(m);
+    }
+    str = out; if (!changed) break;
+  }
+  return str;
+}
+/* compile: ids, bracket jumps, path distances → birth times */
+function buildModel(sp, seed) {
+  const R = rngFor(sp + ':' + seed);
+  const rules = rulesFor(sp, R);
+  const str = derive(rules, R);
+  const md = { sp, seed, str, nSeg: 0, nLeaf: 0, nFl: 0, nBud: 0, segParent: [], segFix: [], leafSeg: [], flSeg: [], budSeg: [], budActBirth: [],
+    flowerCol: FLOWER_COLS[Math.floor(R() * FLOWER_COLS.length)], epithet: EPITHETS[Math.floor(R() * EPITHETS.length)], lob: 0.3 + R() * 0.35, rules };
+  // bracket matching → bEnd[i] = index of ']' that closes the branch containing i (or str.length)
+  const n = str.length, bEnd = new Int32Array(n), st = [];
+  const closeOf = new Int32Array(n).fill(n);
+  for (let i = 0; i < n; i++) { if (str[i].s === '[') st.push(i); else if (str[i].s === ']') { const o = st.pop(); closeOf[o] = i; } }
+  const enc = [];
+  for (let i = 0; i < n; i++) {
+    const s = str[i].s;
+    if (s === '[') { bEnd[i] = enc.length ? closeOf[enc[enc.length - 1]] : n; enc.push(i); continue; }
+    if (s === ']') { enc.pop(); bEnd[i] = i; continue; }
+    bEnd[i] = enc.length ? closeOf[enc[enc.length - 1]] : n;
+  }
+  md.bEnd = bEnd;
+  // pass 0 — distances
+  let t = { d: 0, seg: -1, bud: -1, depth: 0, p: [0, 0, 0] }; const stack = [];
+  const R2 = rules.rad, seg = [];
+  let mainCount = 0;
+  for (let i = 0; i < n; i++) {
+    const m = str[i];
+    switch (m.s) {
+      case '[': stack.push(t); t = Object.assign({}, t, { depth: t.depth + 1 }); break;
+      case ']': t = stack.pop(); break;
+      case '+': case '-': case '&': case '^': case '/': case '\\': m.ar = m.a * D2R; break;
+      case '?': m.id = md.nBud++; md.budSeg[m.id] = t.seg; m.d0 = t.d; t = Object.assign({}, t, { bud: m.id }); break;
+      case 'F': case 'H': {
+        if (m.s === 'H') {
+          const phi = rules.phi0 + m.i * rules.dphi, y = 1.0 + (m.i + 1) * rules.stakeH / rules.N;
+          m.pt = [R2 * Math.cos(phi), y, R2 * Math.sin(phi)]; m.w = 0.3 - 0.08 * m.i / rules.N;
+          m.l = vlen([m.pt[0] - t.p[0], m.pt[1] - t.p[1], m.pt[2] - t.p[2]]); t.p = m.pt;
+        } else t.p = [0, t.p[1] + m.l, 0];
+        m.id = md.nSeg++; md.segParent[m.id] = t.seg; m.d0 = t.d; m.bud = t.bud;
+        md.segFix[m.id] = t.depth === 0 && mainCount++ < (sp === 'vine' ? 3 : 2);
+        m.lw = m.l / (1 + 0.55 * Math.min(t.depth, 3)); t.d += m.lw; t.seg = m.id; seg.push(m); break;
+      }
+      case 'L': m.id = md.nLeaf++; md.leafSeg[m.id] = t.seg; m.d0 = t.d; m.bud = t.bud; break;
+      case 'K': case 'Y': m.id = md.nFl++; md.flSeg[m.id] = t.seg; m.d0 = t.d; m.bud = t.bud; break;
+    }
+  }
+  let Dmax = 1;
+  for (const m of seg) if (m.bud < 0) Dmax = Math.max(Dmax, m.d0 + m.lw);
+  const TS = 0.86 / Dmax;
+  for (let i = 0; i < n; i++) {
+    const m = str[i];
+    if (m.s === 'F' || m.s === 'H') { m.b = m.d0 * TS + 0.012; m.dur = Math.max(0.004, m.lw * TS); }
+    else if (m.s === 'L') { m.b = m.d0 * TS + 0.02 + (m.k === 'cot' ? -0.02 : 0); m.dur = m.k === 'cot' ? 0.03 : 0.07; }
+    else if (m.s === 'K' || m.s === 'Y') { m.b = Math.max(m.d0 * TS + 0.02, SP[sp].flowerFrom + m.r * 0.18); m.dur = 0.12; }
+    else if (m.s === '?') { m.b0 = m.d0 * TS + 0.012; }
+  }
+  // pedicels appear together with their flower bud
+  for (let i = 0; i + 1 < n; i++) if (str[i].ped && (str[i + 1].s === 'K')) { str[i].b = Math.max(str[i].b, str[i + 1].b - 0.04); str[i].dur = 0.03; }
+  md.TS = TS;
+  return md;
+}
+
+/* =========================================================
+   Care state
+   ========================================================= */
+const NB = 320, BIN = 0.005;
+function newCare(sp, seed) {
+  const now = Date.now(), d = new Date();
+  return { v: 1, sp, seed, planted: now, h0: d.getHours() + d.getMinutes() / 60, age: 0, g: 0, M: 0.32, Y: 0, P: 0, D: 0,
+    theta: 0, rh: [], pruned: {}, pl: {}, act: {}, wlog: [], nWater: 0, nRot: 0, nPrune: 0, good: 0, tot: 0,
+    j: [], fl: {}, lastTs: now, fast: DEMO, maxLean: 0, rotAcc: 0 };
+}
+function thetaAt(c, b) {
+  const k = Math.floor(b / BIN);
+  if (k < 0) return c.rh.length ? c.rh[0] : c.theta;
+  if (k < c.rh.length) return c.rh[k];
+  return c.theta;
+}
+const LW = norm([0.88, 0.42, 0.3]); // light from the right (window side)
+const localLight = th => rotY(LW, -th);
+
+/* =========================================================
+   Interpretation (turtle with tropism) → primitives
+   ========================================================= */
+function interpret(md, c, g, opt = {}) {
+  const sp = SP[md.sp], str = md.str, bEnd = md.bEnd;
+  const out = { stems: [], leaves: [], flowers: [] };
+  let t = { p: [0, 0, 0], H: [0, 1, 0], L: [-1, 0, 0], U: [0, 0, 1], act: -1, base: 0, seg: -1, o: 0 };
+  const stack = [];
+  const eff = b => t.act >= 0 ? t.act + (b - t.base) * 0.9 : b;
+  const D = opt.D !== undefined ? opt.D : c.D;
+  const tlight = th => {
+    const L = localLight(th);
+    return norm(add(sc(L, 1 - sp.up), [0, sp.up, 0]));
+  };
+  for (let i = 0; i < str.length; i++) {
+    const m = str[i];
+    switch (m.s) {
+      case '[': stack.push(t); t = Object.assign({}, t, { o: t.o + 1 }); break;
+      case ']': t = stack.pop(); break;
+      case '+': t.H = rot(t.H, t.U, m.ar); t.L = rot(t.L, t.U, m.ar); break;
+      case '-': t.H = rot(t.H, t.U, -m.ar); t.L = rot(t.L, t.U, -m.ar); break;
+      case '&': t.H = rot(t.H, t.L, m.ar); t.U = rot(t.U, t.L, m.ar); break;
+      case '^': t.H = rot(t.H, t.L, -m.ar); t.U = rot(t.U, t.L, -m.ar); break;
+      case '/': t.L = rot(t.L, t.H, m.ar); t.U = rot(t.U, t.H, m.ar); break;
+      case '\\': t.L = rot(t.L, t.H, -m.ar); t.U = rot(t.U, t.H, -m.ar); break;
+      case '?': {
+        const a = c.act[m.id];
+        if (a === undefined) { i = bEnd[i] - 1; break; }
+        t.act = a; t.base = m.b0; break;
+      }
+      case 'F': case 'H': {
+        if (c.pruned[m.id] !== undefined) { i = bEnd[i] - 1; break; }
+        const b = eff(m.b), f = clamp((g - b) / m.dur);
+        if (f <= 0) { i = bEnd[i] - 1; break; }
+        let p1;
+        if (m.s === 'H') {
+          p1 = [lerp(t.p[0], m.pt[0], f), lerp(t.p[1], m.pt[1], f), lerp(t.p[2], m.pt[2], f)];
+          const H = norm([m.pt[0] - t.p[0], m.pt[1] - t.p[1], m.pt[2] - t.p[2]]);
+          const o = norm([m.pt[0], 0, m.pt[2]]);
+          const U = norm(add(o, sc(H, -dot(o, H))));
+          t.H = H; t.U = U; t.L = cross(U, H);
+        } else {
+          // tropism toward light (in plant-local frame, depends on pot angle when this segment grew)
+          const T = tlight(thetaAt(c, b));
+          const ax = cross(t.H, T), mg = vlen(ax);
+          if (mg > 1e-5) { const k = sc(ax, 1 / mg), a = sp.trop * mg * (t.o === 0 && md.sp !== 'vine' ? 0.7 : 1); t.H = rot(t.H, k, a); t.L = rot(t.L, k, a); t.U = rot(t.U, k, a); }
+          if (sp.grav && t.o > 0) { const ax2 = cross(t.H, [0, -1, 0]), m2 = vlen(ax2); if (m2 > 1e-5) { const k = sc(ax2, 1 / m2), a = (sp.grav + D * 0.08) * m2; t.H = rot(t.H, k, a); t.L = rot(t.L, k, a); t.U = rot(t.U, k, a); } }
+          p1 = add(t.p, sc(t.H, m.l * f));
+        }
+        const age = clamp((g - b) / 0.55);
+        out.stems.push({ a: t.p, b: p1, w: m.w * (0.35 + 0.65 * age) * (0.55 + 0.45 * f), id: m.id, age, o: t.o });
+        t.p = p1; t.seg = m.id;
+        if (f < 1) i = bEnd[i] - 1;
+        break;
+      }
+      case 'L': {
+        if (c.pl[m.id] !== undefined) break;
+        const b = eff(m.b), f = clamp((g - b) / m.dur);
+        if (f <= 0) break;
+        let fade = 1;
+        if (m.life) { const dg = g - (b + m.life); if (dg > 0) { fade = 1 - dg / 0.08; if (fade <= 0) break; } }
+        const U2 = rot(t.U, t.H, m.az * D2R), L2 = rot(t.L, t.H, m.az * D2R);
+        const pa = m.pitch * D2R;
+        let d = add(sc(t.H, Math.cos(pa)), sc(U2, Math.sin(pa)));
+        const T = localLight(thetaAt(c, b));
+        d = norm(add(d, sc(T, sp.leafLight * (m.k === 'cot' ? 0.2 : 1))));
+        d = norm(add(d, [0, -(sp.droop + (md.sp === 'succ' ? 0.15 : 0.75) * D) * (m.k === 'cot' ? 0.3 : 1), 0]));
+        let side = norm(add(L2, sc(d, -dot(L2, d))));
+        out.leaves.push({ p: t.p, d, side, size: m.size * easeOut(f) * (0.6 + 0.4 * fade), fade, id: m.id, b, k: m.k, r: m.r, pet: m.pet || 0, seg: t.seg, o: t.o });
+        break;
+      }
+      case 'K': case 'Y': {
+        const b = eff(m.b), f = (g - b) / m.dur;
+        if (f <= 0) break;
+        out.flowers.push({ p: t.p, d: t.H, f, k: m.s === 'Y' ? 'berry' : m.k, r: m.r, id: m.id, seg: t.seg });
+        break;
+      }
+    }
+  }
+  return out;
+}
+/* plant shape statistics */
+function leanOf(out) {
+  let sx = 0, sz = 0, sy = 0, n = 0;
+  for (const l of out.leaves) { if (l.k === 'cot') continue; sx += l.p[0]; sz += l.p[2]; sy += l.p[1]; n++; }
+  if (n < 3) return { deg: 0, dir: 0 };
+  sx /= n; sz /= n; sy /= n;
+  return { deg: Math.atan2(Math.hypot(sx, sz), Math.max(1, sy)) / D2R, x: sx, z: sz };
+}
+function boundsOf(out, theta) {
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9, rad = 0;
+  const pt = (p) => { const q = rotY(p, theta); x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); rad = Math.max(rad, Math.hypot(p[0], p[2])); };
+  for (const s of out.stems) { pt(s.a); pt(s.b); }
+  for (const l of out.leaves) { const e = add(l.p, sc(l.d, l.size + l.pet)); pt(e); pt(add(e, sc(l.side, l.size * 0.5))); pt(add(e, sc(l.side, -l.size * 0.5))); }
+  for (const f of out.flowers) pt(add(f.p, sc(f.d, 2.4)));
+  if (x0 > x1) { x0 = -1; x1 = 1; y0 = 0; y1 = 1; }
+  return { x0, x1, y0, y1, rad };
+}
+
+/* =========================================================
+   Rendering plant → SVG string (ink + watercolour)
+   ========================================================= */
+const INK = '#2E2721';
+const SHAPE = {
+  heart: [[0, 0], [-0.16, 0.3], [0.08, 0.66], [0.4, 0.57], [0.66, 0.48], [0.88, 0.2], [1, 0], [0.88, -0.2], [0.66, -0.48], [0.4, -0.57], [0.08, -0.66], [-0.16, -0.3], [0, 0]],
+  oval: [[0, 0], [0.04, 0.48], [0.42, 0.62], [0.74, 0.48], [0.95, 0.36], [1.04, 0.12], [1, 0], [1.04, -0.12], [0.95, -0.36], [0.74, -0.48], [0.42, -0.62], [0.04, -0.48], [0, 0]],
+  cot: [[0, 0], [0.1, 0.45], [0.5, 0.55], [0.8, 0.4], [0.95, 0.3], [1.02, 0.1], [1, 0], [1.02, -0.1], [0.95, -0.3], [0.8, -0.4], [0.5, -0.55], [0.1, -0.45], [0, 0]]
+};
+function lobedShape(lob) {
+  const s = 1 - lob;
+  const half = [[0.06, 0.16], [0.14, 0.42], [0.3, 0.7], [0.42, 0.62 * s + 0.08], [0.48, 0.42 * s], [0.62, 0.42], [0.72, 0.36], [0.82, 0.2 * s + 0.08], [0.9, 0.12], [1, 0]];
+  return [[0, 0], ...half, ...half.slice(0, -1).reverse().map(([u, v]) => [u, -v]), [0, 0]];
+}
+const WR = { heart: 0.78, succ: 0.6, cot: 0.36, lobed: 0.86 };
+function fmtP(x, y) { return r1(x) + ',' + r1(y); }
+function bezPath(P) { let s = 'M' + fmtP(P[0][0], P[0][1]); for (let i = 1; i + 2 < P.length; i += 3) s += 'C' + fmtP(P[i][0], P[i][1]) + ' ' + fmtP(P[i + 1][0], P[i + 1][1]) + ' ' + fmtP(P[i + 2][0], P[i + 2][1]); return s + 'Z'; }
+function polyPath(P) { // softly rounded polygon (quadratic through midpoints)
+  const n = P.length - 1, mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  let m = mid(P[n - 1], P[0]), s = 'M' + fmtP(m[0], m[1]);
+  for (let i = 0; i < n; i++) { const q = mid(P[i], P[i + 1]); s += 'Q' + fmtP(P[i][0], P[i][1]) + ' ' + fmtP(q[0], q[1]); }
+  return s + 'Z'; }
+
+function renderPlant(md, c, out, V) {
+  // V: {cx, by, S, theta, time, sway, hl:Set|null, hlLeaf, spec:bool, lw:ink width}
+  const sp = SP[md.sp], S = V.S, th = V.theta, cth = Math.cos(th), sth = Math.sin(th);
+  const lw = V.lw || 1.25;
+  const H = 40;
+  const sway = (p) => V.sway ? V.sway * Math.sin(V.time * 1.3 + p[1] * 0.16 + p[0] * 0.2) * Math.pow(Math.max(0, p[1]) / H, 1.5) : 0;
+  const P = p => { const sw = sway(p); const x = p[0] * cth + p[2] * sth; const z = -p[0] * sth + p[2] * cth; return [V.cx + (x + sw) * S, V.by - p[1] * S, z]; };
+  const hits = { stems: [], leaves: [] };
+  const g = V.g;
+  // ---- stems
+  const stemInkB = new Map(), stemWashB = new Map(), stemHi = [];
+  const back = [], front = [];
+  for (const s of out.stems) {
+    const A = P(s.a), B = P(s.b);
+    const wpx = Math.max(lw * 0.9, s.w * S);
+    const wq = Math.round(wpx * 2) / 2;
+    const wood = sp.woody ? clamp((s.age - 0.25) / 0.5) * (s.o <= 1 ? 1 : 0.6) : 0;
+    const cq = Math.round(wood * 4) / 4;
+    const zAvg = (A[2] + B[2]) / 2;
+    const seg = 'M' + fmtP(A[0], A[1]) + 'L' + fmtP(B[0], B[1]);
+    (zAvg < -0.2 && md.sp === 'vine' ? back : front).push({ seg, wq, cq, hl: V.hl && V.hl.has(s.id) });
+    hits.stems.push({ id: s.id, x0: A[0], y0: A[1], x1: B[0], y1: B[1], w: wpx });
+    if (wpx > 4 && !V.spec) stemHi.push('M' + fmtP(A[0] + wpx * 0.22, A[1]) + 'L' + fmtP(B[0] + wpx * 0.22, B[1]));
+  }
+  const stemsSVG = (arr) => {
+    const ink = new Map(), wash = new Map(); let hl = '';
+    for (const s of arr) {
+      ink.set(s.wq, (ink.get(s.wq) || '') + s.seg);
+      const k = s.wq + '|' + s.cq; wash.set(k, (wash.get(k) || '') + s.seg);
+      if (s.hl) hl += s.seg;
+    }
+    let o = '';
+    for (const [w, d] of ink) o += `<path d="${d}" stroke="${INK}" stroke-width="${r1(w + Math.min(lw * 1.6, Math.max(lw * 0.7, w * 0.55)))}" stroke-opacity="${w < 2.5 ? 0.6 : 1}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    for (const [k, d] of wash) { const [w, cq] = k.split('|').map(Number); o += `<path d="${d}" stroke="${mixc(sp.stem, sp.wood, cq)}" stroke-width="${w}" fill="none" stroke-linecap="round"/>`; }
+    if (hl) o += `<path d="${hl}" stroke="#C0442C" stroke-width="${r1(lw * 2.4)}" fill="none" stroke-dasharray="${r1(lw * 4)} ${r1(lw * 3)}" stroke-linecap="round"/>`;
+    return o;
+  };
+  // ---- leaves
+  const shapeL = lobedShape(md.lob);
+  const leafGroups = { back: { fill: new Map(), bloom: new Map(), line: '', lineS: '', rib: '', blush: '', dry: '', hl: '' }, front: { fill: new Map(), bloom: new Map(), line: '', lineS: '', rib: '', blush: '', dry: '', hl: '' } };
+  const Yv = c.Y, Pv = c.P, Dv = V.D !== undefined ? V.D : c.D;
+  const sorted = out.leaves.map(l => { const q = P(l.p); return [q[2], l]; }).sort((a, b) => a[0] - b[0]);
+  for (const [z, l] of sorted) {
+    if (l.size <= 0.02) continue;
+    const grp = z < -0.4 ? leafGroups.back : leafGroups.front;
+    const base3 = l.pet ? add(l.p, sc(l.d, l.pet * Math.min(1, l.size / 2))) : l.p;
+    const B0 = P(l.p), B = P(base3), T3 = P(add(base3, sc(l.d, l.size)));
+    let Dx = T3[0] - B[0], Dy = T3[1] - B[1];
+    const wr = WR[l.k === 'succ' ? 'succ' : l.k] * l.size;
+    const sd = P(add(base3, sc(l.side, wr)));
+    let Wx = sd[0] - B[0], Wy = sd[1] - B[1];
+    const dl = Math.hypot(Dx, Dy) || 1, wl = Math.hypot(Wx, Wy);
+    const minW = wr * S * (V.flat ? 1 : l.k === 'succ' ? 0.62 : 0.34);
+    if (V.flat) {
+      // pressed specimen: blade lies flat on the sheet → full width, length at least 75%
+      let ux = Dx / dl, uy = Dy / dl; if (dl < 0.5) { ux = 0; uy = -1; }
+      const Lp = Math.max(dl, l.size * S * 0.78); Dx = ux * Lp; Dy = uy * Lp;
+      const sg = (Wx * -uy + Wy * ux) >= 0 ? 1 : -1;
+      Wx = -uy * wr * S * sg; Wy = ux * wr * S * sg;
+    } else if (wl < minW) { const px = -Dy / dl, py = Dx / dl; const sg = (Wx * px + Wy * py) >= 0 ? 1 : -1; Wx += px * minW * sg; Wy += py * minW * sg; }
+    const sh = l.k === 'heart' ? SHAPE.heart : l.k === 'succ' ? SHAPE.oval : l.k === 'cot' ? SHAPE.cot : shapeL;
+    const T3x = B[0] + Dx, T3y = B[1] + Dy, small = l.size * S < 22;
+    const pts = sh.map(([u, v]) => [B[0] + u * Dx + v * Wx, B[1] + u * Dy + v * Wy]);
+    const path = l.k === 'lobed' ? polyPath(pts) : bezPath(pts);
+    // colour: youth → mature; yellowing (overwater) older leaves first; drought browns
+    const old = clamp((g - l.b) / 0.9);
+    const young = 1 - clamp((g - l.b) / 0.15);
+    let yel = clamp((Yv * 0.9 + Pv) * (0.3 + 1.2 * old) - 0.12 + (l.r - 0.5) * 0.25 * Yv);
+    if (l.k === 'cot') yel = Math.max(yel, 1 - l.fade);
+    let col = mixc(sp.leaf, sp.leafYoung, young * (md.sp === 'tree' ? 0.6 : 0.6));
+    col = mixc(col, '#6F8F4E', (l.r - 0.5) * 0.3 + 0.1);
+    if (yel > 0) col = mixc(col, '#D9C35A', clamp(yel * 1.1));
+    if (yel > 0.7) col = mixc(col, '#B98A4E', (yel - 0.7) * 1.4);
+    if (Dv > 0.3) col = mixc(col, '#A99A5E', (Dv - 0.3) * 0.6);
+    const ck = mixc(col, col, 0); // normalise
+    grp.fill.set(ck, (grp.fill.get(ck) || '') + path);
+    // bloom (lighter inner wash, offset toward light)
+    const cu = 0.5, sh2 = l.k === 'succ' ? 0.5 : 0.55;
+    const bl = sh.map(([u, v]) => [B[0] + (cu + (u - cu) * sh2 + 0.04) * Dx + (v * sh2 + 0.12) * Wx, B[1] + (cu + (u - cu) * sh2 + 0.04) * Dy + (v * sh2 + 0.12) * Wy]);
+    const bk = mixc(col, '#F6F1D8', 0.45);
+    grp.bloom.set(bk, (grp.bloom.get(bk) || '') + (l.k === 'lobed' ? polyPath(bl) : bezPath(bl)));
+    if (small) grp.lineS += path; else grp.line += path;
+    if (l.pet) grp.line += 'M' + fmtP(B0[0], B0[1]) + 'L' + fmtP(B[0], B[1]);
+    if (l.k !== 'succ' && !small) {
+      grp.rib += 'M' + fmtP(B[0] + Dx * 0.04, B[1] + Dy * 0.04) + 'L' + fmtP(B[0] + Dx * 0.86, B[1] + Dy * 0.86);
+      if (l.k === 'lobed') grp.rib += 'M' + fmtP(B[0] + Dx * 0.08, B[1] + Dy * 0.08) + 'L' + fmtP(B[0] + Dx * 0.3 + Wx * 0.55, B[1] + Dy * 0.3 + Wy * 0.55) + 'M' + fmtP(B[0] + Dx * 0.08, B[1] + Dy * 0.08) + 'L' + fmtP(B[0] + Dx * 0.3 - Wx * 0.55, B[1] + Dy * 0.3 - Wy * 0.55);
+      if (l.k === 'heart') for (const s of [0.3, 0.55]) grp.rib += 'M' + fmtP(B[0] + Dx * s, B[1] + Dy * s) + 'Q' + fmtP(B[0] + Dx * (s + 0.12) + Wx * 0.3, B[1] + Dy * (s + 0.12) + Wy * 0.3) + ' ' + fmtP(B[0] + Dx * (s + 0.2) + Wx * 0.45, B[1] + Dy * (s + 0.2) + Wy * 0.45) + 'M' + fmtP(B[0] + Dx * s, B[1] + Dy * s) + 'Q' + fmtP(B[0] + Dx * (s + 0.12) - Wx * 0.3, B[1] + Dy * (s + 0.12) - Wy * 0.3) + ' ' + fmtP(B[0] + Dx * (s + 0.2) - Wx * 0.45, B[1] + Dy * (s + 0.2) - Wy * 0.45);
+    } else if (l.k === 'succ') {
+      grp.blush += 'M' + fmtP(B[0] + Dx * 0.62 + Wx * 0.5, B[1] + Dy * 0.62 + Wy * 0.5) + 'Q' + fmtP(B[0] + Dx * 1.06, B[1] + Dy * 1.06) + ' ' + fmtP(B[0] + Dx * 0.62 - Wx * 0.5, B[1] + Dy * 0.62 - Wy * 0.5);
+    }
+    if (Dv > 0.45 && l.k !== 'cot') grp.dry += `M${fmtP(B[0] + Dx * 0.82, B[1] + Dy * 0.82)}L${fmtP(T3x, T3y)}`;
+    if (V.hl && (V.hl.has(l.seg) && V.hlSegMode || V.hlLeaf === l.id)) grp.hl += path;
+    hits.leaves.push({ id: l.id, seg: l.seg, x0: B[0], y0: B[1], x1: T3x, y1: T3y, w: Math.max(wl, minW) });
+  }
+  const leavesSVG = (G, isBack) => {
+    let o = '';
+    const op = isBack ? 0.72 : 0.9;
+    for (const [col, d] of G.fill) o += `<path d="${d}" fill="${isBack ? mixc(col, '#8E9AA8', 0.18) : col}" fill-opacity="${op}"/>`;
+    for (const [col, d] of G.bloom) o += `<path d="${d}" fill="${col}" fill-opacity="${isBack ? 0.25 : 0.42}"/>`;
+    if (G.blush) o += `<path d="${G.blush}" fill="none" stroke="#C7675A" stroke-width="${r1(lw * 2.6)}" stroke-opacity=".45" stroke-linecap="round"/>`;
+    if (G.dry) o += `<path d="${G.dry}" fill="none" stroke="#9A7440" stroke-width="${r1(lw * 2.2)}" stroke-opacity=".7" stroke-linecap="round"/>`;
+    if (G.rib) o += `<path d="${G.rib}" fill="none" stroke="${INK}" stroke-width="${r1(lw * 0.6)}" stroke-opacity=".45" stroke-linecap="round"/>`;
+    if (G.line) o += `<path d="${G.line}" fill="none" stroke="${INK}" stroke-width="${r1(lw * (isBack ? 0.8 : 1))}" stroke-opacity="${isBack ? 0.6 : 0.88}" stroke-linejoin="round" transform="translate(${r1(lw * 0.5)},${r1(lw * 0.35)})"/>`;
+    if (G.lineS) o += `<path d="${G.lineS}" fill="none" stroke="${INK}" stroke-width="${r1(lw * 0.6)}" stroke-opacity="${isBack ? 0.35 : 0.55}" stroke-linejoin="round"/>`;
+    if (G.hl) o += `<path d="${G.hl}" fill="#C0442C" fill-opacity=".18" stroke="#C0442C" stroke-width="${r1(lw * 1.8)}" stroke-dasharray="${r1(lw * 3)} ${r1(lw * 2.5)}"/>`;
+    return o;
+  };
+  // ---- flowers
+  let fl = '';
+  const hour = V.hour;
+  const dayOpen = V.spec ? 1 : (hour === undefined ? 1 : (hour >= 4.5 && hour < 15.5 ? clamp((hour - 4.5) / 1.2) : hour >= 15.5 && hour < 18 ? 1 - clamp((hour - 15.5) / 2.2) * 0.85 : 0.15));
+  for (const f of out.flowers) {
+    const A = P(f.p);
+    if (f.k === 'trumpet') {
+      const d3 = rotY(f.d, th), fz = d3[2];
+      const bud = clamp(f.f * 2), open = clamp((f.f - 0.5) * 2) * dayOpen;
+      const tube = 1.5 * bud * S;
+      const sdx = d3[0], sdy = -d3[1], sl = Math.hypot(sdx, sdy) || 1;
+      const ux = sdx / sl, uy = sdy / sl;
+      const Cx = A[0] + d3[0] * tube, Cy = A[1] - d3[1] * tube;
+      const col = md.flowerCol;
+      if (open < 0.08) { // bud: twisted spindle
+        const L2 = tube * 1.1, Wd = 0.42 * S * bud;
+        fl += `<path d="M${fmtP(A[0], A[1])}Q${fmtP(A[0] + ux * L2 * 0.5 - uy * Wd, A[1] + uy * L2 * 0.5 + ux * Wd)} ${fmtP(A[0] + ux * L2, A[1] + uy * L2)}Q${fmtP(A[0] + ux * L2 * 0.5 + uy * Wd, A[1] + uy * L2 * 0.5 - ux * Wd)} ${fmtP(A[0], A[1])}Z" fill="${mixc(col, '#FFFFFF', 0.45)}" stroke="${INK}" stroke-opacity=".7" stroke-width="${r1(lw * 0.7)}" stroke-linejoin="round"/>`;
+        fl += `<path d="M${fmtP(A[0] + ux * L2 * 0.2, A[1] + uy * L2 * 0.2)}L${fmtP(A[0] + ux * L2 * 0.9, A[1] + uy * L2 * 0.9)}" stroke="${INK}" stroke-opacity=".4" stroke-width="${r1(lw * 0.6)}"/>`;
+        continue;
+      }
+      const Rr = (0.55 + 1.15 * open) * S;
+      let a3 = norm(cross(d3, [0, 1, 0])); if (!isFinite(a3[0]) || vlen(cross(d3, [0, 1, 0])) < 0.05) a3 = [1, 0, 0];
+      const b3 = cross(d3, a3);
+      const ax = a3[0], ay = -a3[1], bx = b3[0], by2 = -b3[1];
+      let cor = '';
+      for (let k = 0; k <= 40; k++) { const ph = k / 40 * Math.PI * 2, rr = Rr * (0.86 + 0.14 * Math.cos(5 * ph + f.r * 6)); const x = Cx + (ax * Math.cos(ph) + bx * Math.sin(ph)) * rr, y = Cy + (ay * Math.cos(ph) + by2 * Math.sin(ph)) * rr; cor += (k ? 'L' : 'M') + fmtP(x, y); }
+      cor += 'Z';
+      const tw = Rr * 0.32, pw = 0.12 * S;
+      const tubeP = `M${fmtP(A[0] - uy * pw, A[1] + ux * pw)}L${fmtP(Cx - uy * tw, Cy + ux * tw)}L${fmtP(Cx + uy * tw, Cy - ux * tw)}L${fmtP(A[0] + uy * pw, A[1] - ux * pw)}Z`;
+      const tubeS = `<path d="${tubeP}" fill="${mixc(col, '#FFFFFF', 0.55)}" stroke="${INK}" stroke-width="${r1(lw * 0.9)}" stroke-linejoin="round"/>`;
+      let bands = '';
+      for (let k = 0; k < 5; k++) { const ph = k / 5 * Math.PI * 2 + f.r * 6 / 5; bands += 'M' + fmtP(Cx, Cy) + 'L' + fmtP(Cx + (ax * Math.cos(ph) + bx * Math.sin(ph)) * Rr * 0.9, Cy + (ay * Math.cos(ph) + by2 * Math.sin(ph)) * Rr * 0.9); }
+      const facing = fz > -0.05;
+      const corS = `<path d="${cor}" fill="${facing ? col : mixc(col, '#3A3550', 0.3)}" fill-opacity=".86" stroke="${INK}" stroke-width="${r1(lw)}" stroke-linejoin="round"/>` +
+        `<path d="${cor}" fill="#FFFFFF" fill-opacity=".18" transform="translate(${r1(Rr * 0.08)},${r1(-Rr * 0.08)}) "/>` +
+        (facing ? `<path d="${bands}" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="${r1(lw * 1.5)}"/><path d="${bands}" stroke="${INK}" stroke-opacity=".25" stroke-width="${r1(lw * 0.5)}"/>` +
+          `<ellipse cx="${r1(Cx)}" cy="${r1(Cy)}" rx="${r1(Rr * 0.3)}" ry="${r1(Rr * 0.3 * Math.max(0.3, Math.abs(fz)))}" fill="#FBF6E2"/><circle cx="${r1(Cx)}" cy="${r1(Cy)}" r="${r1(Rr * 0.11)}" fill="#E7C65A"/>` : '');
+      fl += facing ? tubeS + corS : corS + tubeS;
+    } else if (f.k === 'star') {
+      const n = 6, rr = 0.55 * S * clamp(f.f * 1.5);
+      if (rr < 0.5) continue;
+      const open = clamp((f.f - 0.35) * 2);
+      for (let k = 0; k < n; k++) {
+        const a = k / n * Math.PI * 2 + f.r * 5;
+        const q = P(add(f.p, [Math.cos(a) * 0.9, 0.5 + Math.sin(a * 2) * 0.3, Math.sin(a) * 0.9]));
+        fl += `<path d="M${fmtP(A[0], A[1])}L${fmtP(q[0], q[1])}" stroke="${INK}" stroke-width="${r1(lw * 0.6)}" stroke-opacity=".6"/>`;
+        let st = '';
+        for (let j2 = 0; j2 < 10; j2++) { const ph = j2 / 10 * Math.PI * 2 + a, r = (j2 % 2 ? 0.38 : 1) * rr * (0.4 + 0.6 * open); st += (j2 ? 'L' : 'M') + fmtP(q[0] + Math.cos(ph) * r, q[1] + Math.sin(ph) * r); }
+        fl += `<path d="${st}Z" fill="#F6DDE0" stroke="${INK}" stroke-width="${r1(lw * 0.7)}" stroke-linejoin="round"/><circle cx="${r1(q[0])}" cy="${r1(q[1])}" r="${r1(rr * 0.22)}" fill="#D46F82"/>`;
+      }
+    } else if (f.k === 'berry') {
+      const rr = 0.42 * S * clamp(f.f * 1.6), ripe = clamp((f.f - 0.4) * 1.6);
+      if (rr < 0.5) continue;
+      const colB = mixc('#9DB86B', '#C2463A', ripe);
+      for (let k = 0; k < 3; k++) {
+        const q = P(add(f.p, [Math.cos(k * 2.1 + f.r * 4) * 0.55, -0.9 - k * 0.15, Math.sin(k * 2.1 + f.r * 4) * 0.55]));
+        fl += `<path d="M${fmtP(A[0], A[1])}L${fmtP(q[0], q[1])}" stroke="${INK}" stroke-width="${r1(lw * 0.6)}"/>` +
+          `<circle cx="${r1(q[0])}" cy="${r1(q[1])}" r="${r1(rr)}" fill="${colB}" stroke="${INK}" stroke-width="${r1(lw * 0.9)}"/><circle cx="${r1(q[0] + rr * 0.3)}" cy="${r1(q[1] - rr * 0.3)}" r="${r1(rr * 0.28)}" fill="#fff" fill-opacity=".55"/>`;
+      }
+    }
+  }
+  // ---- stake for the vine
+  let stake = '';
+  if (md.sp === 'vine' && V.stake !== false) {
+    const top = P([0, md.rules.stakeH + 1.5, 0]), bot = P([0, -0.5, 0]);
+    const w = 0.38 * S;
+    stake = `<path d="M${fmtP(bot[0], bot[1])}L${fmtP(top[0], top[1])}" stroke="${INK}" stroke-width="${r1(w + lw * 1.6)}" stroke-linecap="round"/><path d="M${fmtP(bot[0], bot[1])}L${fmtP(top[0], top[1])}" stroke="#D2B97E" stroke-width="${r1(w)}" stroke-linecap="round"/>`;
+    for (let k = 1; k < 6; k++) { const q = P([0, k * (md.rules.stakeH / 5.5), 0]); stake += `<path d="M${fmtP(q[0] - w * 0.6, q[1])}L${fmtP(q[0] + w * 0.6, q[1])}" stroke="${INK}" stroke-width="${r1(lw * 0.9)}"/>`; }
+  }
+  const svg = leavesSVG(leafGroups.back, true) + stemsSVG(back) + stake + stemsSVG(front) +
+    (stemHi.length ? `<path d="${stemHi.join('')}" stroke="#FFF6DE" stroke-opacity=".35" stroke-width="${r1(lw * 1.4)}" stroke-linecap="round" fill="none"/>` : '') +
+    leavesSVG(leafGroups.front, false) + fl;
+  return { svg, hits };
+}
+
+/* =========================================================
+   Audio (Web Audio synthesis, very quiet)
+   ========================================================= */
+const Snd = {
+  ctx: null, master: null, on: true, nb: null, amb: null,
+  init() {
+    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      const c = this.ctx = new AC();
+      this.master = c.createGain(); this.master.gain.value = this.on ? 0.3 : 0; this.master.connect(c.destination);
+      const len = c.sampleRate * 2, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      this.nb = buf;
+      // ambient city hum: brown-ish noise through lowpass
+      const bb = c.createBuffer(1, len, c.sampleRate), bd = bb.getChannelData(0); let last = 0;
+      for (let i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; bd[i] = last * 3.5; }
+      const src = c.createBufferSource(); src.buffer = bb; src.loop = true;
+      const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 260;
+      const gg = c.createGain(); gg.gain.value = 0.05;
+      src.connect(lp); lp.connect(gg); gg.connect(this.master); src.start();
+      this.amb = gg;
+    } catch (e) { this.ctx = null; }
+  },
+  setOn(v) { this.on = v; if (this.master) this.master.gain.setTargetAtTime(v ? 0.3 : 0, this.ctx.currentTime, 0.05); },
+  noise(t, dur, filt, gainEnv, pan = 0) {
+    const c = this.ctx, s = c.createBufferSource(); s.buffer = this.nb; s.playbackRate.value = 0.9 + Math.random() * 0.2;
+    let node = s;
+    for (const f of filt) { const b = c.createBiquadFilter(); b.type = f[0]; b.frequency.value = f[1]; b.Q.value = f[2] || 0.7; node.connect(b); node = b; if (f[3]) f[3](b); }
+    const g = c.createGain(); g.gain.value = 0; gainEnv(g.gain, t);
+    node.connect(g);
+    if (pan && c.createStereoPanner) { const p = c.createStereoPanner(); p.pan.value = pan; g.connect(p); p.connect(this.master); } else g.connect(this.master);
+    s.start(t, Math.random() * 1.5, dur + 0.05); s.stop(t + dur + 0.1);
+  },
+  tone(t, type, f0, f1, dur, vol, pan = 0) {
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, t); if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + Math.min(0.012, dur * 0.2)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g);
+    if (pan && c.createStereoPanner) { const p = c.createStereoPanner(); p.pan.value = pan; g.connect(p); p.connect(this.master); } else g.connect(this.master);
+    o.start(t); o.stop(t + dur + 0.02);
+  },
+  ok() { return this.ctx && this.on && this.ctx.state === 'running'; },
+  water() {
+    if (!this.ok()) return; const t = this.ctx.currentTime;
+    this.noise(t, 1.5, [['bandpass', 1300, 0.8, b => { b.frequency.setValueAtTime(900, t); b.frequency.linearRampToValueAtTime(1700, t + 0.6); b.frequency.linearRampToValueAtTime(1100, t + 1.4); }], ['lowpass', 3200]],
+      (g, t0) => { g.setValueAtTime(0, t0); g.linearRampToValueAtTime(0.22, t0 + 0.15); g.setValueAtTime(0.22, t0 + 1.05); g.linearRampToValueAtTime(0, t0 + 1.5); }, -0.15);
+    for (let i = 0; i < 9; i++) { const tt = t + 0.25 + Math.random() * 1.1, f = 420 + Math.random() * 600; this.tone(tt, 'sine', f, f * 1.7, 0.06, 0.05, -0.2 + Math.random() * 0.3); }
+  },
+  rustle(amt = 1) {
+    if (!this.ok()) return; const t = this.ctx.currentTime;
+    const n = 3 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < n; i++) {
+      const tt = t + i * 0.045 + Math.random() * 0.03, v = (0.05 + Math.random() * 0.07) * amt;
+      this.noise(tt, 0.08, [['highpass', 2600], ['bandpass', 4200 + Math.random() * 2500, 0.9]], (g, t0) => { g.setValueAtTime(0, t0); g.linearRampToValueAtTime(v, t0 + 0.01); g.exponentialRampToValueAtTime(0.0001, t0 + 0.07 + Math.random() * 0.03); }, (Math.random() - 0.5) * 0.6);
+    }
+  },
+  snip() {
+    if (!this.ok()) return; const t = this.ctx.currentTime;
+    for (const d of [0, 0.12]) {
+      this.noise(t + d, 0.04, [['highpass', 3200]], (g, t0) => { g.setValueAtTime(0, t0); g.linearRampToValueAtTime(0.28, t0 + 0.003); g.exponentialRampToValueAtTime(0.0001, t0 + 0.035); });
+      this.tone(t + d, 'triangle', 3300, 2500, 0.08, 0.06);
+      this.tone(t + d + 0.002, 'sine', 220, 140, 0.03, 0.08);
+    }
+  },
+  bird(pan) {
+    if (!this.ok()) return; const c = this.ctx, t = c.currentTime;
+    const p = pan !== undefined ? pan : (Math.random() - 0.5) * 1.4;
+    const f0 = 2500 + Math.random() * 1300, n = 2 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < n; i++) {
+      const tt = t + i * (0.11 + Math.random() * 0.05);
+      const o = c.createOscillator(), g = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(f0, tt); o.frequency.exponentialRampToValueAtTime(f0 * 1.38, tt + 0.045); o.frequency.exponentialRampToValueAtTime(f0 * 0.92, tt + 0.09);
+      lfo.frequency.value = 38; lg.gain.value = 110; lfo.connect(lg); lg.connect(o.frequency);
+      g.gain.setValueAtTime(0.0001, tt); g.gain.exponentialRampToValueAtTime(0.045, tt + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.095);
+      o.connect(g);
+      if (c.createStereoPanner) { const pn = c.createStereoPanner(); pn.pan.value = p; g.connect(pn); pn.connect(this.master); } else g.connect(this.master);
+      o.start(tt); lfo.start(tt); o.stop(tt + 0.11); lfo.stop(tt + 0.11);
+    }
+  },
+  cricket() {
+    if (!this.ok()) return; const t = this.ctx.currentTime;
+    for (let i = 0; i < 3; i++) this.tone(t + i * 0.05, 'sine', 4300, 4250, 0.03, 0.012, 0.5);
+  },
+  tick() { if (!this.ok()) return; this.tone(this.ctx.currentTime, 'sine', 950, 620, 0.04, 0.05); },
+  thump() {
+    if (!this.ok()) return; const t = this.ctx.currentTime;
+    this.tone(t, 'sine', 120, 55, 0.35, 0.22);
+    this.noise(t, 0.25, [['lowpass', 900]], (g, t0) => { g.setValueAtTime(0, t0); g.linearRampToValueAtTime(0.25, t0 + 0.005); g.exponentialRampToValueAtTime(0.0001, t0 + 0.22); });
+  },
+  chime() {
+    if (!this.ok()) return; const t = this.ctx.currentTime;
+    [784, 988, 1175, 1568].forEach((f, i) => { this.tone(t + i * 0.13, 'sine', f, f, 1.4, 0.05); this.tone(t + i * 0.13, 'sine', f * 2, f * 2, 0.6, 0.012); });
+  }
+};
+
+/* =========================================================
+   Scene (background, time of day)
+   ========================================================= */
+const svg = $('#scene');
+const L = { vbW: 1600, vbH: 1000, floorY: 900, mobile: false };
+const SKY = [ // hour, top, mid, bottom, far, near, lit(windows), night(0..1)
+  [0, '#1D2342', '#2C3256', '#3B3F63', '#2D3150', '#22253A', 1, 1],
+  [4.6, '#232A4C', '#3E4468', '#5D5875', '#3A3D5A', '#2A2B40', 0.9, 0.9],
+  [5.8, '#6C7FA8', '#C9A9B4', '#F2C3A3', '#8C8AA2', '#5F5D73', 0.45, 0.35],
+  [7.5, '#A3BDD6', '#E6DCCB', '#F4E2C0', '#B2B4BC', '#8D8F99', 0.1, 0],
+  [12, '#B5D0E2', '#E3EBE6', '#EFEDE1', '#C1C7CB', '#9BA2A8', 0, 0],
+  [16, '#AFC6D8', '#E9E2D2', '#F2DDBC', '#BCB8B3', '#958F8B', 0, 0],
+  [17.8, '#8E92B8', '#E6B39E', '#F2A57F', '#988499', '#6A5D72', 0.35, 0.15],
+  [19, '#4D527E', '#9F7B95', '#C98A84', '#58506E', '#3B3650', 0.85, 0.6],
+  [20.5, '#262C4D', '#3A3F64', '#555274', '#353656', '#26283D', 1, 0.95],
+  [24, '#1D2342', '#2C3256', '#3B3F63', '#2D3150', '#22253A', 1, 1]
+];
+function skyAt(h) {
+  h = ((h % 24) + 24) % 24;
+  let i = 0; while (i < SKY.length - 2 && SKY[i + 1][0] <= h) i++;
+  const a = SKY[i], b = SKY[i + 1], t = ease((h - a[0]) / (b[0] - a[0]));
+  return { top: mixc(a[1], b[1], t), mid: mixc(a[2], b[2], t), bot: mixc(a[3], b[3], t), far: mixc(a[4], b[4], t), near: mixc(a[5], b[5], t), lit: lerp(a[6], b[6], t), night: lerp(a[7], b[7], t), h };
+}
+const NS = 'http://www.w3.org/2000/svg';
+function buildScene() {
+  const w = innerWidth, h = innerHeight;
+  L.vbW = Math.round(1000 * w / h); L.vbH = 1000;
+  L.mobile = w < 700;
+  L.floorY = L.mobile ? 790 : 905;
+  for (const el of document.querySelectorAll('svg.layer')) el.setAttribute('viewBox', `0 0 ${L.vbW} ${L.vbH}`);
+  const W = L.vbW, fy = L.floorY, parTop = fy - 150, railTop = parTop - 175;
+  L.parTop = parTop; L.railTop = railTop;
+  const R = rngFor('city');
+  // soft washes in sky
+  let ws = '';
+  for (let i = 0; i < 6; i++) ws += `<ellipse cx="${r1(R() * W)}" cy="${r1(80 + R() * 380)}" rx="${r1(160 + R() * 260)}" ry="${r1(30 + R() * 60)}" fill="url(#washG)" opacity="${r1(0.2 + R() * 0.2)}"/>`;
+  $('#washes').innerHTML = ws;
+  // clouds (ink outline + wash)
+  let cl = '';
+  for (let i = 0; i < 5; i++) {
+    const x = R() * W, y = 70 + R() * 240, s2 = 0.7 + R() * 0.9;
+    for (let k = 0; k < 6; k++) cl += `<ellipse cx="${r1(x + (k - 2.5) * 34 * s2 + R() * 14)}" cy="${r1(y - Math.sin(k / 5 * Math.PI) * 14 * s2 + R() * 6)}" rx="${r1((34 + R() * 26) * s2)}" ry="${r1((13 + R() * 9) * s2)}" fill="#FFFFFF" opacity="${r1(0.16 + R() * 0.14)}"/>`;
+    cl += `<path d="M${r1(x - 90 * s2)},${r1(y + 12 * s2)}q${r1(60 * s2)},${r1(5 * s2)} ${r1(180 * s2)},0" stroke="${INK}" stroke-opacity=".12" fill="none"/>`;
+  }
+  $('#clouds').innerHTML = cl;
+  // city: far
+  const far = [], near = [], lit = [], farWins = [], nearRects = [];
+  const FARC = ['#A9AAB6', '#B4ABA6', '#A2ACB4', '#B0AE9F'], NEARC = ['#8E8C98', '#9A8F88', '#86909A', '#959282', '#8F8189'];
+  let x = -30;
+  while (x < W + 30) {
+    const bw = 50 + R() * 110, top = railTop - 60 - R() * 230;
+    far.push(`<rect x="${r1(x)}" y="${r1(top)}" width="${r1(bw)}" height="${r1(parTop - top + 10)}" fill="${FARC[Math.floor(R() * FARC.length)]}"/>`);
+    if (R() < 0.35) far.push(`<rect x="${r1(x + bw * 0.6)}" y="${r1(top - 16)}" width="10" height="16"/>`);
+    for (let wy = top + 14; wy < railTop + 120; wy += 22) for (let wx = x + 8; wx < x + bw - 10; wx += 16) if (R() < 0.28) farWins.push([wx, wy]);
+    x += bw + R() * 8;
+  }
+  x = -40;
+  const nearDetail = [];
+  while (x < W + 40) {
+    const bw = 90 + R() * 150, top = railTop - 10 - R() * 170;
+    near.push(`<rect x="${r1(x)}" y="${r1(top)}" width="${r1(bw)}" height="${r1(parTop - top + 10)}" fill="${NEARC[Math.floor(R() * NEARC.length)]}"/>`); nearRects.push([x, top - 22, x + bw]);
+    // rooftop water tank & antenna
+    if (R() < 0.6) { const tx = x + 14 + R() * (bw - 50), tw = 22 + R() * 14; near.push(`<rect x="${r1(tx)}" y="${r1(top - 20)}" width="${r1(tw)}" height="20" rx="2"/><rect x="${r1(tx + 3)}" y="${r1(top - 6)}" width="3" height="6"/>`); }
+    if (R() < 0.4) { const ax = x + bw * (0.2 + R() * 0.6); nearDetail.push(`M${r1(ax)},${r1(top)}V${r1(top - 34 - R() * 30)}M${r1(ax - 8)},${r1(top - 22)}H${r1(ax + 8)}`); }
+    // iron window grilles (鐵窗)
+    for (let wy = top + 22; wy < parTop - 30; wy += 46) for (let wx = x + 12; wx < x + bw - 40; wx += 52) {
+      if (R() < 0.55) { nearDetail.push(`M${r1(wx)},${r1(wy)}h32v24h-32zM${r1(wx + 8)},${r1(wy)}v24M${r1(wx + 16)},${r1(wy)}v24M${r1(wx + 24)},${r1(wy)}v24`); if (R() < 0.4 && wy + 24 < railTop - 6) lit.push(`<rect x="${r1(wx + 1)}" y="${r1(wy + 1)}" width="30" height="22" opacity=".9"/>`); }
+    }
+    x += bw + R() * 20;
+  }
+  for (const [wx, wy] of farWins) { if (wy + 9 > railTop - 6) continue; if (nearRects.some(([a, t, b]) => wx + 7 > a && wx < b && wy + 9 > t)) continue; lit.push(`<rect x="${r1(wx)}" y="${r1(wy)}" width="7" height="9" opacity=".7"/>`); }
+  $('#cityFar').innerHTML = far.join(''); $('#cityFar').setAttribute('fill', '#A9AAB4');
+  $('#cityNear').setAttribute('fill', '#8A8791'); $('#cityNear').setAttribute('stroke', 'rgba(46,39,33,.35)'); $('#cityNear').innerHTML = near.join('') + `<path d="${nearDetail.join('')}" fill="none" stroke="${INK}" stroke-opacity=".35" stroke-width="1.2"/>`;
+  $('#cityLit').innerHTML = lit.join('');
+  // balcony: parapet wall + railing + floor
+  let b = '';
+  b += `<rect x="0" y="${parTop}" width="${W}" height="${fy - parTop + 2}" fill="#E5D9C0"/>`;
+  for (let ty = parTop + 30; ty < fy; ty += 30) b += `<path d="M0,${ty}H${W}" stroke="${INK}" stroke-opacity=".12"/>`;
+  for (let tx = 0, row = 0; tx < W; tx += 60) b += `<path d="M${tx},${parTop}V${fy}" stroke="${INK}" stroke-opacity=".08"/>`;
+  b += `<rect x="0" y="${parTop - 10}" width="${W}" height="14" fill="#D5C6A7" stroke="${INK}" stroke-width="1.2"/>`;
+  // railing
+  let rp = `M0,${railTop}H${W}M0,${railTop + 12}H${W}`;
+  for (let rx = 18; rx < W; rx += 34) rp += `M${rx},${railTop + 12}V${parTop - 10}`;
+  b += `<path d="${rp}" stroke="#4E4A44" stroke-width="2.4" fill="none" opacity=".55"/><path d="${rp}" stroke="${INK}" stroke-width="1" fill="none"/>`;
+  b += `<rect x="0" y="${railTop - 5}" width="${W}" height="9" rx="3" fill="#6C665D" stroke="${INK}" stroke-width="1.1"/>`;
+  // floor
+  b += `<rect x="0" y="${fy}" width="${W}" height="${L.vbH - fy}" fill="#CBB99A"/>`;
+  b += `<path d="M0,${fy}H${W}" stroke="${INK}" stroke-width="1.4"/>`;
+  const cx = W / 2;
+  let fl = '';
+  for (let k = -16; k <= 16; k++) fl += `M${r1(cx + k * 60)},${fy}L${r1(cx + k * 140)},${L.vbH}`;
+  for (let k = 1; k < 5; k++) { const yy = fy + (L.vbH - fy) * (k * k) / 20; fl += `M0,${r1(yy)}H${W}`; }
+  b += `<path d="${fl}" stroke="${INK}" stroke-opacity=".14" fill="none"/>`;
+  // a slice of door frame on wide screens
+  if (W > 1100) {
+    b += `<rect x="-4" y="0" width="70" height="${fy}" fill="#DCCDB0" stroke="${INK}" stroke-width="1.3"/><path d="M48,0V${fy}M54,0V${fy}" stroke="${INK}" stroke-opacity=".35"/>`;
+    b += `<g transform="translate(${W - 210},${fy - 96})"><rect x="0" y="0" width="150" height="92" rx="4" fill="#D9D3C6" stroke="${INK}" stroke-width="1.3"/><circle cx="60" cy="46" r="32" fill="none" stroke="${INK}" stroke-opacity=".6"/>` +
+      `<path d="M60,14V78M28,46H92M37,23L83,69M83,23L37,69" stroke="${INK}" stroke-opacity=".25"/><path d="M112,18h26M112,30h26M112,42h26" stroke="${INK}" stroke-opacity=".4"/><rect x="18" y="92" width="10" height="6" fill="${INK}" opacity=".4"/><rect x="122" y="92" width="10" height="6" fill="${INK}" opacity=".4"/></g>`;
+  }
+  $('#balcony').innerHTML = `<rect x="0" y="${railTop - 260}" width="${W}" height="${parTop - railTop + 260}" fill="url(#hazeG)"/>` + b;
+  // sunbeam from the right
+  $('#beam').setAttribute('d', `M${W},${railTop - 260}L${W},${railTop + 40}L${cx - 120},${fy}L${cx + 40},${fy}Z`);
+  skyCache = -99;
+  layoutPlant();
+}
+let skyCache = -99;
+function applySky(h) {
+  const s = skyAt(h);
+  $('#sk0').setAttribute('stop-color', s.top); $('#sk1').setAttribute('stop-color', s.mid); $('#sk2').setAttribute('stop-color', s.bot);
+  $('#bgTint').style.background = s.night > 0.5 ? '#1C2348' : mixc('#1C2348', s.bot, clamp(1 - s.night * 2) * 0.8);
+  $('#litsvg').style.opacity = r1(s.lit * 0.9);
+  const W = L.vbW;
+  // sun arc: rises 5.5, sets 18.5; drawn on the right (window side)
+  const sd = (h - 5.6) / 13;
+  const sunUp = sd > 0 && sd < 1;
+  const sy = L.railTop - Math.sin(clamp(sd) * Math.PI) * (L.railTop - 120) + 20;
+  const sx = W * (0.62 + 0.3 * clamp(sd));
+  $('#sun').setAttribute('cx', r1(sx)); $('#sun').setAttribute('cy', r1(sy)); $('#sun').setAttribute('opacity', sunUp ? 1 : 0);
+  $('#sunDisc').setAttribute('cx', r1(sx)); $('#sunDisc').setAttribute('cy', r1(sy)); $('#sunDisc').setAttribute('opacity', sunUp ? 0.9 : 0);
+  const warm = clamp(1 - Math.abs(sd - 0.5) * 2.6);
+  $('#sunDisc').setAttribute('fill', mixc('#F7B57E', '#FFF6DA', warm));
+  // moon
+  const md2 = ((h - 18.5 + 24) % 24) / 11;
+  const mUp = md2 > 0 && md2 < 1;
+  const mx = W * (0.15 + 0.3 * md2), my = L.railTop - Math.sin(clamp(md2) * Math.PI) * (L.railTop - 140) + 10;
+  $('#moon').innerHTML = mUp ? `<circle cx="${r1(mx)}" cy="${r1(my)}" r="60" fill="#F5EFD8" opacity=".12"/><circle cx="${r1(mx)}" cy="${r1(my)}" r="18" fill="#F3EDD6" stroke="${INK}" stroke-opacity=".4"/><circle cx="${r1(mx + 8)}" cy="${r1(my - 5)}" r="15" fill="${s.top}" opacity=".9"/>` : '';
+  $('#beamsvg').style.opacity = r1(clamp(1 - s.night * 1.6) * 0.32 * (0.5 + warm * 0.5));
+  const dusk = clamp(1 - Math.abs(h - 18.2) / 1.6) + clamp(1 - Math.abs(h - 5.9) / 1.3);
+  $('#bgTint').style.opacity = r1(Math.max(s.night * 0.42, dusk * 0.16));
+  $('#fgTint').style.opacity = r1(s.night * 0.2);
+  $('#lampsvg').style.opacity = r1(clamp((s.night - 0.3) * 1.6));
+  L.night = s.night;
+}
+function layoutPlant() {
+  if (!md) return;
+  const b = mature.bounds;
+  const W = L.vbW, fy = L.floorY;
+  const ps = SP[md.sp].ps, top = L.mobile ? 165 : 140;
+  const Hm = Math.max(16, b.y1) * 1.04, Wm = Math.max(8, b.rad + 3);
+  const capP = W * (L.mobile ? 0.34 : 0.3) / 17.2;
+  let S = (fy - top) / (Hm + 13.3 * ps), P = 0;
+  for (let k = 0; k < 3; k++) { P = Math.min(S * ps, capP); S = Math.min((fy - top - 13.3 * P) / Hm, (W / 2 - 18) / Wm, 24); }
+  P = Math.min(S * ps, capP);
+  L.S = S; L.ps = ps; L.P = P; L.cx = W / 2; L.by = fy - 13.3 * P;
+  $('#lamp').setAttribute('cx', L.cx); $('#lamp').setAttribute('cy', L.by - 14 * S); $('#lamp').setAttribute('rx', 30 * S); $('#lamp').setAttribute('ry', 26 * S);
+  drawPotBack(); dirty = true;
+}
+/* ---------- pot ---------- */
+function drawPotBack() {
+  if (!md) return;
+  const sp = SP[md.sp], S = L.P, cx = L.cx, by = L.by, k = 0.2;
+  const rimTop = by - 0.9 * S, Rr = 8.3 * S;
+  const soilR = 7.5 * S;
+  const soil = mixc('#AE916E', '#4A382A', clamp((cs ? cs.M : 0.5) / 1.1));
+  $('#potBack').innerHTML =
+    `<ellipse cx="${cx}" cy="${r1(L.floorY + 0.6 * S)}" rx="${r1(11 * S)}" ry="${r1(2 * S)}" fill="${INK}" opacity=".18"/>` +
+    `<ellipse cx="${cx}" cy="${r1(rimTop)}" rx="${r1(Rr)}" ry="${r1(Rr * k)}" fill="${mixc(sp.pot.dark, INK, 0.45)}" stroke="${INK}" stroke-width="1.3"/>` +
+    `<ellipse id="soil" cx="${cx}" cy="${r1(by)}" rx="${r1(soilR)}" ry="${r1(soilR * k)}" fill="${soil}"/>` +
+    `<path d="M${r1(cx - soilR * 0.6)},${r1(by - 1)}q${r1(soilR * 0.2)},-3 ${r1(soilR * 0.4)},0M${r1(cx + soilR * 0.2)},${r1(by + soilR * k * 0.4)}q${r1(soilR * 0.2)},-3 ${r1(soilR * 0.4)},0" stroke="${INK}" stroke-opacity=".3" fill="none"/>`;
+}
+function potFrontSVG(theta) {
+  const sp = SP[md.sp], S = L.P, cx = L.cx, by = L.by, k = 0.2;
+  const rimTop = by - 0.9 * S, rimBot = rimTop + 2.0 * S, Rr = 8.3 * S, Rt = 7.7 * S, Rb = 5.9 * S, bot = L.floorY - 1.0 * S;
+  const pc = sp.pot;
+  $('#pg0').setAttribute('stop-color', mixc(pc.body, INK, 0.25)); $('#pg1').setAttribute('stop-color', pc.body);
+  $('#pg2').setAttribute('stop-color', mixc(pc.body, '#FFFFFF', 0.25)); $('#pg3').setAttribute('stop-color', mixc(pc.body, INK, 0.2));
+  let o = '';
+  // saucer
+  o += `<path d="M${r1(cx - 8.6 * S)},${r1(bot)}L${r1(cx - 7.6 * S)},${r1(L.floorY + 0.4 * S)}A${r1(7.6 * S)},${r1(7.6 * S * k * 0.6)} 0 0 0 ${r1(cx + 7.6 * S)},${r1(L.floorY + 0.4 * S)}L${r1(cx + 8.6 * S)},${r1(bot)}Z" fill="${mixc(pc.dark, INK, 0.1)}" stroke="${INK}" stroke-width="1.3" stroke-linejoin="round"/>`;
+  o += `<ellipse cx="${cx}" cy="${r1(bot)}" rx="${r1(8.6 * S)}" ry="${r1(8.6 * S * k * 0.55)}" fill="${pc.dark}" stroke="${INK}" stroke-width="1.2"/>`;
+  // body
+  o += `<path d="M${r1(cx - Rt)},${r1(rimBot)}L${r1(cx - Rb)},${r1(bot)}A${r1(Rb)},${r1(Rb * k)} 0 0 0 ${r1(cx + Rb)},${r1(bot)}L${r1(cx + Rt)},${r1(rimBot)}Z" fill="url(#potG)" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`;
+  // rim band (front half)
+  o += `<path d="M${r1(cx - Rr)},${r1(rimTop)}A${r1(Rr)},${r1(Rr * k)} 0 0 0 ${r1(cx + Rr)},${r1(rimTop)}L${r1(cx + Rr)},${r1(rimBot)}A${r1(Rr)},${r1(Rr * k)} 0 0 1 ${r1(cx - Rr)},${r1(rimBot)}Z" fill="url(#potG)" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`;
+  o += `<path d="M${r1(cx - Rr)},${r1(rimTop)}A${r1(Rr)},${r1(Rr * k)} 0 0 1 ${r1(cx + Rr)},${r1(rimTop)}" fill="none" stroke="${INK}" stroke-width="1.2" stroke-opacity=".6"/>`;
+  // painted pattern rotating with the pot
+  const marks = 14; let pat = '', motif = '';
+  for (let i = 0; i < marks; i++) {
+    const a = i / marks * Math.PI * 2 + theta, cz = Math.cos(a);
+    if (cz <= 0.05) continue;
+    const sx = Math.sin(a);
+    const xr = cx + sx * (Rr - 1), yy = (rimTop + rimBot) / 2 + cz * Rr * k;
+    pat += `M${r1(xr)},${r1(yy - 0.45 * S)}l${r1(cz * 0.5 * S)},${r1(0.9 * S)}`;
+  }
+  // a motif sprig on the body (pot's "front" mark) + catalogue number at the opposite side
+  for (const [phi, kind] of [[0, 'sprig'], [Math.PI * 0.66, 'dot'], [Math.PI * 1.33, 'dot'], [Math.PI, 'no']]) {
+    const a = phi + theta, cz = Math.cos(a); if (cz <= 0.08) continue;
+    const yy = (rimBot + bot) / 2 + cz * Rt * k * 0.6, rr = lerp(Rt, Rb, 0.45);
+    const xr = cx + Math.sin(a) * rr;
+    if (kind === 'sprig') motif += `<g transform="translate(${r1(xr)},${r1(yy)}) scale(${r1(cz * S / 10)},${r1(S / 10)})" opacity="${r1(0.4 + cz * 0.6)}"><path d="M0,26 C2,10 -2,-6 4,-24" stroke="${pc.pat}" stroke-width="3" fill="none"/><path d="M1,8 c-14,-4 -18,-14 -16,-20 c8,0 16,8 16,20zM2,-6 c12,-6 16,-14 14,-20 c-8,2 -15,10 -14,20zM3,-18 c-8,-4 -10,-10 -8,-14 c5,1 9,6 8,14z" fill="${pc.pat}" fill-opacity=".85"/></g>`;
+    else if (kind === 'dot') motif += `<ellipse cx="${r1(xr)}" cy="${r1(yy)}" rx="${r1(cz * 1.1 * S)}" ry="${r1(1.1 * S)}" fill="none" stroke="${pc.pat}" stroke-width="${r1(0.25 * S)}" opacity="${r1(0.3 + cz * 0.6)}"/>`;
+    else motif += `<text x="${r1(xr)}" y="${r1(yy + 0.5 * S)}" font-family="IM Fell English SC, Georgia, serif" font-size="${r1(1.4 * S)}" fill="${pc.pat}" text-anchor="middle" transform="translate(${r1(xr)},0) scale(${r1(cz)},1) translate(${r1(-xr)},0)" opacity="${r1(0.3 + cz * 0.6)}">No.${md.seed}</text>`;
+  }
+  o += `<path d="${pat}" stroke="${pc.pat}" stroke-width="${r1(0.32 * S)}" stroke-linecap="round" fill="none"/>` + motif;
+  o += `<path d="M${r1(cx - Rt * 0.98)},${r1(rimBot + 2)}A${r1(Rt)},${r1(Rt * k)} 0 0 0 ${r1(cx + Rt * 0.98)},${r1(rimBot + 2)}" stroke="${INK}" stroke-opacity=".25" fill="none"/>`;
+  // highlight
+  o += `<path d="M${r1(cx + Rt * 0.55)},${r1(rimBot + 0.8 * S)}L${r1(cx + Rb * 0.6)},${r1(bot - 0.8 * S)}" stroke="#FFFFFF" stroke-opacity=".4" stroke-width="${r1(0.6 * S)}" stroke-linecap="round"/>`;
+  return o;
+}
+
+/* =========================================================
+   Game state & loop
+   ========================================================= */
+let md = null, cs = null, mature = null, dirty = true;
+const view = { theta: 0, vth: 0, paused: true, snip: false, hover: null, playing: false, drag: null, swayBoost: 0, lastRender: 0, pour: null, hits: null, hourOverride: null, fastBase: null };
+let parts = [], cuts = [];
+function journal(txt, quiet) {
+  if (!cs) return;
+  const day = Math.floor(cs.age) + 1;
+  cs.j.unshift({ d: day, t: txt }); if (cs.j.length > 30) cs.j.length = 30;
+  renderJournal(true);
+}
+function renderJournal(fresh) {
+  const ol = $('#jList'); if (!cs) { ol.innerHTML = ''; return; }
+  ol.innerHTML = cs.j.slice(0, 6).map((e, i) => `<li class="${fresh && i === 0 ? 'new' : ''}"><b>D${e.d}</b>${e.t}</li>`).join('');
+}
+function toastAt(txt, x, y, zh) {
+  const el = document.createElement('div'); el.className = 'toast' + (zh ? ' zh' : ''); el.textContent = txt;
+  el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 1900);
+}
+const vb2px = (x, y) => [x * innerWidth / L.vbW, y * innerHeight / L.vbH];
+const px2vb = (x, y) => [x * L.vbW / innerWidth, y * L.vbH / innerHeight];
+function curHour() {
+  if (view.hourOverride !== null) return view.hourOverride;
+  const d = new Date(), real = d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600;
+  if (cs && cs.fast && !RM && view.fastBase) return (view.fastBase.h + (cs.age - view.fastBase.age) * 24) % 24;
+  return real;
+}
+function periodName(h) { return h < 4.5 ? '深夜' : h < 7 ? '清晨' : h < 11 ? '上午' : h < 13 ? '中午' : h < 17 ? '下午' : h < 19 ? '黃昏' : '夜晚'; }
+
+function startPlant(sp, seed, saved) {
+  md = buildModel(sp, seed);
+  cs = saved || newCare(sp, seed);
+  view.theta = cs.theta; view.vth = 0; view.snip = false; view.hover = null;
+  parts = []; cuts = []; $('#fx').innerHTML = '';
+  // mature bounds (for scale & ruler)
+  const probe = Object.assign({}, cs, { pruned: {}, pl: {}, act: {}, rh: [], theta: 0 });
+  const outM = interpret(md, probe, 1.02, { D: 0 });
+  mature = { bounds: boundsOf(outM, 0) };
+  const s = SP[sp];
+  $('#pZh').textContent = s.zh;
+  $('#pLa').textContent = `${s.genus} ${s.ep} var. ${md.epithet}`;
+  $('#pNo').textContent = 'No. ' + seed;
+  const z = $('#mZone'); z.style.left = (s.dry / 1.5 * 100) + '%'; z.style.width = ((s.wet - s.dry) / 1.5 * 100) + '%';
+  view.fastBase = { h: curRealHour(), age: cs.age };
+  if (!saved) journal(`播下 No.${seed} 號種子。${s.ideal}澆水就好。`);
+  renderJournal(false);
+  layoutPlant();
+  $('#snipBtn').classList.remove('on'); svg.classList.remove('snip');
+  $('#ffBtn').classList.toggle('on', !!cs.fast);
+  $('#hud').style.display = '';
+  view.playing = true; view.paused = false;
+  lastFrame = performance.now();
+  updateHUD(true);
+  save();
+}
+function curRealHour() { const d = new Date(); return d.getHours() + d.getMinutes() / 60; }
+function save() { if (!cs) return; cs.theta = view.theta; cs.lastTs = Date.now(); store.set(SKEY, cs); }
+function simulate(dd) {
+  const sp = SP[cs.sp];
+  while (dd > 1e-9) {
+    const h = Math.min(dd, 0.01); dd -= h;
+    const prevDay = Math.floor(cs.age);
+    cs.age += h;
+    cs.M *= Math.exp(-sp.k * h);
+    if (cs.M > sp.wet) cs.Y += (cs.M - sp.wet) * 6 * sp.sens * h; else cs.Y -= 0.16 * h;
+    cs.Y = clamp(cs.Y, 0, 1.3);
+    if (cs.Y > 0.5) cs.P = Math.min(1, cs.P + (cs.Y - 0.5) * 0.45 * h);
+    cs.D = clamp(cs.D + (cs.M < sp.dry ? 2 : -1) * h);
+    const rate = Math.max(0.25, 1 - 0.5 * cs.D - 0.25 * Math.min(1, cs.Y));
+    cs.g += rate * h / 7;
+    cs.tot += h; if (cs.M >= sp.dry && cs.M <= sp.wet) cs.good += h;
+    const nd = Math.floor(cs.age);
+    if (nd !== prevDay) onNewDay(nd);
+  }
+  // record pot angle history against growth time (for phototropism)
+  const bin = Math.min(NB - 1, Math.floor(cs.g / BIN));
+  for (let k = cs.rh.length; k <= bin; k++) cs.rh[k] = Math.round(view.theta * 100) / 100;
+  cs.rh[bin] = Math.round(view.theta * 100) / 100;
+  checkEvents();
+}
+function onNewDay(d) {
+  const sp = SP[cs.sp];
+  const st = cs.M > sp.wet ? '土還很濕。' : cs.M < sp.dry + 0.08 ? '土摸起來乾乾的。' : '土的濕度剛好。';
+  journal(`第 ${d + 1} 天早上。${st}`);
+  if (view.playing && !document.hidden) { Snd.bird(0.5); setTimeout(() => Snd.bird(-0.3), 500); flyBird(); }
+}
+function checkEvents() {
+  const F = cs.fl;
+  if (!F.sprout && cs.g > 0.035) { F.sprout = 1; journal('冒出兩片子葉了！'); }
+  if (!F.yellow && cs.Y > 0.32) { F.yellow = 1; journal('下面的葉子開始變黃——水澆太多了。'); }
+  if (F.yellow && cs.Y < 0.08) F.yellow = 0;
+  if (!F.dry && cs.D > 0.35) { F.dry = 1; journal('葉子垂下來了，土好乾。'); }
+  if (F.dry && cs.D < 0.05) F.dry = 0;
+  if (!F.flower && md.sp !== 'tree' && view.lastOut && view.lastOut.flowers.some(f => f.f > 0.6 && f.k !== 'berry')) { F.flower = 1; journal(md.sp === 'vine' ? '第一朵喇叭花開了！' : '頂端冒出星星一樣的小花。'); Snd.chime(); }
+  if (!F.berry && md.sp === 'tree' && view.lastOut && view.lastOut.flowers.some(f => f.f > 0.6)) { F.berry = 1; journal('枝梢結了幾顆小紅果。'); }
+  if (!F.mature && cs.g >= 1) { F.mature = 1; journal('長好了。可以把它壓成標本。'); Snd.chime(); }
+  const dayK = Math.floor(cs.age);
+  if (cs.g > 0.25 && view.lean > 16 && F.leanDay !== dayK) { F.leanDay = dayK; journal(`整株往窗邊歪了 ${Math.round(view.lean)}°，轉一下盆吧。`); }
+}
+function water(auto) {
+  if (!cs || view.pour) return;
+  const sp = SP[cs.sp];
+  Snd.init(); Snd.water();
+  view.pour = { t: 0, dur: 1.5, add: sp.add, given: 0 };
+  cs.nWater++;
+  const d = Math.floor(cs.age); cs.wlog[d] = (cs.wlog[d] || 0) + 1;
+  const after = cs.M + sp.add;
+  const [px, py] = vb2px(L.cx, L.by - 6 * L.S);
+  if (after > sp.wet) { toastAt('水太多了…', px, py, true); journal(`澆水（今天第 ${cs.wlog[d]} 次）——盆底在滴水。`); }
+  else { toastAt('+ 水', px, py); journal(auto ? '（展示模式）自動澆水。' : `澆水（今天第 ${cs.wlog[d]} 次）。`); }
+  view.didWater = true;
+  updateHUD(true);
+}
+function activateBuds(segId) {
+  // releasing apical dominance: wake dormant buds just below the cut
+  let p = md.segParent[segId], woke = 0;
+  for (let up = 0; up < 4 && p >= 0 && woke < 2; up++) {
+    for (let b = 0; b < md.nBud && woke < 2; b++) if (md.budSeg[b] === p && cs.act[b] === undefined && !isPrunedAbove(p)) { cs.act[b] = Math.round(cs.g * 1000) / 1000; woke++; }
+    p = md.segParent[p];
+  }
+  if (!woke) { // fallback: nearest dormant bud anywhere on the remaining ancestry, then anywhere below the cut
+    const anc = new Set(); let q = md.segParent[segId]; while (q >= 0) { anc.add(q); q = md.segParent[q]; }
+    let pick = -1, bestId = -1;
+    for (let b = 0; b < md.nBud; b++) { if (cs.act[b] !== undefined || isPrunedAbove(md.budSeg[b])) continue; const sId = md.budSeg[b]; const score = (anc.has(sId) ? 1e6 : 0) + sId; if (sId < segId && score > bestId) { bestId = score; pick = b; } }
+    if (pick >= 0) { cs.act[pick] = Math.round(cs.g * 1000) / 1000; woke = 1; }
+  }
+  return woke;
+}
+function isPrunedAbove(seg) { let s = seg; while (s >= 0) { if (cs.pruned[s] !== undefined) return true; s = md.segParent[s]; } return false; }
+function descSet(segId) {
+  const set = new Set([segId]);
+  for (let i = segId + 1; i < md.nSeg; i++) if (set.has(md.segParent[i])) set.add(i);
+  return set;
+}
+function pickAt(vx, vy, touch) {
+  if (!view.hits) return null;
+  const R = touch ? 26 : 16;
+  let best = null, bd = R;
+  const dseg = (h) => { const dx = h.x1 - h.x0, dy = h.y1 - h.y0, l2 = dx * dx + dy * dy || 1; const t = clamp(((vx - h.x0) * dx + (vy - h.y0) * dy) / l2); const x = h.x0 + dx * t, y = h.y0 + dy * t; return Math.hypot(vx - x, vy - y); };
+  for (const h of view.hits.leaves) { const d = dseg(h) - h.w * 0.45; if (d < bd) { bd = d; best = { type: 'leaf', id: h.id }; } }
+  let sb = 1e9, sbest = null;
+  for (const h of view.hits.stems) { if (md.segFix[h.id]) continue; const d = dseg(h) - h.w * 0.5 - 2; if (d < sb) { sb = d; sbest = { type: 'seg', id: h.id }; } }
+  if (sbest && (sb <= 1 || sb < bd - 3)) best = sbest;
+  return best;
+}
+function prune(target) {
+  if (!target) return;
+  Snd.init(); Snd.snip();
+  const out = view.lastOut;
+  let fall = { stems: [], leaves: [], flowers: [] };
+  if (target.type === 'leaf') {
+    cs.pl[target.id] = cs.g;
+    fall.leaves = out.leaves.filter(l => l.id === target.id);
+    journal('摘掉一片葉子。');
+  } else {
+    const set = descSet(target.id);
+    fall.stems = out.stems.filter(s => set.has(s.id));
+    fall.leaves = out.leaves.filter(l => set.has(l.seg));
+    fall.flowers = out.flowers.filter(f => set.has(f.seg));
+    cs.pruned[target.id] = cs.g;
+    const woke = activateBuds(target.id);
+    journal(woke ? '剪掉一段枝條。切口下方冒出新芽。' : '剪掉一段枝條。');
+  }
+  cs.nPrune++; view.didPrune = true;
+  // falling cutting
+  if (fall.stems.length + fall.leaves.length + fall.flowers.length) {
+    const r = renderPlant(md, cs, fall, { cx: L.cx, by: L.by, S: L.S, theta: view.theta, time: 0, sway: 0, g: cs.g, hour: curHour() });
+    const el = document.createElementNS(NS, 'g'); el.innerHTML = r.svg; $('#fx').appendChild(el);
+    let ox = L.cx, oy = L.by; const h0 = fall.stems[0] || fall.leaves[0] || fall.flowers[0];
+    if (h0) { const q = rotY(h0.p || h0.a, view.theta); ox = L.cx + q[0] * L.S; oy = L.by - q[1] * L.S; }
+    cuts.push({ el, t: 0, ox, oy, vx: (Math.random() - 0.5) * 60, spin: (Math.random() - 0.5) * 80 });
+    if (cuts.length > 6) { const c0 = cuts.shift(); c0.el.remove(); }
+    const [px, py] = vb2px(ox, oy); toastAt('喀嚓', px, py - 10);
+  }
+  view.hover = null; dirty = true;
+}
+/* ---------- input ---------- */
+function onDown(e) {
+  if (!view.playing || view.paused) return;
+  Snd.init();
+  svg.setPointerCapture && svg.setPointerCapture(e.pointerId);
+  view.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, lx: e.clientX, lt: performance.now(), moved: 0, startTheta: view.theta, touch: e.pointerType !== 'mouse' };
+  view.vth = 0;
+}
+function onMove(e) {
+  if (!view.playing || view.paused) return;
+  const dr = view.drag;
+  if (dr && dr.id === e.pointerId) {
+    const dx = e.clientX - dr.lx; dr.lx = e.clientX;
+    dr.moved += Math.abs(dx) + Math.abs(e.movementY || 0) * 0.2;
+    if (dr.moved > 8) {
+      svg.classList.add('dragging');
+      const dth = dx * 0.011 * (L.vbW / innerWidth) * (1000 / Math.max(500, L.vbH));
+      view.theta += dth;
+      const now = performance.now(), dt = Math.max(8, now - dr.lt); dr.lt = now;
+      view.vth = dth / (dt / 1000);
+      cs.rotAcc += Math.abs(dth);
+      if (Math.abs(dth) > 0.01 && now - (view.lastRustle || 0) > 160) { view.lastRustle = now; Snd.rustle(clamp(Math.abs(dth) * 20, 0.4, 1.2)); }
+      view.swayBoost = Math.min(1, view.swayBoost + Math.abs(dth) * 1.5);
+      dirty = true; view.hover = null;
+    }
+    return;
+  }
+  if (view.snip && e.pointerType === 'mouse') {
+    const [vx, vy] = px2vb(e.clientX, e.clientY);
+    const p = pickAt(vx, vy, false);
+    const key = p ? p.type + p.id : '';
+    if (key !== (view.hover ? view.hover.type + view.hover.id : '')) { view.hover = p; dirty = true; }
+  }
+}
+function onUp(e) {
+  const dr = view.drag; if (!dr || dr.id !== e.pointerId) return;
+  view.drag = null; svg.classList.remove('dragging');
+  if (dr.moved > 8) {
+    if (Math.abs(view.theta - dr.startTheta) > 0.35) { cs.nRot++; view.didRotate = true; }
+    return;
+  }
+  // tap
+  const [vx, vy] = px2vb(e.clientX, e.clientY);
+  if (view.snip) {
+    const p = pickAt(vx, vy, dr.touch);
+    if (p) prune(p); else toastAt('點枝或葉來修剪', e.clientX, e.clientY - 20, true);
+    return;
+  }
+  const S = L.P;
+  const inPot = Math.abs(vx - L.cx) < 9 * S && vy > L.by - 2 * S && vy < L.floorY + S;
+  if (inPot) { water(); return; }
+  const p = pickAt(vx, vy, dr.touch);
+  if (p) { view.swayBoost = 1; Snd.rustle(0.8); }
+}
+svg.addEventListener('pointerdown', onDown);
+svg.addEventListener('pointermove', onMove);
+svg.addEventListener('pointerup', onUp);
+svg.addEventListener('pointercancel', e => { view.drag = null; svg.classList.remove('dragging'); });
+svg.addEventListener('pointerleave', e => { if (view.hover && e.pointerType === 'mouse') { view.hover = null; dirty = true; } });
+
+/* ---------- birds flying (decor) ---------- */
+let birds = [];
+function flyBird() {
+  if (RM || birds.length > 3) return;
+  const y = 120 + Math.random() * 200, dir = Math.random() < 0.5 ? 1 : -1;
+  const el = document.createElementNS(NS, 'path');
+  el.setAttribute('fill', 'none'); el.setAttribute('stroke', INK); el.setAttribute('stroke-width', '1.6'); el.setAttribute('stroke-linecap', 'round');
+  $('#birds').appendChild(el);
+  birds.push({ el, x: dir > 0 ? -30 : L.vbW + 30, y, vx: dir * (120 + Math.random() * 80), ph: Math.random() * 6 });
+}
+
+/* ---------- HUD ---------- */
+let hudT = 0;
+function updateHUD(force) {
+  if (!cs) return;
+  const sp = SP[cs.sp];
+  const day = Math.floor(cs.age) + 1;
+  $('#pDay').textContent = `第 ${day} 天`;
+  const h = curHour(); const hh = Math.floor(h), mm = Math.floor((h - hh) * 60);
+  $('#pClock').textContent = `${periodName(h)} ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+  $('#growFill').style.width = (clamp(cs.g) * 100).toFixed(1) + '%';
+  $('#mFill').style.width = (clamp(cs.M / 1.5) * 100).toFixed(1) + '%';
+  $('#mState').textContent = cs.M > sp.wet ? '太濕' : cs.M < sp.dry ? '太乾' : cs.M < sp.dry + 0.1 ? '偏乾' : '剛好';
+  $('#mState').style.color = cs.M > sp.wet ? '#B04A36' : cs.M < sp.dry ? '#9A7440' : '';
+  // calendar
+  const cal = $('#cal'); const n = Math.max(7, day);
+  const first = Math.max(0, day - 7);
+  let html = '';
+  for (let d = first; d < first + 7; d++) {
+    const w = cs.wlog[d] || 0;
+    const cls = (d === day - 1 ? 'today ' : '') + (w === 1 ? 'w1' : w === 2 ? 'w2' : w >= 3 ? 'w3' : '');
+    html += `<span class="${cls}" title="第 ${d + 1} 天：澆水 ${w} 次">${d + 1}</span>`;
+  }
+  if (cal.innerHTML !== html) cal.innerHTML = html;
+  $('#pressBtn').style.display = cs.g >= 1 ? 'block' : 'none';
+  // coaching hint
+  let hint = '';
+  if (cs.g < 1 && !DEMO) {
+    if (!view.didWater && cs.nWater === 0) hint = '先點「澆水」，或直接點盆土。';
+    else if (!view.didRotate && cs.nRot === 0 && cs.g > 0.06) hint = '左右拖曳盆栽，讓每一面都曬到光。';
+    else if (!view.didPrune && cs.nPrune === 0 && cs.g > 0.35) hint = '打開剪刀，點一根枝修剪看看。';
+    else if (!cs.fast && cs.g < 0.2 && cs.age > 0.002) hint = '想看它長大？右上角「快轉」：一天＝10 秒。';
+  }
+  if (cs.g >= 1) hint = '';
+  $('#hint').textContent = hint;
+  $('#waterBtn').classList.toggle('pulse', cs.nWater === 0 && !DEMO);
+}
+/* ---------- particles (water) ---------- */
+function canPose(t) {
+  // returns {x,y,ang,op}
+  const S = L.P, cx = L.cx - 10 * S, cy = L.by - 15 * S;
+  const tin = clamp(t / 0.3), tout = clamp((t - 1.25) / 0.3);
+  const tilt = (easeOut(tin) - ease(tout)) * 34;
+  return { x: cx - (1 - easeOut(tin)) * 4 * S + ease(tout) * -3 * S, y: cy - (1 - easeOut(tin)) * 3 * S, ang: tilt, op: tin * (1 - tout) };
+}
+function canSVG(p) {
+  const s = L.P / 10;
+  return `<g transform="translate(${r1(p.x)},${r1(p.y)}) rotate(${r1(p.ang)}) scale(${r1(s)})" opacity="${r1(p.op)}">` +
+    `<path d="M-30,-14 L18,-14 L14,26 L-26,26 Z" fill="#9FB3C2" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>` +
+    `<path d="M-30,-14 L18,-14 L16,0 L-28,0Z" fill="#FFFFFF" fill-opacity=".25"/>` +
+    `<path d="M16,4 L52,-22" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><path d="M16,4 L52,-22" stroke="#9FB3C2" stroke-width="4.5" stroke-linecap="round"/>` +
+    `<path d="M48,-30 L60,-14" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>` +
+    `<path d="M-24,-14 C-24,-44 12,-44 12,-14" fill="none" stroke="${INK}" stroke-width="3"/>` +
+    `<path d="M-18,8 h24" stroke="${INK}" stroke-opacity=".35" stroke-width="2"/></g>`;
+}
+function spoutTip(p) {
+  const s = L.P / 10, a = p.ang * D2R, lx = 56, ly = -22;
+  return [p.x + (lx * Math.cos(a) - ly * Math.sin(a)) * s, p.y + (lx * Math.sin(a) + ly * Math.cos(a)) * s];
+}
+
+/* ---------- demo auto-care ---------- */
+function demoCare() {
+  if (!DEMO || !cs || view.pour) return;
+  const sp = SP[cs.sp], d = Math.floor(cs.age);
+  if (cs.M < sp.dry + 0.12 && !(cs.wlog[d] >= 1 && cs.M > sp.dry)) water(true);
+  if (!cs.fl.demoRot1 && cs.age > 2.3) { cs.fl.demoRot1 = 1; view.vth = 5.5; cs.nRot++; Snd.rustle(1); }
+  if (!cs.fl.demoRot2 && cs.age > 4.6) { cs.fl.demoRot2 = 1; view.vth = -5.5; cs.nRot++; Snd.rustle(1); }
+  if (!cs.fl.demoCut && cs.age > 3.6 && view.hits) {
+    // trim one young tip to show branching response
+    const cand = view.hits.stems.filter(h => !md.segFix[h.id] && md.segParent[h.id] >= 0).slice(-12);
+    if (cand.length) { cs.fl.demoCut = 1; prune({ type: 'seg', id: cand[Math.floor(cand.length / 2)].id }); }
+  }
+  if (cs.g >= 1 && !cs.fl.demoPress) { cs.fl.demoPress = 1; setTimeout(() => { if (view.playing) pressSpecimen(); }, 2500); }
+}
+
+/* ---------- main loop ---------- */
+let lastFrame = performance.now(), raf = 0, lastSave = 0, lastSkyT = 0, lastBirdCheck = 0;
+function loop(now) {
+  raf = requestAnimationFrame(loop);
+  const dtRaw = Math.min(1, (now - lastFrame) / 1000), dtR = Math.min(0.1, dtRaw); lastFrame = now;
+  if (view.playing && !view.paused && cs) {
+    const speed = cs.fast ? DAY_MS / FAST_DAY_MS : 1;
+    const prevG = cs.g;
+    simulate(dtRaw * 1000 * speed / DAY_MS);
+    if (Math.abs(cs.g - prevG) > 0) dirty = dirty || (cs.fast || now - view.lastRender > 2000);
+    // rotation inertia
+    if (!view.drag && Math.abs(view.vth) > 0.01) { view.theta += view.vth * dtR; view.vth *= Math.pow(0.04, dtR); dirty = true; if (Math.abs(view.vth) < 0.05) view.vth = 0; }
+    // watering
+    if (view.pour) {
+      const p = view.pour; p.t += dtR;
+      const pose = canPose(p.t);
+      if (p.t > 0.3 && p.t < 1.3) {
+        const k = dtR / 1.0; const amt = p.add * k; cs.M += amt; p.given += amt;
+        const tip = spoutTip(pose);
+        for (let i = 0; i < (RM ? 1 : 3); i++) if (parts.length < 140) parts.push({ x: tip[0], y: tip[1], vx: (40 + Math.random() * 60) * (L.S / 12), vy: (-10 + Math.random() * 30), r: 1.2 + Math.random() * 1.6, life: 1.4, k: 'drop' });
+      }
+      if (p.t >= 1.6) { cs.M += p.add - p.given; view.pour = null; drawPotBack(); }
+      else if (Math.random() < 0.15) drawPotBack();
+    }
+    demoCare();
+    if (now - lastSave > 2500) { lastSave = now; save(); }
+    if (now - hudT > 200) { hudT = now; updateHUD(); }
+  }
+  // sky
+  if (now - lastSkyT > (cs && cs.fast ? 120 : 2000)) { lastSkyT = now; applySky(curHour()); }
+  // ambient birds / crickets
+  if (view.playing && !view.paused && now - lastBirdCheck > 1000) {
+    lastBirdCheck = now; const h = curHour();
+    if (h > 5 && h < 17.5 && Math.random() < (cs && cs.fast ? 0.05 : 0.07)) { Snd.bird(); if (Math.random() < 0.5) flyBird(); }
+    if ((h > 20 || h < 4) && Math.random() < 0.08) Snd.cricket();
+  }
+  // particles
+  if (parts.length) {
+    let d = '', sp = '';
+    const floorTop = L.by;
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const q = parts[i]; q.vy += 900 * dtR * (L.S / 12); q.x += q.vx * dtR; q.y += q.vy * dtR; q.life -= dtR;
+      if (q.k === 'drop' && q.y > floorTop - 2 && Math.abs(q.x - L.cx) < 7.5 * L.P) {
+        for (let k = 0; k < 2; k++) if (parts.length < 160) parts.push({ x: q.x, y: floorTop - 2, vx: (Math.random() - 0.5) * 120, vy: -80 - Math.random() * 100, r: 0.9, life: 0.35, k: 'spl' });
+        parts.splice(i, 1); continue;
+      }
+      if (q.life <= 0 || q.y > L.vbH || (q.k === 'spl' && q.vy > 0 && q.y > floorTop + 2)) { parts.splice(i, 1); continue; }
+      const c = `M${r1(q.x - q.r)},${r1(q.y)}a${q.r},${q.r} 0 1 0 ${r1(q.r * 2)},0a${q.r},${q.r} 0 1 0 ${r1(-q.r * 2)},0`;
+      if (q.k === 'drop') d += c; else sp += c;
+    }
+    view.partSVG = `<path d="${d}" fill="#7FA7C9" fill-opacity=".85" stroke="${INK}" stroke-opacity=".4" stroke-width=".6"/><path d="${sp}" fill="#9DBCD6"/>`;
+  } else view.partSVG = '';
+  // cuttings falling
+  for (let i = cuts.length - 1; i >= 0; i--) {
+    const c = cuts[i]; c.t += dtR;
+    const fy = Math.min(c.t * c.t * 300, L.floorY - c.oy + 40);
+    const op = clamp(1 - (c.t - 1.1) / 0.6);
+    c.el.setAttribute('transform', `translate(${r1(c.vx * c.t)},${r1(fy)}) rotate(${r1(c.spin * c.t)} ${r1(c.ox)} ${r1(c.oy)})`);
+    c.el.setAttribute('opacity', r1(op));
+    if (op <= 0) { c.el.remove(); cuts.splice(i, 1); }
+  }
+  // birds
+  for (let i = birds.length - 1; i >= 0; i--) {
+    const b = birds[i]; b.x += b.vx * dtR; b.ph += dtR * 12; b.y += Math.sin(b.ph * 0.3) * 0.3;
+    const f = Math.sin(b.ph) * 5;
+    b.el.setAttribute('d', `M${r1(b.x - 9)},${r1(b.y - f)}Q${r1(b.x - 4)},${r1(b.y - 3)} ${r1(b.x)},${r1(b.y)}Q${r1(b.x + 4)},${r1(b.y - 3)} ${r1(b.x + 9)},${r1(b.y - f)}`);
+    if (b.x < -60 || b.x > L.vbW + 60) { b.el.remove(); birds.splice(i, 1); }
+  }
+  // plant render
+  if (md && cs) {
+    const swayOn = !RM;
+    view.swayBoost *= Math.pow(0.3, dtR);
+    const interval = cs.fast ? 50 : 40;
+    if ((dirty || (swayOn && now - view.lastRender > 66) || view.pour || cuts.length) && now - view.lastRender > interval) {
+      view.lastRender = now; dirty = false;
+      const out = interpret(md, cs, cs.g);
+      view.lastOut = out;
+      const ln = leanOf(out); view.lean = ln.deg; cs.maxLean = Math.max(cs.maxLean || 0, ln.deg);
+      let hl = null, hlLeaf = -1, hlSegMode = false;
+      if (view.snip && view.hover) { if (view.hover.type === 'seg') { hl = descSet(view.hover.id); hlSegMode = true; } else { hl = new Set(); hlLeaf = view.hover.id; } }
+      const r = renderPlant(md, cs, out, { cx: L.cx, by: L.by, S: L.S, theta: view.theta, time: now / 1000, sway: swayOn ? 0.18 + view.swayBoost * 0.9 : 0, g: cs.g, hl, hlLeaf, hlSegMode, hour: curHour() });
+      $('#plant').innerHTML = r.svg;
+      view.hits = r.hits;
+      $('#potFront').innerHTML = potFrontSVG(view.theta);
+    }
+    const p = view.pour ? canPose(view.pour.t) : null;
+    $('#fx').querySelector('#fxDyn') || $('#fx').insertAdjacentHTML('afterbegin', '<g id="fxDyn"></g>');
+    $('#fxDyn').innerHTML = (p ? canSVG(p) : '') + (view.partSVG || '');
+  }
+}
+
+/* =========================================================
+   Specimen sheet (SVG plant → canvas → PNG)
+   ========================================================= */
+function gradeOf() {
+  const goodFrac = cs.tot > 0 ? cs.good / cs.tot : 1;
+  const yel = clamp(cs.P + cs.Y * 0.3);
+  const lean = view.lean || 0;
+  const score = Math.round(100 * (0.45 * goodFrac + 0.3 * (1 - yel) + 0.25 * (1 - clamp((lean - 6) / 30))));
+  const G = score >= 86 ? ['A', '館藏級'] : score >= 72 ? ['B', '優良標本'] : score >= 56 ? ['C', '尚可'] : ['D', '研究用'];
+  return { score, goodFrac, yel, lean, G };
+}
+function latinName() {
+  const s = SP[cs.sp]; let n = `${s.genus} ${s.ep} var. ${md.epithet}`;
+  const forms = [];
+  if (cs.P + cs.Y * 0.4 > 0.35) forms.push('flavescens');
+  else if ((view.lean || 0) > 14) forms.push('heliotropa');
+  else if (Object.keys(cs.act).length >= 2) forms.push('ramosa');
+  if (forms.length) n += ' f. ' + forms[0];
+  return n;
+}
+function careNotes(gr) {
+  const s = SP[cs.sp], n = [];
+  if (gr.yel > 0.35) n.push('下位葉黃化（曾澆水過多）');
+  else if (gr.yel > 0.12) n.push('少數葉緣微黃');
+  else n.push('葉色健康');
+  if (gr.lean > 14) n.push(`向光偏斜 ${Math.round(gr.lean)}°`); else n.push('株形均衡');
+  const nb = Object.keys(cs.act).length; if (nb) n.push(`修剪後萌發側枝 ${nb} 處`);
+  if (cs.D > 0.2 || (cs.tot && cs.good / cs.tot < 0.7)) n.push('曾經缺水');
+  return n;
+}
+function paperBG(x, W, H, R) {
+  x.fillStyle = '#F2EAD7'; x.fillRect(0, 0, W, H);
+  const gr = x.createRadialGradient(W / 2, H * 0.45, H * 0.2, W / 2, H / 2, H * 0.8);
+  gr.addColorStop(0, 'rgba(255,252,240,0.35)'); gr.addColorStop(1, 'rgba(150,115,70,0.22)');
+  x.fillStyle = gr; x.fillRect(0, 0, W, H);
+  for (let i = 0; i < 9000; i++) { x.fillStyle = `rgba(${R() < 0.5 ? '90,70,40' : '255,255,245'},${(R() * 0.07).toFixed(3)})`; x.fillRect(R() * W, R() * H, 1 + R() * 1.5, 1 + R() * 1.5); }
+  x.strokeStyle = 'rgba(120,95,60,0.07)'; x.lineWidth = 1;
+  for (let i = 0; i < 260; i++) { const px = R() * W, py = R() * H, a = R() * Math.PI, l = 6 + R() * 22; x.beginPath(); x.moveTo(px, py); x.quadraticCurveTo(px + Math.cos(a) * l * 0.5 + R() * 4, py + Math.sin(a) * l * 0.5, px + Math.cos(a) * l, py + Math.sin(a) * l); x.stroke(); }
+  for (let i = 0; i < 7; i++) { const px = R() * W, py = R() * H, r = 4 + R() * 16; const g2 = x.createRadialGradient(px, py, 0, px, py, r); g2.addColorStop(0, 'rgba(160,110,60,0.12)'); g2.addColorStop(1, 'rgba(160,110,60,0)'); x.fillStyle = g2; x.beginPath(); x.arc(px, py, r, 0, 7); x.fill(); }
+}
+const FZH = '"LXGW WenKai TC","Noto Serif TC","Noto Serif CJK TC","Songti TC","PMingLiU",serif';
+const FHAND = '"Caveat","Segoe Print","Bradley Hand",cursive';
+const FSC = '"IM Fell English SC","IM Fell English",Georgia,serif';
+const FFELL = '"IM Fell English",Georgia,serif';
+async function loadFonts() {
+  if (!document.fonts || !document.fonts.load) return;
+  try { await Promise.race([Promise.all(['700 40px "Caveat"', '30px "IM Fell English SC"', 'italic 30px "IM Fell English"', '30px "LXGW WenKai TC"', '700 30px "LXGW WenKai TC"'].map(f => document.fonts.load(f, '陽台Aa'))), new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
+}
+function loadImg(src) { return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; }); }
+let specCanvasReady = null;
+async function buildSpecimen() {
+  const W = 1200, H = 1650;
+  const cv = $('#specCanvas'), x = cv.getContext('2d');
+  const R = rngFor('sheet:' + cs.seed + cs.sp);
+  await loadFonts();
+  paperBG(x, W, H, R);
+  // frame
+  x.strokeStyle = 'rgba(46,39,33,.75)'; x.lineWidth = 2; x.strokeRect(46, 46, W - 92, H - 92);
+  x.lineWidth = 0.8; x.strokeRect(56, 56, W - 112, H - 112);
+  // header
+  x.fillStyle = '#2E2721'; x.textBaseline = 'alphabetic';
+  x.font = `30px ${FSC}`; x.letterSpacing = '6px'; x.fillText('HERBARIUM BALCONIENSE', 96, 122); x.letterSpacing = '0px';
+  x.font = `22px ${FZH}`; x.fillStyle = '#5C5145';
+  const arch = store.get(AKEY) || [];
+  x.fillText(`陽台植物誌　·　館藏第 ${String(arch.length + 1).padStart(3, '0')} 號`, 96, 158);
+  x.textAlign = 'right'; x.fillStyle = '#2E2721';
+  x.font = `700 58px ${FHAND}`; x.fillText(`No. 09-${cs.seed}`, W - 96, 130);
+  x.font = `18px ${FSC}`; x.fillStyle = '#8A6B4A'; x.fillText('SHEET 1 / 1', W - 96, 160);
+  x.textAlign = 'left';
+  x.strokeStyle = 'rgba(46,39,33,.35)'; x.lineWidth = 1; x.beginPath(); x.moveTo(96, 180); x.lineTo(W - 96, 180); x.stroke();
+  // plant: interpret & fit (pressed = viewed from current angle, flowers forced open)
+  const out = interpret(md, cs, cs.g);
+  const th = view.theta;
+  const b = boundsOf(out, th);
+  const RG = { x: 110, y: 205, w: 900, h: 950 };
+  const s = Math.min(RG.w / (b.x1 - b.x0 + 2), RG.h / (b.y1 - Math.min(0, b.y0) + 6)) * 0.94;
+  const cxP = RG.x + RG.w / 2 - ((b.x0 + b.x1) / 2) * s, byP = RG.y + RG.h - 3 * s;
+  // roots (ink)
+  x.save(); x.strokeStyle = 'rgba(70,52,36,.75)'; x.lineCap = 'round';
+  for (let i = 0; i < 22; i++) {
+    let px = cxP + (R() - 0.5) * 6, py = byP, a = Math.PI / 2 + (R() - 0.5) * 2.2;
+    x.beginPath(); x.moveTo(px, py);
+    const n = 4 + R() * 8, st = 4 + R() * 6;
+    for (let k = 0; k < n; k++) { a += (R() - 0.5) * 0.7; a = clamp(a, 0.25, Math.PI - 0.25); px += Math.cos(a) * st; py += Math.sin(a) * st * 0.8; x.lineTo(px, py); }
+    x.lineWidth = 0.7 + R() * 1.4; x.stroke();
+  }
+  x.fillStyle = 'rgba(110,80,52,.35)';
+  for (let i = 0; i < 50; i++) { x.beginPath(); x.arc(cxP + (R() - 0.5) * 90, byP + R() * 34, 1 + R() * 2.5, 0, 7); x.fill(); }
+  x.restore();
+  const r = renderPlant(md, cs, out, { cx: cxP, by: byP, S: s, theta: th, time: 0, sway: 0, g: cs.g, spec: true, flat: true, lw: 1.9, stake: false });
+  const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${r.svg}</svg>`;
+  try {
+    const im = await loadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr));
+    x.save(); x.globalAlpha = 0.18; x.filter = 'blur(3px)'; x.drawImage(im, 4, 6); x.restore(); // pressed shadow
+    x.drawImage(im, 0, 0);
+  } catch (e) { /* fallback: plant missing but sheet still valid */ }
+  // tape strips over main stems
+  const st = out.stems.filter(t => t.o <= 1 && t.age > 0.3);
+  const picks = [];
+  for (let k = 0; k < 4 && st.length; k++) picks.push(st[Math.floor((k + 0.5) / 4 * st.length)]);
+  for (const t2 of picks) {
+    const A = rotY(t2.a, th), B = rotY(t2.b, th);
+    const mx = cxP + (A[0] + B[0]) / 2 * s, my = byP - (A[1] + B[1]) / 2 * s;
+    const ang = Math.atan2(-(B[1] - A[1]), B[0] - A[0]) + Math.PI / 2 + (R() - 0.5) * 0.3;
+    x.save(); x.translate(mx, my); x.rotate(ang);
+    x.shadowColor = 'rgba(60,40,20,.18)'; x.shadowBlur = 4; x.shadowOffsetY = 1;
+    x.fillStyle = 'rgba(236,226,198,.82)'; x.fillRect(-38, -11, 76, 22);
+    x.shadowColor = 'transparent'; x.strokeStyle = 'rgba(120,95,60,.25)'; x.lineWidth = 1;
+    x.beginPath(); for (let k = -11; k <= 11; k += 4) { x.moveTo(-38, k); x.lineTo(-35, k + 2); x.moveTo(38, k); x.lineTo(35, k + 2); } x.stroke();
+    x.restore();
+  }
+  // fig. annotation
+  x.fillStyle = '#5C5145'; x.font = `italic 22px ${FFELL}`;
+  x.fillText('fig. 1 — habitus, pressed on day ' + (Math.floor(cs.age) + 1), 96, 1240);
+  // scale bar (true scale: s px per cm)
+  const ux = 96, uy = 1300;
+  let cm = 5; while (cm * s > 360 && cm > 1) cm--; while (cm * s < 160) cm += 5;
+  x.font = `16px ${FSC}`; x.fillStyle = '#2E2721'; x.strokeStyle = '#2E2721'; x.lineWidth = 1.4;
+  for (let k = 0; k < cm; k++) { x.fillStyle = k % 2 ? '#F2EAD7' : '#2E2721'; x.fillRect(ux + k * s, uy, s, 10); }
+  x.strokeRect(ux, uy, cm * s, 10);
+  x.fillStyle = '#2E2721';
+  const stepL = cm > 6 ? 5 : 1;
+  for (let k = 0; k <= cm; k += stepL) { x.beginPath(); x.moveTo(ux + k * s, uy + 10); x.lineTo(ux + k * s, uy + 18); x.stroke(); x.textAlign = 'center'; x.fillText(String(k), ux + k * s, uy + 36); }
+  x.textAlign = 'left'; x.fillText('cm', ux + cm * s + 12, uy + 12);
+  x.font = `15px ${FZH}`; x.fillStyle = '#5C5145'; x.fillText(`比例 1 : ${(10 / (s * 0.2475)).toFixed(1)}（以 A3 列印）`, ux, uy + 62);
+  // colour swatches
+  const sp = SP[cs.sp];
+  const sw = [[sp.leaf, '葉'], [sp.leafYoung, '新芽'], [sp.wood, '莖'], [md.sp === 'vine' ? md.flowerCol : md.sp === 'succ' ? '#F6DDE0' : '#C2463A', md.sp === 'tree' ? '果' : '花'], [mixc(sp.leaf, '#D9C35A', clamp(cs.P + cs.Y * 0.6)), '老葉']];
+  x.font = `15px ${FZH}`;
+  sw.forEach(([c, n], i) => {
+    const sx = ux + i * 66, sy = 1400;
+    x.globalAlpha = 0.85; x.fillStyle = c; x.beginPath(); x.ellipse(sx + 24, sy + 22, 24 + R() * 3, 19 + R() * 3, R() * 0.3, 0, 7); x.fill();
+    x.globalAlpha = 0.3; x.fillStyle = '#FFF'; x.beginPath(); x.ellipse(sx + 28, sy + 17, 10, 7, 0, 0, 7); x.fill(); x.globalAlpha = 1;
+    x.fillStyle = '#5C5145'; x.textAlign = 'center'; x.fillText(n, sx + 24, sy + 64); x.textAlign = 'left';
+  });
+  x.font = `14px ${FSC}`; x.fillStyle = '#8A6B4A'; x.fillText('TABULA COLORUM', ux, 1392);
+  // label box
+  const gr = gradeOf();
+  const lx = 640, ly = 1262, lw2 = 464, lh = 300;
+  x.fillStyle = 'rgba(250,246,234,.92)'; x.fillRect(lx, ly, lw2, lh);
+  x.strokeStyle = '#2E2721'; x.lineWidth = 1.6; x.strokeRect(lx, ly, lw2, lh); x.lineWidth = 0.6; x.strokeRect(lx + 6, ly + 6, lw2 - 12, lh - 12);
+  x.fillStyle = '#2E2721'; x.font = `17px ${FSC}`; x.letterSpacing = '3px'; x.fillText('HERB. BALCON. — PLANTAE URBANAE', lx + 22, ly + 36); x.letterSpacing = '0px';
+  x.font = `700 40px ${FHAND}`; x.fillStyle = '#1F2A44';
+  const ln = latinName();
+  let fs = 40; x.font = `700 ${fs}px ${FHAND}`; while (x.measureText(ln).width > lw2 - 44 && fs > 24) { fs -= 2; x.font = `700 ${fs}px ${FHAND}`; }
+  x.fillText(ln, lx + 22, ly + 84);
+  x.font = `700 24px ${FZH}`; x.fillStyle = '#2E2721'; x.fillText(sp.zh, lx + 22, ly + 120);
+  const d = new Date();
+  const rows = [
+    ['採集日期', `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日`],
+    ['採集地', '城市陽台・東向窗邊，' + sp.pot.name],
+    ['栽培紀錄', `${Math.floor(cs.age) + 1} 日｜澆水 ${cs.nWater}｜轉盆 ${cs.nRot}｜修剪 ${cs.nPrune}`],
+    ['品相', careNotes(gr).slice(0, 3).join('，')]
+  ];
+  x.font = `17px ${FZH}`;
+  rows.forEach(([k, v], i) => {
+    const yy = ly + 160 + i * 34;
+    x.fillStyle = '#8A6B4A'; x.fillText(k, lx + 22, yy);
+    x.fillStyle = '#2E2721';
+    let vv = v; while (x.measureText(vv).width > lw2 - 140 && vv.length > 4) vv = vv.slice(0, -2) + '…';
+    x.fillText(vv, lx + 112, yy);
+    x.strokeStyle = 'rgba(46,39,33,.25)'; x.lineWidth = 0.8; x.beginPath(); x.moveTo(lx + 108, yy + 8); x.lineTo(lx + lw2 - 22, yy + 8); x.stroke();
+  });
+  x.font = `700 30px ${FHAND}`; x.fillStyle = '#B04A36'; x.textAlign = 'right'; x.fillText(`grade ${gr.G[0]}`, lx + lw2 - 22, ly + 120); x.textAlign = 'left';
+  // red stamp
+  x.save(); x.translate(lx - 70, ly - 20); x.rotate(-0.22);
+  x.strokeStyle = 'rgba(176,74,54,.82)'; x.fillStyle = 'rgba(176,74,54,.82)';
+  x.lineWidth = 4; x.beginPath(); x.arc(0, 0, 66, 0, 7); x.stroke(); x.lineWidth = 1.5; x.beginPath(); x.arc(0, 0, 57, 0, 7); x.stroke();
+  x.font = `700 26px ${FZH}`; x.textAlign = 'center'; x.fillText('陽台', 0, -4); x.fillText('標本館', 0, 26);
+  x.font = `13px ${FSC}`; x.fillText('ECHO · ' + d.getFullYear(), 0, -32);
+  x.globalCompositeOperation = 'destination-out';
+  for (let i = 0; i < 260; i++) { x.fillStyle = `rgba(0,0,0,${(R() * 0.6).toFixed(2)})`; x.fillRect((R() - 0.5) * 140, (R() - 0.5) * 140, 1 + R() * 3, 1 + R() * 2); }
+  x.restore();
+  x.textAlign = 'left';
+  // tiny footer
+  x.font = `14px ${FSC}`; x.fillStyle = '#8A6B4A';
+  x.fillText(`SEMEN No. ${cs.seed} · L-SYSTEMA GENERATIVUM · ${sp.genus.toUpperCase()}`, 96, H - 74);
+  return { gr, ln };
+}
+async function pressSpecimen() {
+  if (!cs || view.pressing) return;
+  view.pressing = true; view.paused = true; view.snip = false; view.hover = null;
+  const pr = $('#press'); pr.style.display = 'block';
+  const t = pr.querySelector('.t'), b = pr.querySelector('.b');
+  const dur = RM ? 1 : 520;
+  t.animate([{ top: '-55%' }, { top: '0%' }], { duration: dur, easing: 'cubic-bezier(.6,0,.9,.5)', fill: 'forwards' });
+  b.animate([{ bottom: '-55%' }, { bottom: '0%' }], { duration: dur, easing: 'cubic-bezier(.6,0,.9,.5)', fill: 'forwards' });
+  setTimeout(() => Snd.thump(), dur - 40);
+  const res = await buildSpecimen();
+  await new Promise(r => setTimeout(r, Math.max(0, dur + 350)));
+  // archive & clear the plant
+  const arch = store.get(AKEY) || [];
+  arch.push({ sp: cs.sp, seed: cs.seed, date: Date.now(), grade: res.gr.G[0] }); store.set(AKEY, arch.slice(-40));
+  view.lastSpec = { sp: cs.sp, seed: cs.seed };
+  $('#sGrade').textContent = res.gr.G[0] + ' 級';
+  $('#sGradeL').textContent = `${res.gr.G[1]}　·　品相分數 ${res.gr.score}`;
+  $('#sList').innerHTML = [
+    `<li><i style="font-family:var(--hand);font-size:17px">${res.ln}</i></li>`,
+    `<li>土壤濕度合宜的時間：${Math.round(res.gr.goodFrac * 100)}%</li>`,
+    ...careNotes(res.gr).map(n => `<li>${n}</li>`)
+  ].join('');
+  store.del(SKEY);
+  view.playing = false;
+  $('#hud').style.display = 'none';
+  $('#specOv').classList.add('show');
+  Snd.chime();
+  t.animate([{ top: '0%' }, { top: '-55%' }], { duration: dur, easing: 'ease-in', fill: 'forwards' });
+  b.animate([{ bottom: '0%' }, { bottom: '-55%' }], { duration: dur, easing: 'ease-in', fill: 'forwards' });
+  setTimeout(() => { pr.style.display = 'none'; view.pressing = false; }, dur + 20);
+}
+function downloadPNG() {
+  const cv = $('#specCanvas');
+  const name = `herbarium-g09-${view.lastSpec ? view.lastSpec.sp + '-' + view.lastSpec.seed : 'sheet'}.png`;
+  const go = (url, revoke) => { const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); if (revoke) setTimeout(() => URL.revokeObjectURL(url), 4000); };
+  try { cv.toBlob(bl => { if (bl) go(URL.createObjectURL(bl), true); else go(cv.toDataURL('image/png')); }, 'image/png'); }
+  catch (e) { try { go(cv.toDataURL('image/png')); } catch (e2) {} }
+  Snd.tick();
+}
+
+/* =========================================================
+   Start screen
+   ========================================================= */
+let selSp = 'vine', seedNo = String(1000 + Math.floor(Math.random() * 9000));
+function previewSVG(sp, seed) {
+  const m = buildModel(sp, seed);
+  const c = newCare(sp, seed); c.rh = []; for (let k = 0; k < NB; k++) c.rh[k] = (k % 40 < 20 ? 0 : Math.PI);
+  const out = interpret(m, c, 1.05, { D: 0 });
+  const b = boundsOf(out, 0.4);
+  const W = 200, H = 150, s = Math.min((W - 16) / (b.x1 - b.x0), (H - 22) / (b.y1 + 1));
+  const cx = W / 2 - (b.x0 + b.x1) / 2 * s, by = H - 12;
+  const r = renderPlant(m, c, out, { cx, by, S: s, theta: 0.4, time: 0, sway: 0, g: 1.05, spec: true, lw: 0.8, hour: 9 });
+  const pc = SP[sp].pot;
+  return `<svg viewBox="0 0 ${W} ${H}"><ellipse cx="${r1(cx)}" cy="${by + 2}" rx="34" ry="5" fill="${pc.body}" stroke="${INK}" stroke-width=".8"/><path d="M${r1(cx - 30)},${by + 2}L${r1(cx - 22)},${H}M${r1(cx + 30)},${by + 2}L${r1(cx + 22)},${H}" stroke="${INK}" stroke-width=".8"/>${r.svg}</svg>`;
+}
+function renderSeeds() {
+  $('#seeds').innerHTML = SP_KEYS.map(k => { const s = SP[k]; return `<button class="seed ${k === selSp ? 'sel' : ''}" data-sp="${k}">${previewSVG(k, seedNo)}<div class="n">${s.zh}</div><div class="l">${s.genus} ${s.ep}</div><div class="h">${s.hint}</div></button>`; }).join('');
+  $('#seedIn').value = seedNo;
+}
+$('#seeds').addEventListener('click', e => { const b = e.target.closest('.seed'); if (!b) return; selSp = b.dataset.sp; Snd.init(); Snd.tick(); document.querySelectorAll('.seed').forEach(x => x.classList.toggle('sel', x.dataset.sp === selSp)); });
+$('#reroll').addEventListener('click', () => { seedNo = String(1000 + Math.floor(Math.random() * 9000)); Snd.init(); Snd.rustle(0.7); renderSeeds(); });
+$('#seedIn').addEventListener('change', () => { const v = $('#seedIn').value.replace(/\D/g, '').slice(0, 4).padStart(4, '0'); seedNo = v; renderSeeds(); });
+$('#seedIn').addEventListener('keydown', e => e.stopPropagation());
+function showStart() {
+  view.playing = false; view.paused = true;
+  $('#hud').style.display = 'none';
+  $('#specOv').classList.remove('show'); $('#pauseOv').classList.remove('show');
+  const saved = store.get(SKEY);
+  const arch = store.get(AKEY) || [];
+  $('#cabinet').textContent = `標本櫃 · ${arch.length} 張`;
+  const cb = $('#contBtn');
+  if (saved && saved.v === 1 && SP[saved.sp]) { cb.style.display = ''; cb.textContent = `繼續照顧 ${SP[saved.sp].zh}（第 ${Math.floor(saved.age + (Date.now() - saved.lastTs) / DAY_MS) + 1} 天）`; $('#goBtn').textContent = '種新的一盆'; }
+  else { cb.style.display = 'none'; $('#goBtn').textContent = '播種'; }
+  renderSeeds();
+  $('#startOv').classList.add('show');
+}
+$('#goBtn').addEventListener('click', () => {
+  Snd.init(); Snd.tick();
+  $('#startOv').classList.remove('show');
+  startPlant(selSp, seedNo, null);
+});
+$('#contBtn').addEventListener('click', () => {
+  Snd.init(); Snd.tick();
+  const saved = store.get(SKEY); if (!saved) return;
+  $('#startOv').classList.remove('show');
+  resume(saved);
+});
+function resume(saved) {
+  const off = Math.max(0, Math.min(30 * DAY_MS, Date.now() - (saved.lastTs || Date.now())));
+  startPlant(saved.sp, saved.seed, saved);
+  if (off > 1000) { simulate(off / DAY_MS); journal(`離開了 ${fmtDur(off)}，植物自己長了一些。`); }
+}
+function fmtDur(ms) { const h = ms / 3600000; return h >= 24 ? `${(h / 24).toFixed(1)} 天` : h >= 1 ? `${h.toFixed(1)} 小時` : `${Math.max(1, Math.round(ms / 60000))} 分鐘`; }
+
+/* ---------- controls ---------- */
+$('#waterBtn').addEventListener('click', () => { if (!view.paused) water(); });
+$('#snipBtn').addEventListener('click', () => {
+  Snd.init(); Snd.tick();
+  view.snip = !view.snip; view.hover = null; dirty = true;
+  $('#snipBtn').classList.toggle('on', view.snip); svg.classList.toggle('snip', view.snip);
+  if (view.snip) { const [px, py] = vb2px(L.cx, L.by - 20 * L.S); toastAt('點枝或葉來修剪', px, py, true); }
+});
+$('#ffBtn').addEventListener('click', () => {
+  if (!cs) return; Snd.init(); Snd.tick();
+  cs.fast = !cs.fast; view.fastBase = { h: curHour(), age: cs.age };
+  if (!cs.fast) view.fastBase = null;
+  $('#ffBtn').classList.toggle('on', cs.fast);
+  const [px, py] = vb2px(L.vbW - 120, 120);
+  toastAt(cs.fast ? '快轉：一天＝10 秒' : '回到真實時間', Math.min(innerWidth - 90, px), py, true);
+  lastSkyT = 0; save();
+});
+function setPaused(p) {
+  if (!view.playing) return;
+  view.paused = p; $('#pauseOv').classList.toggle('show', p);
+  if (!p) lastFrame = performance.now();
+  save();
+}
+$('#pauseBtn').addEventListener('click', () => { Snd.init(); Snd.tick(); setPaused(true); });
+$('#resumeBtn').addEventListener('click', () => { Snd.tick(); setPaused(false); });
+$('#toTitle').addEventListener('click', () => { save(); $('#pauseOv').classList.remove('show'); showStart(); });
+addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (view.playing) setPaused(!view.paused); }
+  else if (view.playing && !view.paused) {
+    if (e.key === 'w' || e.key === 'W') water();
+    else if (e.key === 'ArrowLeft') { view.vth = -3; cs.nRot++; Snd.rustle(1); }
+    else if (e.key === 'ArrowRight') { view.vth = 3; cs.nRot++; Snd.rustle(1); }
+    else if (e.key === 's' || e.key === 'S') $('#snipBtn').click();
+    else if (e.key === 'f' || e.key === 'F') $('#ffBtn').click();
+  }
+});
+const prefs = store.get(PKEY) || { snd: true };
+Snd.on = prefs.snd !== false;
+function sndIcon() { $('#sndIcon').innerHTML = `<path d="M4 9 H8 L13 5 V19 L8 15 H4 Z" fill="none" stroke="#2E2721" stroke-width="1.7" stroke-linejoin="round"/>` + (Snd.on ? `<path d="M16 9 Q18.5 12 16 15 M18.5 6.5 Q23 12 18.5 17.5" fill="none" stroke="#2E2721" stroke-width="1.6" stroke-linecap="round"/>` : `<path d="M16.5 9.5 L21 14.5 M21 9.5 L16.5 14.5" stroke="#2E2721" stroke-width="1.7" stroke-linecap="round"/>`); }
+sndIcon();
+$('#sndBtn').addEventListener('click', () => { Snd.init(); Snd.setOn(!Snd.on); store.set(PKEY, { snd: Snd.on }); sndIcon(); Snd.tick(); });
+$('#pressBtn').addEventListener('click', () => { Snd.init(); pressSpecimen(); });
+$('#dlBtn').addEventListener('click', downloadPNG);
+$('#againBtn').addEventListener('click', () => { Snd.tick(); $('#specOv').classList.remove('show'); seedNo = String(1000 + Math.floor(Math.random() * 9000)); showStart(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { view.hiddenAt = Date.now(); save(); cancelAnimationFrame(raf); raf = 0; }
+  else {
+    if (view.playing && cs && view.hiddenAt) { const off = Date.now() - view.hiddenAt; if (off > 1000) simulate(off / DAY_MS); }
+    lastFrame = performance.now(); if (!raf) raf = requestAnimationFrame(loop);
+  }
+});
+addEventListener('pagehide', save);
+let rsT = 0;
+addEventListener('resize', () => { clearTimeout(rsT); rsT = setTimeout(() => { buildScene(); dirty = true; }, 120); });
+
+/* ---------- paper grain ---------- */
+(function grain() {
+  try {
+    const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); const R = rngFor('grain');
+    for (let i = 0; i < 5000; i++) { const v = R(); x.fillStyle = v < 0.5 ? `rgba(80,60,30,${(R() * 0.16).toFixed(3)})` : `rgba(255,255,250,${(R() * 0.25).toFixed(3)})`; x.fillRect(R() * 256, R() * 256, 1 + R(), 1 + R()); }
+    x.strokeStyle = 'rgba(110,85,50,.07)';
+    for (let i = 0; i < 60; i++) { const px = R() * 256, py = R() * 256, a = R() * 3.14; x.beginPath(); x.moveTo(px, py); x.lineTo(px + Math.cos(a) * 14, py + Math.sin(a) * 14); x.stroke(); }
+    $('#grainImg').setAttribute('href', c.toDataURL()); $('#grainR').setAttribute('fill', 'url(#grainP)');
+  } catch (e) {}
+})();
+
+/* ---------- boot ---------- */
+buildScene();
+applySky(curRealHour());
+if (QS.get('hour') !== null && !isNaN(+QS.get('hour'))) view.hourOverride = +QS.get('hour');
+if (DEMO) {
+  store.del(SKEY);
+  const sp = SP_KEYS.includes(QS.get('sp')) ? QS.get('sp') : 'vine';
+  startPlant(sp, QS.get('seed') || seedNo, null);
+} else showStart();
+raf = requestAnimationFrame(loop);
+
+/* test / debug hook */
+window.__g09 = {
+  get cs() { return cs; }, get md() { return md; }, get view() { return view; }, L,
+  hits: () => view.hits, setHour: h => { view.hourOverride = h; lastSkyT = 0; },
+  vb2px, pickAt
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "title": "桌上的貓",
+  "kind": "物理破壞",
+  "desc": "主人出門 90 秒，把桌上的東西一樣一樣推下去。",
+  "tags": [
+    "webgl"
+  ],
+  "tech": "Three.js · cannon-es",
+  "time": "2 分"
+}

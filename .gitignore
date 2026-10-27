@@ -1,0 +1,4 @@
+# 由 scripts/build-games.mjs 產生，部署時 GitHub Actions 會自動重建
+games.json
+node_modules/
+.DS_Store

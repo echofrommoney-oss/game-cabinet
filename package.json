@@ -1,0 +1,9 @@
+{
+  "name": "game-cabinet",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-games.mjs",
+    "dev": "node scripts/build-games.mjs && npx -y http-server -c-1 -o"
+  }
+}

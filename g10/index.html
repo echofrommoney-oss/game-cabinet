@@ -1,0 +1,1438 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>證物牆</title>
+<meta name="description" content="把線索釘上軟木板、拉起紅線，找出偷走社區咖啡店招牌食譜的人。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#241a13; --desk2:#3a2a1e;
+  --cork:#b8875a; --wood:#6b4426; --wood2:#8a5a33;
+  --paper:#fbf8f0; --paper2:#f1ead8; --ink:#2a2420; --ink2:#5b5148;
+  --red:#c8141e; --red2:#e0333b; --blue:#2c62b8; --twine:#8f6a46;
+  --manila:#e3c68f; --manila2:#cfae72;
+  --note-y:#fbe58a; --note-p:#f7c6d0; --note-b:#c9e4f2;
+  --ok:#2f7d4f; --gold:#d9a521;
+  --hand:"LXGW WenKai TC","Kaiti TC","BiauKai","DFKai-SB","STKaiti","Noto Serif CJK TC","Noto Serif TC",serif;
+  --serif:"Noto Serif TC","Noto Serif CJK TC","Songti TC","PMingLiU",serif;
+  --mono:"Courier New","Noto Sans Mono CJK TC","Noto Sans CJK TC",monospace;
+  --sans:system-ui,-apple-system,"PingFang TC","Noto Sans TC","Noto Sans CJK TC","Microsoft JhengHei",sans-serif;
+  --hud-h:58px; --bot-h:74px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--desk);color:var(--ink);font-family:var(--sans);
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body{background:
+  radial-gradient(ellipse at 50% 40%, #3b2b1f 0%, #241a13 60%, #160f0a 100%);}
+button{font-family:inherit;cursor:pointer}
+#app{position:fixed;inset:0}
+
+/* ---------- HUD ---------- */
+#hud{position:absolute;left:0;right:0;top:0;height:var(--hud-h);display:flex;align-items:center;gap:14px;padding:0 14px;z-index:20;
+  color:#f4e9d6;background:linear-gradient(#1a120ccc,#1a120c00)}
+#caseTag{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+#caseTag b{font-family:var(--serif);font-size:17px;letter-spacing:.06em;white-space:nowrap}
+#caseTag span{font-size:12px;opacity:.7;font-variant-numeric:tabular-nums;white-space:nowrap}
+#chips{display:flex;gap:8px;margin:0 auto}
+.chip{display:flex;align-items:center;gap:6px;padding:5px 11px 5px 7px;border-radius:4px;background:#f1e4c8;color:#5a4a3a;font-size:14px;font-weight:700;
+  box-shadow:0 2px 0 #0004;transform:rotate(-1deg);transition:background .3s,color .3s}
+.chip:nth-child(2){transform:rotate(1.2deg)} .chip:nth-child(3){transform:rotate(-.4deg)}
+.chip i{width:18px;height:18px;border:2px solid currentColor;border-radius:3px;display:grid;place-items:center;font-style:normal;font-size:14px;line-height:1}
+.chip.on{background:var(--red);color:#fff}
+.chip.on i::after{content:"✓"}
+.chip.pop{animation:chipPop .5s cubic-bezier(.3,1.8,.5,1)}
+@keyframes chipPop{0%{transform:scale(1.5) rotate(-6deg)}100%{transform:scale(1) rotate(-1deg)}}
+#excl{font-size:12px;opacity:.85;white-space:nowrap}
+#cred{display:flex;align-items:center;gap:8px;font-size:13px;white-space:nowrap}
+#credBar{width:110px;height:10px;border-radius:5px;background:#0006;overflow:hidden;box-shadow:inset 0 1px 2px #0008}
+#credFill{height:100%;width:100%;background:linear-gradient(90deg,#e6b24a,#f0d27a);transition:width .5s cubic-bezier(.3,1.4,.5,1),background .3s}
+#credFill.low{background:linear-gradient(90deg,#c8141e,#ef5a4f)}
+#cred.hit{animation:hit .4s}
+@keyframes hit{25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
+.hbtn{width:38px;height:38px;border-radius:50%;border:1px solid #f4e9d633;background:#0004;color:#f4e9d6;display:grid;place-items:center;padding:0}
+.hbtn:hover{background:#0007}
+.hbtn svg{width:20px;height:20px}
+#hudBtns{display:flex;gap:8px}
+
+/* ---------- stage / board ---------- */
+#stage{position:absolute;left:0;right:0;top:var(--hud-h);bottom:var(--bot-h);overflow:hidden}
+#boardWrap{position:absolute;left:0;top:0;transform-origin:0 0}
+#frame{position:absolute;left:-22px;top:-22px;border-radius:6px;
+  background:
+   linear-gradient(90deg,#0000 0,#ffffff10 50%,#0000 100%),
+   repeating-linear-gradient(90deg,#6b4426 0 7px,#734a2a 7px 9px,#5e3b20 9px 15px,#7a4f2d 15px 22px);
+  box-shadow:0 18px 40px #000a,0 2px 0 #9a6a40 inset,0 -2px 0 #3b2412 inset}
+#board{position:absolute;left:0;top:0;overflow:hidden;background-color:var(--cork);touch-action:none;
+  box-shadow:inset 0 0 0 2px #4a2e18,inset 0 6px 14px #0006,inset 0 0 120px #4a2a1288}
+#board::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 22% 12%,#fff3 0%,#fff0 45%),radial-gradient(ellipse at 50% 50%,#0000 55%,#0004 100%)}
+#board.shake{animation:bshake .32s}
+@keyframes bshake{20%{translate:-5px 2px}40%{translate:5px -2px}60%{translate:-3px 1px}80%{translate:2px 0}}
+
+/* folder */
+.folder{position:absolute;width:236px;height:164px;z-index:4;cursor:pointer}
+.folder .back{position:absolute;inset:0;top:18px;border-radius:4px 8px 6px 6px;background:var(--manila2);box-shadow:0 8px 16px #0006}
+.folder .tab{position:absolute;left:18px;top:0;width:96px;height:26px;border-radius:6px 6px 0 0;background:var(--manila2)}
+.folder .front{position:absolute;left:0;right:0;bottom:0;height:120px;border-radius:3px 3px 6px 6px;
+  background:linear-gradient(#ead3a1,#dcbd84);box-shadow:0 -2px 4px #0003;transform-origin:50% 100%;transition:transform .25s}
+.folder:hover .front{transform:perspective(500px) rotateX(10deg)}
+.folder.flip .front{animation:fflip .45s}
+@keyframes fflip{40%{transform:perspective(500px) rotateX(26deg)}100%{transform:none}}
+.folder .lbl{position:absolute;left:16px;top:16px;right:16px;font-family:var(--mono);font-size:13px;color:#5b4423;line-height:1.35}
+.folder .lbl b{display:block;font-family:var(--serif);font-size:19px;letter-spacing:.08em}
+.folder .stampf{position:absolute;right:14px;bottom:12px;border:2.5px solid #b3262c;color:#b3262c;font-family:var(--serif);font-weight:900;font-size:15px;padding:1px 6px;transform:rotate(-9deg);opacity:.8}
+.folder .cnt{position:absolute;left:16px;bottom:12px;font-family:var(--hand);font-size:17px;color:#4a3518}
+.folder.empty{opacity:.55;cursor:default}
+.folder.nudge .front{animation:fnudge 1.6s infinite}
+@keyframes fnudge{0%,70%,100%{transform:none}80%{transform:perspective(500px) rotateX(14deg)}}
+
+/* strings svg */
+#strings{position:absolute;left:0;top:0;z-index:10;pointer-events:none;overflow:visible}
+#strings text{font-family:var(--hand);font-weight:700}
+
+/* cards */
+.card{position:absolute;left:0;top:0;z-index:5;cursor:grab;will-change:transform}
+.card.lift{z-index:12;cursor:grabbing}
+.card.tray{z-index:11}
+.card .paper{position:absolute;inset:0;background:var(--paper);box-shadow:0 2px 2px #0004,0 3px 8px #0003;overflow:hidden}
+.card.lift .paper{box-shadow:0 18px 26px #0005,0 6px 8px #0003}
+.card.tray .paper{box-shadow:0 10px 18px #0005}
+.card .paper::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:var(--grain);background-size:128px;mix-blend-mode:multiply;opacity:.55}
+.card.hot .paper{outline:4px solid #ffd54add;outline-offset:3px}
+.card.src .paper{outline:3px dashed #c8141e88;outline-offset:3px}
+.card .pin{position:absolute;left:50%;top:10px;width:26px;height:26px;margin:-13px 0 0 -13px;z-index:3;opacity:0;pointer-events:auto}
+.card.pinned .pin{opacity:1}
+.card.pinned .pin.drop{animation:pindrop .32s cubic-bezier(.2,1.6,.45,1)}
+@keyframes pindrop{0%{transform:translate(8px,-34px) scale(1.6);opacity:0}60%{opacity:1}100%{transform:none}}
+.pin::before{content:"";position:absolute;left:9px;top:12px;width:16px;height:7px;border-radius:50%;background:#0005;filter:blur(2px);transform:rotate(20deg)}
+.pin::after{content:"";position:absolute;inset:2px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff9 0 12%,var(--pc,#d42a2a) 30%,color-mix(in srgb,var(--pc,#d42a2a) 60%,#000) 100%);box-shadow:0 1px 1px #0006}
+.card.pinned:not(.lift) .pin{cursor:crosshair}
+.card .stampx{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) rotate(-14deg) scale(2.4);opacity:0;
+  border:4px solid #2c62b8;color:#2c62b8;font-family:var(--serif);font-weight:900;font-size:26px;padding:0 10px;letter-spacing:.15em;background:#fff6;transition:all .35s cubic-bezier(.3,1.5,.5,1);z-index:4;pointer-events:none;white-space:nowrap}
+.card.excl .stampx{opacity:.9;transform:translate(-50%,-50%) rotate(-14deg) scale(1)}
+
+/* polaroid */
+.t-polaroid{width:150px;height:182px}
+.t-polaroid .paper{background:#fdfcf7}
+.t-polaroid .photo{position:absolute;left:9px;top:9px;width:132px;height:120px;background:#ccc;overflow:hidden;box-shadow:inset 0 0 0 1px #0002}
+.t-polaroid .photo svg{display:block;width:100%;height:100%}
+.t-polaroid .photo::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,#fff3,#0000 40%,#0001);pointer-events:none}
+.t-polaroid .cap{position:absolute;left:8px;right:8px;top:133px;bottom:4px;display:grid;place-items:center;text-align:center;font-family:var(--hand);font-size:17px;line-height:1.15;color:#2b2a5a}
+.t-polaroid.suspect .cap{font-size:16px}
+.t-polaroid.suspect .cap small{display:block;font-size:12px;color:#555}
+
+/* cctv */
+.t-cctv{width:192px;height:144px}
+.t-cctv .paper{background:#101814;padding:7px}
+.t-cctv svg{position:absolute;left:7px;top:7px;width:178px;height:130px}
+.t-cctv .scan{position:absolute;left:7px;top:7px;width:178px;height:130px;background:repeating-linear-gradient(#0000 0 2px,#0003 2px 3px);pointer-events:none}
+.t-cctv .ov{position:absolute;font-family:var(--mono);font-size:11px;color:#dff5e3;text-shadow:0 0 3px #000}
+.t-cctv .rec{color:#ff4a4a}
+
+/* receipt */
+.t-receipt{width:128px;height:200px}
+.t-receipt .paper{background:#fbfaf6;clip-path:polygon(0 0,100% 0,100% 96%,92% 100%,84% 96%,76% 100%,68% 96%,60% 100%,52% 96%,44% 100%,36% 96%,28% 100%,20% 96%,12% 100%,4% 96%,0 100%);box-shadow:none}
+.t-receipt{filter:drop-shadow(0 2px 2px #0004)}
+.t-receipt.lift{filter:drop-shadow(0 14px 14px #0005)}
+.t-receipt .rc{position:absolute;inset:22px 9px 14px;font-family:var(--mono);font-size:10.5px;line-height:1.45;color:#333;white-space:pre}
+.t-receipt .rc b{display:block;text-align:center;font-family:var(--sans);font-size:12px;margin-bottom:4px;letter-spacing:.04em}
+.t-receipt .rc hr{border:0;border-top:1px dashed #999;margin:3px 0}
+.t-receipt .rc .hl{background:#fff27a;box-shadow:0 0 0 1px #fff27a}
+.rstamp{position:absolute;right:6px;bottom:22px;border:2px solid #c8141e;color:#c8141e;border-radius:50%;width:46px;height:46px;display:grid;place-items:center;font-family:var(--serif);font-weight:900;font-size:13px;transform:rotate(-18deg);opacity:.75}
+
+/* phone screenshot */
+.t-phone{width:142px;height:216px}
+.t-phone .paper{border-radius:14px;background:#f6f6f6;border:5px solid #222;border-top-width:18px}
+.t-phone .paper::before{content:"";position:absolute;left:50%;top:-11px;width:26px;height:4px;margin-left:-13px;border-radius:2px;background:#444;z-index:2}
+.t-phone .ph-h{position:absolute;left:0;right:0;top:0;height:26px;background:#fff;border-bottom:1px solid #ddd;display:flex;align-items:center;gap:5px;padding:0 6px;font-size:11px;font-weight:700;color:#222}
+.t-phone .ph-h .av{width:16px;height:16px;border-radius:50%;flex:none}
+.t-phone .ph-b{position:absolute;left:0;right:0;top:27px;bottom:0;padding:5px 6px;font-size:10.5px;line-height:1.3}
+.bub{max-width:84%;padding:3px 7px;border-radius:9px;margin:3px 0;width:fit-content;background:#fff;box-shadow:0 1px 0 #0001}
+.bub.me{margin-left:auto;background:#bfe8a4}
+.bub.hl{box-shadow:0 0 0 2px #ffd54a}
+.ph-date{text-align:center;font-size:9px;color:#888;margin:2px 0}
+.ph-img{width:100%;height:78px;display:block;border-radius:4px;overflow:hidden}
+.ph-t{font-size:10.5px;margin-top:4px;color:#222}
+.live{background:#e5262c;color:#fff;border-radius:3px;padding:0 4px;font-size:9px;margin-left:auto}
+
+/* sticky */
+.t-sticky{width:142px;height:138px}
+.t-sticky .paper{background:var(--nc,var(--note-y));box-shadow:0 2px 2px #0003,2px 8px 10px -6px #0005}
+.t-sticky .paper::before{content:"";position:absolute;left:0;right:0;top:0;height:16px;background:#0000000c}
+.t-sticky .nt{position:absolute;inset:20px 10px 8px 12px;font-family:var(--hand);font-size:16.5px;line-height:1.28;color:#2a2a4a;transform:rotate(-1.5deg)}
+.t-sticky .nt u{text-decoration-color:#c8141e;text-decoration-thickness:2px}
+.t-sticky .sig{position:absolute;right:12px;bottom:7px;font-family:var(--hand);font-size:14px;color:#444}
+
+/* photocopy doc */
+.t-doc{width:176px;height:166px}
+.t-doc .paper{background:#f2efe6}
+.t-doc .paper::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;box-shadow:inset 0 0 14px #0003, inset -6px 0 10px -6px #0006;
+  background:radial-gradient(circle at 20% 70%,#0002 0 1px,#0000 2px),radial-gradient(circle at 80% 30%,#0002 0 1px,#0000 2px);background-size:37px 41px,53px 29px}
+.t-doc .dc{position:absolute;inset:22px 10px 8px;transform:rotate(.7deg);font-size:10.5px;line-height:1.35;color:#2a2a2a;font-family:var(--sans);filter:contrast(1.2)}
+.t-doc .dc h4{margin:0 0 4px;font-family:var(--serif);font-size:13px;text-align:center;letter-spacing:.06em;border-bottom:1.5px solid #333;padding-bottom:2px}
+.t-doc table{width:100%;border-collapse:collapse}
+.t-doc td{border:1px solid #555;padding:1px 3px;font-size:10px}
+.t-doc .hw{font-family:var(--hand);color:#1d3a8a;font-size:12.5px}
+.t-doc .hl{background:#fff27a99}
+.t-doc .big{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:.2em;text-align:center;margin:3px 0}
+
+/* tape */
+.tape{position:absolute;width:52px;height:16px;background:#f2ecd0aa;box-shadow:0 1px 1px #0002;z-index:3}
+
+/* crumbs */
+.crumb{position:absolute;width:5px;height:5px;border-radius:2px;background:#6e4a2a;z-index:13;pointer-events:none}
+
+/* bottom bar */
+#bot{position:absolute;left:0;right:0;bottom:0;height:var(--bot-h);z-index:20;pointer-events:none}
+#det{position:absolute;left:12px;bottom:20px;width:62px;height:62px;border-radius:50%;overflow:hidden;background:#d9c8a6;border:3px solid #f4e9d6;box-shadow:0 4px 10px #0008;pointer-events:auto;cursor:pointer}
+#det svg{width:100%;height:100%;display:block}
+#det.talk{animation:talk .25s 3}
+@keyframes talk{50%{transform:translateY(-3px) rotate(-3deg)}}
+#bubble{position:absolute;left:88px;bottom:30px;max-width:min(520px,calc(100vw - 300px));background:#fffdf5;color:#2a2420;border-radius:12px;padding:10px 14px;font-size:15px;line-height:1.45;
+  box-shadow:0 8px 20px #0007;opacity:0;transform:translateY(8px) scale(.96);transform-origin:0 100%;transition:opacity .2s,transform .25s cubic-bezier(.3,1.5,.5,1);pointer-events:none;z-index:25}
+#bubble::before{content:"";position:absolute;left:-8px;bottom:14px;border:8px solid transparent;border-right-color:#fffdf5;border-left:0}
+#bubble.show{opacity:1;transform:none}
+#bubble b{color:var(--red)}
+#bubble .who{display:block;font-size:11px;color:#8a7a68;margin-bottom:2px;letter-spacing:.08em}
+#accuse{position:absolute;right:16px;bottom:14px;pointer-events:auto;font-family:var(--serif);font-weight:900;font-size:19px;letter-spacing:.12em;color:#fff;
+  background:linear-gradient(#d3262e,#a50f17);border:0;border-radius:6px;padding:12px 22px 12px 18px;box-shadow:0 4px 0 #5e070b,0 8px 18px #0008;display:flex;align-items:center;gap:8px;transition:transform .1s}
+#accuse:active{transform:translateY(3px);box-shadow:0 1px 0 #5e070b}
+#accuse.ready{animation:ready 1.4s infinite}
+@keyframes ready{0%,100%{box-shadow:0 4px 0 #5e070b,0 0 0 0 #ff4a4aaa}50%{box-shadow:0 4px 0 #5e070b,0 0 0 12px #ff4a4a00}}
+#accuse svg{width:22px;height:22px}
+#back{position:fixed;left:10px;bottom:4px;z-index:80;font-size:11px;color:#f4e9d6aa;text-decoration:none;letter-spacing:.05em}
+#back:hover{color:#fff}
+
+/* overlays */
+.ov{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px;background:#120c08cc;backdrop-filter:blur(3px)}
+.ov.show{display:flex;animation:fadein .3s}
+@keyframes fadein{from{opacity:0}}
+.sheet{position:relative;background:var(--paper);color:var(--ink);border-radius:3px;box-shadow:0 24px 60px #000c;max-height:calc(100vh - 32px);overflow:auto}
+.sheet::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:var(--grain);background-size:128px;mix-blend-mode:multiply;opacity:.45}
+.btn{border:0;border-radius:5px;padding:12px 22px;font-size:17px;font-weight:700;letter-spacing:.08em;background:var(--red);color:#fff;box-shadow:0 3px 0 #6e0a10;transition:transform .1s}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #6e0a10}
+.btn.ghost{background:#e9dfc9;color:#4a3a2a;box-shadow:0 3px 0 #b5a27e}
+
+/* title */
+#title .sheet{width:min(560px,100%);padding:30px 34px 26px;background:linear-gradient(#ecd6a6,#e1c58d);transform:rotate(-.6deg)}
+#title .tabt{position:absolute;left:28px;top:-22px;width:150px;height:24px;background:#e8cf9b;border-radius:8px 8px 0 0}
+#title h1{font-family:var(--serif);font-weight:900;font-size:56px;margin:0;letter-spacing:.12em;color:#2d1f12;line-height:1.05}
+#title .sub{font-family:var(--serif);font-size:17px;color:#6a4a26;margin:8px 0 12px}
+#title .one{font-family:var(--hand);font-size:20px;color:#2b2a5a;margin:0 0 14px}
+#title ul{margin:0 0 18px;padding:12px 16px 12px 30px;background:#fbf7ec;font-size:14px;line-height:1.7;color:#3a2e22;box-shadow:0 2px 4px #0002;transform:rotate(.5deg)}
+#title .stampT{position:absolute;right:26px;top:26px;border:4px solid #b3262c;color:#b3262c;font-family:var(--serif);font-weight:900;font-size:26px;padding:2px 10px;transform:rotate(12deg);opacity:.85;letter-spacing:.2em}
+#title .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#title .meta{font-size:13px;color:#5a4630;line-height:1.5}
+.dots i{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid #8a6a46;margin-right:4px;vertical-align:-1px}
+.dots i.on{background:#b3262c;border-color:#b3262c}
+
+/* zoom */
+#zoom .sheet{display:flex;gap:26px;align-items:center;padding:26px;width:min(860px,100%);background:#efe6d2}
+#zoomCard{position:relative;flex:none;display:grid;place-items:center}
+#zoomCard .card{position:relative!important}
+#zoomCard .pin{display:none}
+#zoomTxt{flex:1;min-width:0}
+#zoomTxt .ty{font-size:12px;letter-spacing:.15em;color:#8a6a46}
+#zoomTxt h3{font-family:var(--serif);font-size:24px;margin:2px 0 10px}
+#zoomTxt p{font-size:16px;line-height:1.7;margin:0 0 12px;color:#3a2e22}
+#zoomTxt .links{font-size:13px;color:#6a5a48;margin-bottom:12px}
+#zoomTxt .row{display:flex;gap:10px;flex-wrap:wrap}
+
+/* lineup */
+#lineup .sheet{padding:22px 24px;width:min(760px,100%);background:#efe6d2;text-align:center}
+#lineup h2{font-family:var(--serif);margin:0 0 4px;font-size:26px;letter-spacing:.1em}
+#lineup .warn{font-size:14px;color:#a3121a;min-height:20px;margin-bottom:8px}
+#suspects{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:8px 0 16px}
+.sus{position:relative;background:#fdfcf7;padding:7px 7px 6px;box-shadow:0 3px 8px #0004;cursor:pointer;transition:transform .2s cubic-bezier(.3,1.6,.5,1);border:0;color:inherit}
+.sus:nth-child(odd){transform:rotate(-2deg)} .sus:nth-child(even){transform:rotate(2deg)}
+.sus:hover{transform:scale(1.04)}
+.sus.sel{transform:scale(1.08);outline:4px solid var(--red);outline-offset:2px}
+.sus svg{width:100%;aspect-ratio:132/120;display:block}
+.sus .nm{font-family:var(--hand);font-size:17px;margin-top:3px}
+.sus .ex{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) rotate(-14deg);border:3px solid var(--blue);color:var(--blue);font-family:var(--serif);font-weight:900;font-size:20px;padding:0 8px;background:#fff8;letter-spacing:.1em}
+#lineup .row{display:flex;justify-content:center;gap:12px}
+
+/* pause */
+#pause .sheet{padding:28px 34px;text-align:center;width:min(380px,100%)}
+#pause h2{font-family:var(--serif);font-size:30px;margin:0 0 18px;letter-spacing:.2em}
+#pause .col{display:flex;flex-direction:column;gap:12px}
+
+/* end */
+#end .sheet{width:min(640px,100%);padding:26px 30px 24px;background:#f6f1e4}
+#end .hdr{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #333;padding-bottom:6px;font-family:var(--serif)}
+#end .hdr b{font-size:22px;letter-spacing:.2em}
+#end .hdr span{font-size:12px;color:#666}
+#endArt{float:right;width:190px;height:150px;margin:12px 0 6px 16px}
+#end h2{font-family:var(--serif);font-size:30px;margin:14px 0 6px}
+#end p{font-size:15.5px;line-height:1.75;margin:0 0 10px}
+#endStamp{position:absolute;right:34px;bottom:20px;border:5px solid #c8141e;color:#c8141e;font-family:var(--serif);font-weight:900;font-size:34px;padding:2px 14px;letter-spacing:.2em;transform:rotate(-12deg) scale(3);opacity:0;background:#fff6;z-index:3}
+#end.show #endStamp{animation:stampIn .45s .35s cubic-bezier(.3,1.4,.5,1) forwards}
+@keyframes stampIn{to{transform:rotate(-12deg) scale(1);opacity:.88}}
+#endStats{clear:both;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 16px}
+#endStats div{background:#ebe2cc;padding:8px;text-align:center;font-size:12px;color:#5a4a3a}
+#endStats b{display:block;font-size:20px;color:#2a2420;font-variant-numeric:tabular-nums}
+#end .row{display:flex;gap:12px;flex-wrap:wrap}
+
+/* big accuse stamp */
+#bigStamp{position:fixed;left:50%;top:45%;z-index:58;font-family:var(--serif);font-weight:900;font-size:min(16vw,120px);color:#c8141e;border:10px solid #c8141e;padding:0 30px;letter-spacing:.15em;
+  transform:translate(-50%,-50%) rotate(-10deg) scale(3);opacity:0;pointer-events:none;background:#fff3}
+#bigStamp.go{animation:bigS .5s cubic-bezier(.3,1.4,.5,1) forwards}
+@keyframes bigS{to{transform:translate(-50%,-50%) rotate(-10deg) scale(1);opacity:.92}}
+
+/* demo hand */
+#hand{position:fixed;left:0;top:0;width:44px;height:44px;z-index:90;pointer-events:none;opacity:0;transition:opacity .25s;filter:drop-shadow(0 4px 4px #0007)}
+#hand.on{opacity:1}
+#hand.press svg{transform:scale(.85)}
+#hand svg{transition:transform .12s;transform-origin:30% 10%}
+#demoTag{position:fixed;top:calc(var(--hud-h) + 8px);left:50%;transform:translateX(-50%);z-index:30;background:#000a;color:#ffe9a8;font-size:12px;padding:4px 12px;border-radius:20px;letter-spacing:.15em;display:none}
+#demoTag.on{display:block}
+
+/* responsive */
+@media (max-width:760px){
+  :root{--hud-h:92px;--bot-h:84px}
+  #hud{display:grid;grid-template-columns:1fr auto;grid-template-areas:"tag btns" "chips cred";gap:6px 8px;padding:6px 10px;align-items:center}
+  #caseTag{grid-area:tag}
+  #hudBtns{grid-area:btns;justify-self:end}
+  #demoTag{top:auto;bottom:calc(var(--bot-h) + 4px)}
+  #title .sub{font-size:15px}
+  #chips{grid-area:chips;margin:0;gap:5px}
+  .chip{font-size:12.5px;padding:3px 7px 3px 5px}
+  .chip i{width:15px;height:15px;font-size:11px}
+  #excl{display:none}
+  #cred{grid-area:cred;font-size:12px}
+  #credBar{width:64px}
+  #caseTag b{font-size:15px}
+  #det{width:54px;height:54px;bottom:24px;left:10px}
+  #bubble{position:fixed;left:12px;right:12px;max-width:none;bottom:auto;top:calc(var(--hud-h) + 6px);font-size:14px;transform-origin:50% 0;transform:translateY(-8px) scale(.96)}
+  #bubble::before{display:none}
+  #accuse{font-size:17px;padding:11px 16px 11px 12px;bottom:18px}
+  #title .sheet{padding:24px 20px 20px}
+  #title h1{font-size:44px}
+  #title .stampT{font-size:20px;right:16px;top:20px}
+  #zoom .sheet{flex-direction:column;gap:14px;padding:18px}
+  #zoomTxt h3{font-size:20px}
+  #zoomTxt p{font-size:15px}
+  #suspects{grid-template-columns:repeat(2,1fr);gap:12px}
+  #endArt{float:none;display:block;width:150px;height:110px;margin:6px auto 0}
+  #end h2{font-size:24px}
+  #endStats{grid-template-columns:repeat(2,1fr)}
+  #endStamp{font-size:22px;right:16px;top:64px;bottom:auto}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.05s!important}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="hud">
+    <div id="caseTag"><b>案件 #1010｜消失的食譜</b><span id="clock">00:00 ・ 證物 0/20</span></div>
+    <div id="chips">
+      <div class="chip" id="chipK1"><i></i>時機</div>
+      <div class="chip" id="chipK2"><i></i>手法</div>
+      <div class="chip" id="chipK3"><i></i>動機</div>
+    </div>
+    <div id="excl">排除 0/3</div>
+    <div id="cred">可信度 <div id="credBar"><div id="credFill"></div></div><span id="credNum">100</span></div>
+    <div id="hudBtns">
+      <button class="hbtn" id="pauseBtn" aria-label="暫停"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
+      <button class="hbtn" id="sndBtn" aria-label="聲音開關"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path id="sndWave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path id="sndX" d="M16 9l6 6M22 9l-6 6" style="display:none"/></svg></button>
+    </div>
+  </div>
+  <div id="stage">
+    <div id="boardWrap">
+      <div id="frame"></div>
+      <div id="board">
+        <svg id="strings"><defs></defs><g id="gLines"></g><g id="gTemp"></g><g id="gLabels"></g></svg>
+      </div>
+    </div>
+  </div>
+  <div id="bot">
+    <div id="det" title="鄭警官"></div>
+    <div id="bubble"></div>
+    <button id="accuse"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 20h12v2H3zM14.2 2.6l6.4 6.4-2.8 2.8-1.4-1.4-5.7 5.7 1.4 1.4-2.8 2.8L2.9 13.9l2.8-2.8 1.4 1.4 5.7-5.7-1.4-1.4z"/></svg>指認犯人</button>
+  </div>
+</div>
+<a id="back" href="../index.html">← 遊戲櫃</a>
+<div id="demoTag">展示模式 ・ 點任意處接手</div>
+<div id="hand"><svg viewBox="0 0 44 44"><path d="M14 4c2 0 3.5 1.5 3.5 3.5V19l1-.3V15c0-2 3.5-2 3.5 0v4l1 .2V17c0-2 3.5-2 3.5 0v3l1 .3V19c0-2 3.5-2 3.5 0v9c0 7-4 12-11 12-5 0-8-3-10-7l-4-8c-1-2 1-4 3-3l3 3V7.5C10.5 5.5 12 4 14 4z" fill="#fff" stroke="#222" stroke-width="2" stroke-linejoin="round"/></svg></div>
+<div id="bigStamp">指認！</div>
+
+<div class="ov" id="title"><div class="sheet">
+  <div class="tabt"></div>
+  <div class="stampT">機密</div>
+  <h1>證物牆</h1>
+  <div class="sub">案件 #1010：消失的黑糖檸檬磅蛋糕食譜</div>
+  <p class="one">把線索釘上軟木板、拉起紅線，<br>找出偷走「榕樹下咖啡」招牌食譜的人。</p>
+  <ul id="howto">
+    <li>資料夾會陸續抽出證物，<b>拖到軟木板上</b>就會釘好。</li>
+    <li>從卡片上的<b>圖釘拉出紅線</b>，連到相關的另一張卡。</li>
+    <li><b>點卡片</b>放大看細節。連錯線，鄭警官會酸你、扣可信度。</li>
+    <li>成立「時機、手法、動機」三條關鍵線後，按<b>指認犯人</b>。</li>
+  </ul>
+  <div class="row">
+    <button class="btn" id="startBtn">開始調查</button>
+    <div class="meta"><div class="dots" id="endDots">結局收集 <i></i><i></i><i></i></div><div id="bestTxt">最佳分數：—</div></div>
+  </div>
+</div></div>
+
+<div class="ov" id="zoom"><div class="sheet">
+  <div id="zoomCard"></div>
+  <div id="zoomTxt"><div class="ty" id="zTy"></div><h3 id="zTi"></h3><p id="zDe"></p><div class="links" id="zLi"></div>
+    <div class="row"><button class="btn" id="zPin">釘到板上</button><button class="btn ghost" id="zClose">關閉</button></div></div>
+</div></div>
+
+<div class="ov" id="lineup"><div class="sheet">
+  <h2>指認犯人</h2>
+  <div class="warn" id="luWarn"></div>
+  <div id="suspects"></div>
+  <div class="row"><button class="btn" id="luGo" disabled>就是你！</button><button class="btn ghost" id="luBack">再想想</button></div>
+</div></div>
+
+<div class="ov" id="pause"><div class="sheet">
+  <h2>暫停</h2>
+  <div class="col"><button class="btn" id="resumeBtn">繼續調查</button><button class="btn ghost" id="restartBtn">重新開始</button><button class="btn ghost" id="titleBtn">回到標題</button></div>
+</div></div>
+
+<div class="ov" id="end"><div class="sheet">
+  <div class="hdr"><b>結案報告</b><span>榕樹下咖啡 食譜失竊案 #1010</span></div>
+  <div id="endStamp">破案</div>
+  <svg id="endArt" viewBox="0 0 190 150"></svg>
+  <h2 id="endTitle"></h2>
+  <p id="endText"></p>
+  <div id="endStats"></div>
+  <div class="row"><button class="btn" id="againBtn">重新調查</button><button class="btn ghost" id="endTitleBtn">回到標題</button></div>
+</div></div>
+
+<script src="../lib/gsap.min.js"></script>
+<script>
+'use strict';
+/* =========================================================
+   g10 證物牆 — Evidence Wall
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const COARSE = matchMedia('(pointer: coarse)').matches;
+const DEMO = new URLSearchParams(location.search).get('demo') === '1';
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* ---------- storage ---------- */
+const SKEY = 'g10_evidence_v1';
+function loadSave() { try { return JSON.parse(localStorage.getItem(SKEY)) || {}; } catch (e) { return {}; } }
+function writeSave(o) { try { localStorage.setItem(SKEY, JSON.stringify(o)); } catch (e) { } }
+let save = loadSave();
+save.endings = save.endings || [];
+
+/* ---------- procedural textures ---------- */
+function makeGrain() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const x = c.getContext('2d'); const d = x.createImageData(128, 128);
+  for (let i = 0; i < d.data.length; i += 4) {
+    const v = 200 + Math.random() * 55 | 0; const sp = Math.random() < .006 ? 90 : v;
+    d.data[i] = d.data[i + 1] = d.data[i + 2] = sp; d.data[i + 3] = 255;
+  }
+  x.putImageData(d, 0, 0); return c.toDataURL('image/png');
+}
+function makeCork() {
+  const S = 256, c = document.createElement('canvas'); c.width = c.height = S;
+  const x = c.getContext('2d');
+  x.fillStyle = '#b8875a'; x.fillRect(0, 0, S, S);
+  const cols = ['#a87448', '#c99a68', '#9a6a3e', '#d4a876', '#8c5c34', '#c38f5b', '#e0b98a'];
+  for (let i = 0; i < 2600; i++) {
+    const px = Math.random() * S, py = Math.random() * S, r = Math.random() * 2.6 + .4;
+    x.fillStyle = cols[Math.random() * cols.length | 0]; x.globalAlpha = rand(.35, .9);
+    x.beginPath(); x.ellipse(px, py, r, r * rand(.5, 1), Math.random() * 3, 0, 7); x.fill();
+    // wrap
+    if (px < 4 || py < 4 || px > S - 4 || py > S - 4) { x.beginPath(); x.ellipse((px + S / 2) % S, py, r, r, 0, 0, 7); }
+  }
+  for (let i = 0; i < 260; i++) { x.fillStyle = '#5e3a1c'; x.globalAlpha = rand(.25, .6); x.fillRect(Math.random() * S, Math.random() * S, rand(1, 2.4), rand(1, 2.4)); }
+  for (let i = 0; i < 70; i++) { // tiny pin holes
+    x.globalAlpha = .45; x.fillStyle = '#3c2410'; x.beginPath(); x.arc(Math.random() * S, Math.random() * S, rand(.8, 1.4), 0, 7); x.fill();
+  }
+  x.globalAlpha = 1; return c.toDataURL('image/jpeg', .85);
+}
+document.documentElement.style.setProperty('--grain', `url(${makeGrain()})`);
+$('#board').style.backgroundImage = `url(${makeCork()})`;
+$('#board').style.backgroundSize = '256px';
+
+/* ---------- SVG art (polaroid photos 132x120) ---------- */
+const ART = {
+  box: `<svg viewBox="0 0 132 120"><rect width="132" height="120" fill="#ddd0b4"/><g stroke="#cbbd9e" stroke-width="1"><path d="M0 20h132M0 40h132M0 60h132M33 0v78M66 0v78M99 0v78"/></g>
+   <rect y="78" width="132" height="42" fill="#7a5a3c"/><rect y="78" width="132" height="4" fill="#5e4229"/>
+   <path d="M28 60 L40 26 L114 26 L102 60Z" fill="#3b82a6"/><path d="M40 26 L114 26 L111 33 L43 33Z" fill="#2c6a8a"/>
+   <rect x="28" y="58" width="74" height="34" rx="3" fill="#2f6f8f"/><rect x="30" y="54" width="70" height="8" fill="#14242e"/>
+   <rect x="28" y="66" width="74" height="5" fill="#e8c65a"/><rect x="28" y="84" width="74" height="3" fill="#e8c65a"/>
+   <rect x="59" y="73" width="13" height="11" rx="2" fill="#d4a531"/><path d="M61.5 73v-4a4 4 0 0 1 8 0v4" stroke="#d4a531" stroke-width="2.2" fill="none"/><circle cx="65.5" cy="78" r="1.6" fill="#5a3a10"/>
+   <g fill="#5b2f12"><circle cx="72" cy="80" r="1"/><circle cx="74" cy="83" r=".8"/><circle cx="70" cy="86" r=".9"/><circle cx="76" cy="79" r=".6"/></g>
+   <path d="M44 40 l30 -6 l2 10 l-30 6z" fill="#fff" opacity=".0"/></svg>`,
+  zhe: `<svg viewBox="0 0 132 120"><rect width="132" height="120" fill="#bcd6e0"/><rect y="92" width="132" height="28" fill="#a9c4cf"/>
+   <path d="M18 120 C20 92 36 80 60 80 C84 80 98 92 100 120Z" fill="#e07a2e"/><path d="M26 104h66" stroke="#f3f0c4" stroke-width="4"/>
+   <rect x="54" y="66" width="12" height="16" fill="#e2b088"/><circle cx="60" cy="50" r="18" fill="#e9bd94"/>
+   <path d="M42 46 C42 28 56 26 62 30 C66 24 80 30 78 46 L74 40 L70 44 L66 38 L60 42 L54 37 L48 43Z" fill="#2a2420"/>
+   <circle cx="53" cy="52" r="1.8" fill="#222"/><circle cx="67" cy="52" r="1.8" fill="#222"/><path d="M54 60 q6 5 12 0" stroke="#7a3a2a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+   <circle cx="104" cy="92" r="19" fill="#f4f4ef"/><path d="M88 92 a16 13 0 0 1 32 -2 l-4 8 h-24z" fill="#2a3540"/>
+   <path d="M108 74 l-6 10 h5 l-4 9 l10 -12 h-5 l4 -7z" fill="#f1c832" stroke="#a8861a" stroke-width=".6"/></svg>`,
+  wen: `<svg viewBox="0 0 132 120"><rect width="132" height="120" fill="#f2dfcc"/><rect x="88" y="10" width="34" height="26" fill="#e3c8ab"/><path d="M92 30h26" stroke="#b08a66" stroke-width="2"/>
+   <path d="M20 120 C22 92 40 82 64 82 C88 82 104 92 106 120Z" fill="#f8f8f2"/><path d="M40 120 L44 92 C52 96 76 96 84 92 L88 120Z" fill="#4e7d5f"/>
+   <rect x="58" y="68" width="12" height="16" fill="#efc7a4"/><circle cx="64" cy="52" r="17" fill="#f3cdaa"/>
+   <path d="M46 52 C44 32 60 28 70 32 C80 34 84 44 82 52 C76 42 62 40 50 46Z" fill="#3a2a22"/><path d="M80 40 C96 44 96 66 88 74 C90 60 86 50 80 46Z" fill="#3a2a22"/>
+   <circle cx="58" cy="54" r="1.7" fill="#222"/><circle cx="71" cy="54" r="1.7" fill="#222"/><path d="M59 62 q5 3 10 0" stroke="#a04a3a" stroke-width="1.6" fill="none"/>
+   <rect x="92" y="88" width="16" height="18" rx="2" fill="#fff" stroke="#9a7a5a"/><path d="M108 92 a4 4 0 0 1 0 8" stroke="#9a7a5a" fill="none" stroke-width="2"/></svg>`,
+  meiling: `<svg viewBox="0 0 132 120"><rect width="132" height="120" fill="#f5cfd6"/><path d="M0 18 q11 -8 22 0 t22 0 t22 0 t22 0 t22 0 t22 0V0H0z" fill="#fbe4e8"/>
+   <path d="M20 120 C22 90 40 80 64 80 C88 80 104 90 106 120Z" fill="#fdfdfb"/><g fill="#c9b8bb"><circle cx="58" cy="96" r="2"/><circle cx="70" cy="96" r="2"/><circle cx="58" cy="108" r="2"/><circle cx="70" cy="108" r="2"/></g>
+   <rect x="58" y="66" width="12" height="16" fill="#eec09c"/><circle cx="64" cy="50" r="17" fill="#f1c7a3"/>
+   <circle cx="64" cy="26" r="9" fill="#4a2f2a"/><path d="M47 52 C45 34 56 30 64 30 C74 30 84 36 81 52 C78 42 70 38 64 38 C56 38 50 44 47 52Z" fill="#4a2f2a"/>
+   <circle cx="58" cy="52" r="1.7" fill="#222"/><circle cx="70" cy="52" r="1.7" fill="#222"/><path d="M58 60 q6 4 12 0" stroke="#b03a4a" stroke-width="1.8" fill="none"/>
+   <rect x="78" y="94" width="48" height="10" rx="2" fill="#d9d2c5"/><ellipse cx="86" cy="92" rx="6" ry="4" fill="#f29bb2"/><ellipse cx="99" cy="92" rx="6" ry="4" fill="#a7d8c6"/><ellipse cx="112" cy="92" rx="6" ry="4" fill="#f6d67a"/></svg>`,
+  zhou: `<svg viewBox="0 0 132 120"><rect width="132" height="120" fill="#e5dcc0"/><rect x="8" y="8" width="30" height="40" fill="#d4c9a8"/><path d="M12 16h22M12 24h22M12 32h16" stroke="#a89a78"/>
+   <path d="M18 120 C20 90 38 80 64 80 C90 80 106 90 108 120Z" fill="#8a5a3b"/><path d="M56 82 L64 104 L72 82" fill="#f2efe4"/>
+   <rect x="58" y="66" width="12" height="16" fill="#e2b48e"/><circle cx="64" cy="50" r="17" fill="#ebc19b"/>
+   <path d="M46 48 C46 34 54 30 64 30 C74 30 82 34 82 48 C78 40 72 38 64 40 C56 38 50 40 46 48Z" fill="#c9c4bd"/>
+   <circle cx="57" cy="52" r="5" fill="none" stroke="#333" stroke-width="1.6"/><circle cx="71" cy="52" r="5" fill="none" stroke="#333" stroke-width="1.6"/><path d="M62 52h4" stroke="#333" stroke-width="1.4"/>
+   <circle cx="57" cy="52" r="1.3" fill="#222"/><circle cx="71" cy="52" r="1.3" fill="#222"/><path d="M58 61 q6 3 12 0" stroke="#7a4a3a" stroke-width="1.6" fill="none"/>
+   <rect x="82" y="88" width="40" height="28" fill="#f4f1e8" transform="rotate(-8 102 102)"/><path d="M86 94h28M86 100h28M86 106h20" stroke="#999" transform="rotate(-8 102 102)"/></svg>`,
+  cat: `<svg viewBox="0 0 132 120"><rect width="132" height="120" fill="#d8c6a6"/><g stroke="#c2ae8a"><path d="M0 40h132M0 80h132M44 0v120M88 0v120"/></g>
+   <g fill="#fffdf8" opacity=".95"><g transform="translate(14 96)"><circle r="3.4"/><circle cx="-4" cy="-5" r="1.6"/><circle cx="0" cy="-6.5" r="1.6"/><circle cx="4" cy="-5" r="1.6"/></g>
+   <g transform="translate(30 104) rotate(20)"><circle r="3.4"/><circle cx="-4" cy="-5" r="1.6"/><circle cx="0" cy="-6.5" r="1.6"/><circle cx="4" cy="-5" r="1.6"/></g>
+   <g transform="translate(110 100) rotate(-20)"><circle r="3.4"/><circle cx="-4" cy="-5" r="1.6"/><circle cx="0" cy="-6.5" r="1.6"/><circle cx="4" cy="-5" r="1.6"/></g></g>
+   <path d="M98 70 C120 60 124 40 112 34" stroke="#f3e6cf" stroke-width="8" fill="none" stroke-linecap="round"/>
+   <ellipse cx="72" cy="78" rx="32" ry="22" fill="#f3e6cf"/><path d="M56 62 C64 58 76 60 80 70 C72 74 60 72 56 62Z" fill="#b9773f"/><path d="M84 82 C92 78 100 84 98 92 C90 94 84 90 84 82Z" fill="#3a2a22"/>
+   <circle cx="44" cy="62" r="18" fill="#f3e6cf"/><path d="M30 52 L28 34 L42 46Z M50 46 L62 34 L60 54Z" fill="#f3e6cf"/><path d="M48 46 C56 42 60 50 60 54 C54 52 50 50 48 46Z" fill="#b9773f"/>
+   <ellipse cx="38" cy="62" rx="2" ry="3" fill="#2b3a1a"/><ellipse cx="50" cy="62" rx="2" ry="3" fill="#2b3a1a"/><path d="M42 68 l2 2 l2 -2" stroke="#a05050" fill="none" stroke-width="1.4"/>
+   <g fill="#fffdf8"><ellipse cx="54" cy="98" rx="7" ry="4"/><ellipse cx="84" cy="99" rx="7" ry="4"/></g>
+   <path d="M28 66h-10M28 70h-9M58 66h10M58 70h9" stroke="#8a7a6a" stroke-width=".8"/></svg>`,
+  truck: `<svg viewBox="0 0 120 70" preserveAspectRatio="xMidYMid slice"><rect width="120" height="70" fill="#20304a"/><g fill="#ffe9a8"><circle cx="12" cy="10" r="1"/><circle cx="40" cy="6" r="1"/><circle cx="90" cy="12" r="1"/><circle cx="108" cy="5" r="1"/></g>
+   <g fill="#ffd36a" opacity=".7"><circle cx="20" cy="22" r="3"/><circle cx="34" cy="20" r="3"/><circle cx="48" cy="22" r="3"/><circle cx="62" cy="20" r="3"/><circle cx="76" cy="22" r="3"/><circle cx="90" cy="20" r="3"/><circle cx="104" cy="22" r="3"/></g>
+   <rect x="14" y="30" width="72" height="28" rx="4" fill="#f4b942"/><path d="M86 38 h14 l8 10 v10 h-22z" fill="#f4b942"/><rect x="90" y="40" width="10" height="7" fill="#9fd0e8"/>
+   <rect x="22" y="35" width="44" height="13" fill="#fff6e0"/><text x="44" y="45" font-size="8" text-anchor="middle" fill="#8a3a10" font-weight="700">黑糖檸檬</text>
+   <circle cx="30" cy="60" r="6" fill="#222"/><circle cx="96" cy="60" r="6" fill="#222"/><circle cx="30" cy="60" r="2" fill="#999"/><circle cx="96" cy="60" r="2" fill="#999"/>
+   <path d="M70 34 l-3 6 h3 l-2 5 l6 -7 h-3 l2 -4z" fill="#f1c832" stroke="#a8861a" stroke-width=".4"/></svg>`,
+  macaron: `<svg viewBox="0 0 120 70" preserveAspectRatio="xMidYMid slice"><rect width="120" height="70" fill="#f8e1e6"/><rect y="46" width="120" height="24" fill="#e7cfc0"/>
+   <g><ellipse cx="30" cy="44" rx="13" ry="6" fill="#f29bb2"/><rect x="18" y="40" width="24" height="4" fill="#fff"/><ellipse cx="30" cy="38" rx="13" ry="6" fill="#f29bb2"/></g>
+   <g><ellipse cx="60" cy="48" rx="13" ry="6" fill="#a7d8c6"/><rect x="48" y="44" width="24" height="4" fill="#fff"/><ellipse cx="60" cy="42" rx="13" ry="6" fill="#a7d8c6"/></g>
+   <g><ellipse cx="90" cy="44" rx="13" ry="6" fill="#f6d67a"/><rect x="78" y="40" width="24" height="4" fill="#fff"/><ellipse cx="90" cy="38" rx="13" ry="6" fill="#f6d67a"/></g>
+   <path d="M100 8 C108 12 112 22 104 30 L96 22Z" fill="#f1c7a3"/><rect x="92" y="18" width="10" height="16" rx="3" fill="#fdfdfb" transform="rotate(-30 97 26)"/></svg>`,
+  cctv: `<svg viewBox="0 0 178 130"><defs><filter id="cg"><feTurbulence baseFrequency=".9" numOctaves="1" seed="4"/><feColorMatrix values="0 0 0 0 .7  0 0 0 0 .9  0 0 0 0 .75  0 0 0 .12 0"/><feComposite in2="SourceGraphic" operator="in"/></filter></defs>
+   <rect width="178" height="130" fill="#1b2a22"/><rect y="104" width="178" height="26" fill="#25342b"/>
+   <polygon points="80,0 100,0 150,130 30,130" fill="#bff5d0" opacity=".07"/>
+   <rect x="62" y="18" width="62" height="88" fill="#2c4337" stroke="#4d6b5a" stroke-width="2"/><rect x="72" y="28" width="22" height="16" fill="#3a5546"/><circle cx="116" cy="64" r="2" fill="#7a9a88"/>
+   <rect x="128" y="40" width="12" height="16" rx="2" fill="#3a5546"/><text x="134" y="51" font-size="6" text-anchor="middle" fill="#9fc7ae">#</text>
+   <path d="M86 106 L88 74 C88 66 94 62 100 62 C108 62 114 66 114 74 L116 106Z" fill="#33463d"/>
+   <rect x="112" y="78" width="14" height="18" rx="2" fill="#7d6e4a"/>
+   <circle cx="101" cy="52" r="13" fill="#90a99b"/><path d="M89 52 a12 10 0 0 1 22 -3 l-2 7 h-18z" fill="#162019"/>
+   <path d="M95 42 l-4 7 h3 l-3 6 l7 -8 h-3 l3 -5z" fill="#f1d74a"/>
+   <rect width="178" height="130" filter="url(#cg)"/></svg>`
+};
+const SUSPECT_IDS = ['zhe', 'wen', 'meiling', 'zhou'];
+const SUS_NAME = { zhe: '阿哲', wen: '小雯', meiling: '美玲', zhou: '周老師' };
+
+/* ---------- card data ---------- */
+const TYPE_LABEL = { polaroid: '拍立得照片', cctv: '監視器截圖', receipt: '收據', phone: '手機截圖', sticky: '便利貼', doc: '影印文件' };
+const CARDS = [
+  { id: 'box', type: 'polaroid', title: '廚房的鐵盒', cap: '鐵盒：空的！', detail: '桂姐放食譜卡的餅乾鐵盒，週六打烊後被打開。<b>鎖頭完好、沒有撬痕</b>——是用鑰匙開的。鎖孔旁邊沾了一點黑糖粉。' },
+  { id: 'cctv', type: 'cctv', title: '後門監視器 21:47', detail: '後門監視器。打烊（21:00）後，一個戴全罩安全帽的人從後門進來，<b>安全帽側面有黃色閃電貼紙</b>。21:52 離開時，手上多了一個牛皮紙袋。' },
+  { id: 'zhe', type: 'polaroid', suspect: 1, title: '林哲宇（阿哲）', cap: '阿哲<small>鮮奶外送員</small>', detail: '每天早上 7 點送鮮奶的外送員，騎機車，<b>安全帽上貼著黃色閃電</b>。常說想「做點自己的事業」。' },
+  { id: 'wen', type: 'polaroid', suspect: 1, title: '蘇曉雯（小雯）', cap: '小雯<small>週末工讀生</small>', detail: '大學生，週末工讀，週六負責打烊、有前門鑰匙。住在淡水，每天搭捷運通勤。' },
+  { id: 'meiling', type: 'polaroid', suspect: 1, title: '何美玲', cap: '美玲<small>對街甜點店老闆</small>', detail: '對街「蜜朵甜點」的老闆，和桂姐是多年「良性競爭」的鄰居。手藝很好，嘴巴不饒人。' },
+  { id: 'zhou', type: 'polaroid', suspect: 1, title: '周老師', cap: '周老師<small>退休常客</small>', detail: '退休國文老師，每天下午坐在靠廚房的位子看報紙，最愛黑糖檸檬磅蛋糕，一次吃兩片。' },
+  { id: 'slip', type: 'receipt', title: '鮮奶補貨簽收單', detail: '平常鮮奶都是早上 7 點送。這張單是週六 <b>21:45「臨時加送」</b>，送貨員林哲宇——但店早就打烊了，<b>簽收欄是空白的</b>，沒有人點過這批貨。' },
+  { id: 'handover', type: 'doc', title: '打烊交接表', detail: '小雯 <b>21:05 鎖好前門和後門</b>才離開，當時鐵盒裡的食譜還在。之後還有人進得去，代表有別的方法開門。' },
+  { id: 'askNote', type: 'sticky', nc: '#f7c6d0', title: '桂姐的便利貼（美玲）', detail: '桂姐的便利貼：美玲下午又來問配方。美玲很好奇沒錯——但好奇和偷是兩回事。' },
+  { id: 'keynote', type: 'sticky', nc: '#fbe58a', title: '桂姐的便利貼（鑰匙）', detail: '鐵盒鑰匙的藏處：<b>咖啡豆罐後面</b>。只有桂姐和工讀生小雯知道。' },
+  { id: 'cat', type: 'polaroid', title: '店貓・拿鐵', cap: '拿鐵（店貓）', detail: '週日早上被發現腳掌全是麵粉，在廚房地板留下一排小腳印。牠是一隻貓。' },
+  { id: 'line', type: 'phone', title: '小雯的聊天紀錄', detail: '小雯手機裡的聊天紀錄，週五晚上。<b>阿哲主動問鐵盒鑰匙放哪</b>，說要「幫忙補豆子」——補咖啡豆根本不是他的工作。' },
+  { id: 'code', type: 'doc', title: '後門密碼鎖通知', detail: '桂姐發給合作廠商的通知：後門密碼鎖的<b>送貨專用碼只給鮮奶（林）和咖啡豆廠商</b>，咖啡豆只有週三送。打烊後能從後門進來的人很少。' },
+  { id: 'zhouNote', type: 'sticky', nc: '#c9e4f2', title: '周老師的紙條', detail: '周老師留在桌上的紙條，想學做蛋糕給孫女。他是用「問」的——小偷通常不會先留言。' },
+  { id: 'live', type: 'phone', title: '蜜朵甜點直播', detail: '美玲週六晚上在自己店裡開直播做馬卡龍，<b>21:30 到 22:40 一直在鏡頭前</b>，觀看 312 人。' },
+  { id: 'post', type: 'phone', title: '哲的甜點車', detail: '社群新帳號「哲的甜點車」，<b>週日凌晨 01:12</b> 發文：下週六夜市開張，招牌是<b>黑糖檸檬磅蛋糕</b>。照片裡的車貼著閃電貼紙。' },
+  { id: 'mrt', type: 'receipt', title: '捷運票卡紀錄', detail: '小雯的票卡紀錄：<b>21:08 頂溪進站、21:51 淡水出站</b>。21:47 的時候她人在捷運上。' },
+  { id: 'bake', type: 'receipt', title: '烘焙材料行收據', detail: '在後門垃圾桶旁撿到的。週六 20:12 買了<b>黑糖 5 公斤、檸檬 30 顆</b>——一般家庭不會這樣買。會員名字被遮住一部分：<b>林＊宇</b>。' },
+  { id: 'calli', type: 'doc', title: '書法班簽到表', detail: '社區大學書法班，週六 19:00–22:00。<b>周文彬 19:02 簽到、21:58 簽退</b>。' },
+  { id: 'stall', type: 'receipt', title: '夜市攤位押金收據', detail: '<b>10/8 就付了押金</b>——比食譜失竊早兩天。承租人「林先生」，登記品項：手工蛋糕。他早就打算好要賣什麼。' },
+];
+const CMAP = Object.fromEntries(CARDS.map(c => [c.id, c]));
+const DRAW_ORDER = ['box', 'cctv', 'zhe', 'wen', 'meiling', 'zhou', 'slip', 'handover', 'askNote', 'keynote', 'cat', 'line', 'code', 'zhouNote', 'live', 'post', 'mrt', 'bake', 'calli', 'stall'];
+
+function cardFace(c) {
+  switch (c.id) {
+    case 'cctv': return `${ART.cctv}<div class="scan"></div><div class="ov" style="left:12px;top:10px">CAM-02 後門</div><div class="ov rec" style="right:12px;top:10px">● REC</div><div class="ov" style="left:12px;bottom:10px">2026-10-10 21:47:13</div>`;
+    case 'slip': return `<div class="rc"><b>鮮奶補貨簽收單</b>日期  10/10(六)
+時間  <span class="hl">21:45</span>
+品項  鮮奶 ×2箱
+備註  <span class="hl">臨時加送</span>
+<hr>送貨員 林哲宇
+簽收  <span class="hl">＿＿＿＿</span>
+<hr>大山牧場 鮮乳配送</div>`;
+    case 'mrt': return `<div class="rc"><b>票卡交易明細</b>卡號 ****2207
+<hr>10/10 21:08
+ 進站  頂溪
+10/10 <span class="hl">21:51</span>
+ 出站  <span class="hl">淡水</span>
+<hr>扣款      $40
+餘額     $312
+<hr>持卡人：蘇曉雯</div>`;
+    case 'bake': return `<div class="rc"><b>好麥烘焙材料行</b>10/10  20:12
+<hr><span class="hl">黑糖 5kg</span>  $420
+<span class="hl">檸檬 ×30</span>  $450
+低筋麵粉10kg
+          $560
+<hr>合計    $1,430
+會員  <span class="hl">林＊宇</span></div>`;
+    case 'stall': return `<div class="rc"><b>夜市攤位押金收據</b>攤位    B-17
+承租人  <span class="hl">林先生</span>
+品項  <span class="hl">手工蛋糕</span>
+押金  $5,000
+日期    <span class="hl">10/8</span>
+<hr>星河夜市管委會</div><div class="rstamp">收訖</div>`;
+    case 'handover': return `<div class="dc"><h4>打烊交接表</h4><table>
+<tr><td>日期</td><td>10/10（六）</td></tr><tr><td>值班</td><td class="hw">小雯</td></tr>
+<tr><td>前門上鎖</td><td class="hw hl">✔ 21:05</td></tr><tr><td>後門上鎖</td><td class="hw hl">✔</td></tr>
+<tr><td>鐵盒（食譜）</td><td class="hw">✔ 在</td></tr><tr><td>備註</td><td class="hw">拿鐵已餵</td></tr></table></div>`;
+    case 'calli': return `<div class="dc"><h4>社大 書法班 簽到表</h4><div style="text-align:center;font-size:10px;margin-bottom:3px">10/10（六）19:00–22:00</div><table>
+<tr><td>姓名</td><td>簽到</td><td>簽退</td></tr><tr><td>王＊美</td><td class="hw">19:00</td><td class="hw">22:00</td></tr>
+<tr class="hl"><td>周文彬</td><td class="hw">19:02</td><td class="hw">21:58</td></tr><tr><td>李＊華</td><td class="hw">19:10</td><td class="hw">22:01</td></tr></table></div>`;
+    case 'code': return `<div class="dc"><h4>合作廠商通知</h4>後門密碼鎖 送貨專用碼：<div class="big">0412</div>僅限：<span class="hl">鮮奶（林）</span>、咖啡豆（每週三）<br>送貨後請隨手關門　—榕樹下咖啡</div>`;
+    case 'askNote': return `<div class="nt">美玲下午又來<u>問蛋糕配方</u>！我說「秘密～」她還問黑糖是哪一牌…哼</div><div class="sig">—桂</div>`;
+    case 'keynote': return `<div class="nt">鐵盒鑰匙 →<br><u>咖啡豆罐後面</u>！<br>別跟別人說</div><div class="sig">—桂</div>`;
+    case 'zhouNote': return `<div class="nt">桂姐：磅蛋糕<u>可以教我做</u>嗎？下週孫女生日，想親手做給她</div><div class="sig">—周</div>`;
+    case 'line': return `<div class="ph-h"><span>‹</span><span class="av" style="background:#e07a2e"></span>阿哲</div><div class="ph-b"><div class="ph-date">10/9（五）22:16</div>
+<div class="bub hl">欸 桂姐鐵盒的鑰匙放哪？</div><div class="bub">我明天幫她補豆子順便整理</div><div class="bub me">咖啡豆罐後面啦</div><div class="bub me">不要亂動喔</div><div class="bub">放心啦～</div></div>`;
+    case 'live': return `<div class="ph-h"><span class="av" style="background:#f29bb2"></span>蜜朵甜點<span class="live">● LIVE</span></div><div class="ph-b"><div class="ph-img">${ART.macaron}</div>
+<div class="ph-t"><b>今晚現做馬卡龍！</b><br><span style="background:#fff27a">21:30 開播・22:40 結束</span><br><span style="color:#888">觀看 312・留言 88</span></div></div>`;
+    case 'post': return `<div class="ph-h"><span class="av" style="background:#f4b942"></span>哲的甜點車<span style="margin-left:auto;font-weight:400;color:#888">01:12</span></div><div class="ph-b"><div class="ph-img">${ART.truck}</div>
+<div class="ph-t">下週六 星河夜市 <b>B-17</b> 開張！招牌：<span style="background:#fff27a">黑糖檸檬磅蛋糕</span>（神祕配方）</div></div>`;
+    default: return `<div class="photo">${ART[c.id]}</div><div class="cap">${c.cap}</div>`;
+  }
+}
+const PIN_COLORS = ['#d42a2a', '#2a7ad4', '#e6b422', '#2a9a5a', '#d45a2a', '#8a3ad4'];
+
+/* ---------- relations (推理資料表) ---------- */
+const DED = { K1: { name: '時機', say: '打烊後 21:45 有外送員從後門進廚房' }, K2: { name: '手法', say: '鐵盒是用鑰匙開的，藏處被套出來了' }, K3: { name: '動機', say: '有人早就準備好要賣同款蛋糕' } };
+const REL = {};
+const pk = (a, b) => a < b ? a + '|' + b : b + '|' + a;
+function rel(a, b, o) { REL[pk(a, b)] = o; }
+[['cctv', 'slip'], ['cctv', 'zhe'], ['cctv', 'code'], ['slip', 'code'], ['slip', 'zhe'], ['code', 'zhe']].forEach(p => rel(...p, { kind: 'key', d: 'K1' }));
+[['box', 'keynote'], ['keynote', 'line'], ['box', 'line'], ['line', 'zhe']].forEach(p => rel(...p, { kind: 'key', d: 'K2' }));
+[['post', 'stall'], ['post', 'bake'], ['stall', 'bake'], ['post', 'zhe'], ['stall', 'zhe'], ['bake', 'zhe']].forEach(p => rel(...p, { kind: 'key', d: 'K3' }));
+rel('meiling', 'live', { kind: 'alibi', s: 'meiling', say: '21:30 到 22:40 都在直播鏡頭前。<b>美玲排除。</b>' });
+rel('wen', 'mrt', { kind: 'alibi', s: 'wen', say: '21:47 她人在捷運上。<b>小雯排除。</b>' });
+rel('zhou', 'calli', { kind: 'alibi', s: 'zhou', say: '書法課 21:58 才簽退。<b>周老師排除。</b>' });
+rel('wen', 'line', { kind: 'neutral', say: '小雯確實說溜嘴了。但說溜嘴的人，通常不是拿走東西的人。' });
+rel('wen', 'handover', { kind: 'neutral', say: '她 21:05 鎖門才走。這條算你有做功課。' });
+rel('meiling', 'askNote', { kind: 'neutral', say: '美玲很好奇沒錯。好奇不犯法，不然我早就被抓了。' });
+rel('zhou', 'zhouNote', { kind: 'neutral', say: '他是用「問」的。小偷通常不會先留言。' });
+rel('handover', 'cctv', { kind: 'neutral', say: '21:05 鎖門，21:47 有人進來……時間軸開始有意思了。' });
+rel('handover', 'box', { kind: 'neutral', say: '打烊時食譜還在。至少我們知道，事情發生在九點之後。' });
+rel('handover', 'code', { kind: 'neutral', say: '門鎖好了還進得來，那就是有密碼的人。繼續。' });
+const KEY_SAY = {
+  K1: ['後門、21:45、閃電貼紙……<b>時機成立。</b>', '……好吧，這條我承認。<b>時機成立。</b>'],
+  K2: ['沒撬痕，有人知道鑰匙藏哪。<b>手法成立。</b>', '鑰匙藏處被套出來了。<b>手法成立。</b>'],
+  K3: ['攤位、材料、招牌品項。<b>動機成立。</b>', '偷食譜是為了開店。<b>動機成立。</b>']
+};
+const SNARK = [
+  '這兩張連在一起？我幹這行二十年，第一次看到這麼有創意的推理。',
+  '很好。接下來你要不要把氣象報告也釘上去？',
+  '我先記下來：「直覺系偵探」。',
+  '線很紅，推理很白。',
+  '嗯……不。',
+  '我咖啡都涼了，你的推理還沒熱。',
+  '這叫做巧合，不叫做證據。',
+  '你拉線的手很穩，可惜方向不對。',
+  '如果這也算證據，我明天就能退休了。',
+  '檢察官看到這條線會笑出來的。我是說，真的會笑。',
+];
+const CAT_SNARK = ['你要指控一隻貓？牠連罐頭都打不開。', '拿鐵有不在場證明：牠整晚都在睡。', '貓不會用密碼鎖。我查過了。'];
+const HINTS = {
+  K1: '打烊之後，誰還進得了後門？把<b>時間</b>對一對。',
+  K2: '鐵盒沒被撬開。那<b>鑰匙的藏處</b>，是誰說出去的？',
+  K3: '偷食譜要幹嘛？總不會是拿來裱框吧。看看誰<b>要開店</b>。',
+};
+
+/* ---------- audio (Web Audio synth) ---------- */
+const AU = { ctx: null, master: null, muted: false, noise: null };
+try { AU.muted = !!loadSave().muted; } catch (e) { }
+function ensureAudio() {
+  if (AU.ctx) { if (AU.ctx.state === 'suspended') AU.ctx.resume(); return; }
+  try {
+    const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+    AU.ctx = new C(); AU.master = AU.ctx.createGain(); AU.master.gain.value = AU.muted ? 0 : .8;
+    const comp = AU.ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
+    AU.master.connect(comp); comp.connect(AU.ctx.destination);
+    const len = AU.ctx.sampleRate; const b = AU.ctx.createBuffer(1, len, AU.ctx.sampleRate); const d = b.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1; AU.noise = b;
+  } catch (e) { AU.ctx = null; }
+}
+function env(g, t, a, peak, dcy) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + dcy); }
+function tone(type, f0, f1, dur, vol, t0 = 0, dest) {
+  if (!AU.ctx) return; const t = AU.ctx.currentTime + t0;
+  const o = AU.ctx.createOscillator(), g = AU.ctx.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t);
+  if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  env(g, t, .004, vol, dur); o.connect(g); g.connect(dest || AU.master); o.start(t); o.stop(t + dur + .05);
+}
+function noiseB(dur, vol, ftype, freq, q = 1, t0 = 0, attack = .003) {
+  if (!AU.ctx) return; const t = AU.ctx.currentTime + t0;
+  const s = AU.ctx.createBufferSource(); s.buffer = AU.noise; const f = AU.ctx.createBiquadFilter(); f.type = ftype; f.frequency.value = freq; f.Q.value = q;
+  const g = AU.ctx.createGain(); env(g, t, attack, vol, dur); s.connect(f); f.connect(g); g.connect(AU.master); s.start(t, Math.random() * .5); s.stop(t + dur + attack + .05);
+  return f;
+}
+function pluck(freq, dur = .9, vol = .35, t0 = 0, damp = .994) { // Karplus-Strong
+  if (!AU.ctx) return; const sr = AU.ctx.sampleRate, n = Math.floor(sr * dur), N = Math.max(2, Math.round(sr / freq));
+  const b = AU.ctx.createBuffer(1, n, sr), d = b.getChannelData(0), buf = new Float32Array(N);
+  for (let i = 0; i < N; i++) buf[i] = Math.random() * 2 - 1;
+  let p = 0; for (let i = 0; i < n; i++) { const nx = (p + 1) % N; const v = buf[p]; d[i] = v; buf[p] = (v + buf[nx]) * .5 * damp; p = nx; }
+  const s = AU.ctx.createBufferSource(); s.buffer = b; const g = AU.ctx.createGain(); g.gain.value = vol;
+  const f = AU.ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 3200;
+  s.connect(f); f.connect(g); g.connect(AU.master); s.start(AU.ctx.currentTime + t0);
+}
+const SFX = {
+  pin() { noiseB(.012, .35, 'highpass', 4200); tone('sine', 2600, 1300, .03, .12); tone('sine', 150, 55, .08, .5, .004); noiseB(.05, .12, 'lowpass', 500, 1, .006); },
+  paper() { for (let i = 0; i < 3; i++) noiseB(.06 + i * .02, .16 - i * .03, 'bandpass', 2600 + i * 700, .9, i * .045, .01); noiseB(.18, .06, 'lowpass', 900, 1, 0, .04); },
+  pick() { noiseB(.05, .1, 'bandpass', 3200, 1.2, 0, .006); },
+  pull() { pluck(rand(300, 340), .35, .14); noiseB(.12, .05, 'bandpass', 1800, 2, 0, .02); },
+  twang(f = 196) { pluck(f, 1.1, .4); pluck(f * 1.5, .7, .12, .01); },
+  snap() { noiseB(.02, .5, 'highpass', 2500); pluck(110, .4, .25, 0, .97); tone('triangle', 700, 90, .3, .16, .02); },
+  retract() { tone('sine', 500, 240, .12, .06); },
+  chime() { [880, 1320, 1760].forEach((f, i) => tone('sine', f, f, 1.3 - i * .3, .14 / (i + 1), i * .07)); tone('sine', 120, 60, .15, .4); noiseB(.04, .2, 'lowpass', 800); },
+  alibi() { tone('sine', 523, 523, .25, .16); tone('sine', 659, 659, .35, .16, .11); tone('triangle', 1046, 1046, .2, .04, .11); },
+  neutral() { tone('sine', 392, 392, .3, .1); },
+  tick(hi) { if (!AU.ctx) return; tone('square', hi ? 2100 : 1700, hi ? 2100 : 1700, .012, .012); },
+  type() { noiseB(.012, .05, 'bandpass', rand(2500, 3800), 3); },
+  gavel() { tone('sine', 95, 40, .5, .7); noiseB(.09, .5, 'lowpass', 1200); noiseB(.03, .4, 'highpass', 2000, 1, .002); },
+  draw() { SFX.paper(); tone('sine', 300, 200, .1, .04); },
+  endA() { [523, 659, 784, 1046].forEach((f, i) => { tone('triangle', f, f, .7, .16, .15 + i * .12); }); tone('sine', 1568, 1568, 1.2, .05, .7); },
+  endB() { [392, 370, 349, 294].forEach((f, i) => tone('sawtooth', f, f * .97, i === 3 ? .8 : .25, .06, .15 + i * .3)); },
+  endC() { tone('triangle', 220, 220, .5, .12, .2); tone('triangle', 207, 207, .9, .1, .7); },
+};
+function setMuted(m) {
+  AU.muted = m; save.muted = m; writeSave(save);
+  if (AU.master) AU.master.gain.setTargetAtTime(m ? 0 : .8, AU.ctx.currentTime, .02);
+  $('#sndWave').style.display = m ? 'none' : ''; $('#sndX').style.display = m ? '' : 'none';
+}
+
+/* ---------- state ---------- */
+const board = $('#board'), wrap = $('#boardWrap'), svg = $('#strings');
+const L = { W: 1600, H: 1000, mode: 'land', scale: 1, cs: 1 };
+let S; // game state
+const cards = {}; // runtime card objects
+function freshState() {
+  return {
+    phase: 'title', keys: { K1: false, K2: false, K3: false }, cred: 100, wrong: 0, supports: 0, excluded: new Set(),
+    lines: [], snaps: [], tried: new Set(), folder: DRAW_ORDER.slice(), tray: [], time: 0, lastProgress: 0, hinted: {}, tut: 0,
+    nextAuto: 3, temp: null, ended: false, snarkI: 0,
+  };
+}
+
+/* card DOM */
+function buildCards() {
+  CARDS.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = `card t-${c.type}` + (c.suspect ? ' suspect' : '');
+    el.dataset.id = c.id;
+    el.innerHTML = `<div class="paper" style="${c.nc ? `--nc:${c.nc}` : ''}">${cardFace(c)}</div>${c.suspect ? '<div class="stampx">排除</div>' : ''}<div class="pin" style="--pc:${PIN_COLORS[i % PIN_COLORS.length]}"></div>`;
+    el.style.display = 'none';
+    board.appendChild(el);
+    cards[c.id] = { id: c.id, data: c, el, x: 0, y: 0, r: 0, s: 1, sw: 0, swv: 0, lift: 0, state: 'folder', w: 0, h: 0, z: 5, tween: null, dirty: true };
+  });
+  board.appendChild(svg); // ensure svg after cards in DOM (z-index handles stacking anyway)
+}
+function measure(c) { c.w = c.el.offsetWidth; c.h = c.el.offsetHeight; }
+
+/* ---------- folder ---------- */
+const folderEl = document.createElement('div');
+folderEl.className = 'folder';
+folderEl.innerHTML = `<div class="tab"></div><div class="back"></div><div class="front"><div class="lbl"><b>證物袋</b>案件 #1010<br>榕樹下咖啡</div><div class="cnt">剩 20 張</div><div class="stampf">證物</div></div>`;
+board.appendChild(folderEl);
+const F = { x: 0, y: 0, w: 236, h: 164 };
+
+/* ---------- layout ---------- */
+function layout() {
+  const st = $('#stage'); const sw = st.clientWidth, sh = st.clientHeight;
+  const pad = 22 + 10;
+  const oldW = L.W, oldH = L.H;
+  const portrait = sw / sh < 1.05;
+  if (portrait) { L.mode = 'port'; L.W = 900; L.H = clamp(Math.round(900 * (sh - pad * 2 * 0) / sw), 1150, 1750); L.cs = 1.12; }
+  else { L.mode = 'land'; L.H = 1000; L.W = clamp(Math.round(1000 * sw / sh), 1300, 1900); L.cs = 1; }
+  const sc = Math.min((sw - 16) / (L.W + 44), (sh - 12) / (L.H + 44));
+  L.scale = sc;
+  board.style.width = L.W + 'px'; board.style.height = L.H + 'px';
+  const fr = $('#frame'); fr.style.width = (L.W + 44) + 'px'; fr.style.height = (L.H + 44) + 'px';
+  svg.setAttribute('width', L.W); svg.setAttribute('height', L.H); svg.setAttribute('viewBox', `0 0 ${L.W} ${L.H}`);
+  const bw = (L.W + 44) * sc, bh = (L.H + 44) * sc;
+  wrap.style.transform = `translate(${(sw - bw) / 2 + 22 * sc}px, ${(sh - bh) / 2 + 22 * sc}px) scale(${sc})`;
+  F.x = L.W - F.w - 26; F.y = L.H - F.h - 22;
+  if (L.mode === 'port') { F.x = L.W - F.w - 24; }
+  folderEl.style.left = F.x + 'px'; folderEl.style.top = F.y + 'px';
+  // rescale card positions
+  if (oldW !== L.W || oldH !== L.H) {
+    Object.values(cards).forEach(c => {
+      if (c.state === 'pinned') { c.x = c.x / oldW * L.W; c.y = c.y / oldH * L.H; clampCard(c); }
+      if (c.state === 'pinned' || c.state === 'tray') c.s = L.cs;
+    });
+    S && S.tray.forEach((id, i) => { const p = traySlot(i); Object.assign(cards[id], p); });
+  }
+}
+function traySlot(i) {
+  const n = 3; const spread = L.mode === 'port' ? 66 : 74;
+  return { x: F.x + F.w / 2 + (i - (n - 1) / 2) * spread, y: F.y - 150 * L.cs + 30, r: -9 + i * 9 };
+}
+function clampCard(c) {
+  const w = c.w * c.s, h = c.h * c.s;
+  c.x = clamp(c.x, w / 2 + 6, L.W - w / 2 - 6);
+  c.y = clamp(c.y, 14, L.H - h + 4);
+  // keep pinned cards off the folder
+  if (c.state === 'pinned' && c.x + w / 2 > F.x + 10 && c.y + h > F.y + 20) c.y = Math.max(14, F.y + 20 - h);
+}
+
+/* ---------- rendering ---------- */
+function renderCard(c) {
+  const sw = RM ? 0 : c.sw;
+  const ls = c.lift ? 1.06 : 1;
+  c.el.style.transform = `translate(${c.x - c.w / 2}px, ${c.y - 10}px) rotate(${c.r + sw}deg) scale(${c.s * ls})`;
+  c.el.style.transformOrigin = `${c.w / 2}px 10px`;
+}
+function pinPos(c) { return { x: c.x, y: c.y }; }
+function hitCard(px, py, exclude) {
+  let best = null, bz = -1;
+  Object.values(cards).forEach(c => {
+    if (c.state !== 'pinned' || c === exclude) return;
+    const a = -(c.r + c.sw) * Math.PI / 180, dx = px - c.x, dy = py - c.y;
+    const lx = (dx * Math.cos(a) - dy * Math.sin(a)) / c.s + c.w / 2, ly = (dx * Math.sin(a) + dy * Math.cos(a)) / c.s + 10;
+    const m = 8;
+    if (lx > -m && lx < c.w + m && ly > -m && ly < c.h + m && c.z > bz) { best = c; bz = c.z; }
+  });
+  return best;
+}
+let zTop = 5;
+function bringFront(c) { zTop++; c.z = zTop; board.insertBefore(c.el, svg); }
+
+/* string geometry */
+function curve(ax, ay, bx, by, sag, sway) {
+  const mx = (ax + bx) / 2, my = (ay + by) / 2;
+  const cx = mx + sway, cy = my + sag * 2;
+  return { d: `M${ax.toFixed(1)} ${ay.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${bx.toFixed(1)} ${by.toFixed(1)}`, mid: { x: .25 * ax + .5 * cx + .25 * bx, y: .25 * ay + .5 * cy + .25 * by } };
+}
+const NS = 'http://www.w3.org/2000/svg';
+function mk(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+const LCOL = { key: '#c8141e', support: '#c8141e', alibi: '#2c62b8', neutral: '#8f6a46', wrong: '#c8141e' };
+function makeLineEls(line) {
+  const g = mk('g', {}, $('#gLines'));
+  line.sh = mk('path', { fill: 'none', stroke: '#000', 'stroke-opacity': .28, 'stroke-width': 3.5, 'stroke-linecap': 'round', transform: 'translate(3 7)' }, g);
+  line.p = mk('path', { fill: 'none', stroke: LCOL[line.kind], 'stroke-width': line.kind === 'neutral' ? 2.6 : 3.4, 'stroke-linecap': 'round' }, g);
+  line.p2 = mk('path', { fill: 'none', stroke: '#fff', 'stroke-opacity': .28, 'stroke-width': 1.2, 'stroke-dasharray': '2 4', 'stroke-linecap': 'round' }, g);
+  line.g = g;
+  if (line.label) {
+    const lg = mk('g', {}, $('#gLabels'));
+    const col = line.kind === 'alibi' ? '#2c62b8' : line.kind === 'neutral' ? '#7a5a3a' : '#c8141e';
+    const w = line.label.length * 17 + 18;
+    mk('rect', { x: -w / 2, y: -13, width: w, height: 26, rx: 3, fill: '#f6edd6', stroke: col, 'stroke-width': 1.5 }, lg);
+    mk('circle', { cx: -w / 2 + 7, cy: 0, r: 2.5, fill: col }, lg);
+    const t = mk('text', { x: 4, y: 6, 'text-anchor': 'middle', 'font-size': 16, fill: col }, lg); t.textContent = line.label;
+    line.lg = lg; line.lgScale = 0;
+    gsap.to(line, { lgScale: 1, duration: RM ? .01 : .45, ease: 'back.out(2.5)' });
+  }
+}
+function updateLines(dt, t) {
+  const k = 70, c = 7.5;
+  for (const ln of S.lines) {
+    const A = cards[ln.a], B = cards[ln.b];
+    const ax = A.x, ay = A.y, bx = B.x, by = B.y;
+    const dist = Math.hypot(bx - ax, by - ay);
+    const target = Math.min(18 + dist * .11, 110);
+    // perturb from endpoint motion
+    if (ln.pax !== undefined) { const mv = Math.abs(ax - ln.pax) + Math.abs(ay - ln.pay) + Math.abs(bx - ln.pbx) + Math.abs(by - ln.pby); ln.v += mv * (RM ? .1 : .9); }
+    ln.pax = ax; ln.pay = ay; ln.pbx = bx; ln.pby = by;
+    ln.v += (k * (target - ln.s) - c * ln.v) * dt; ln.s += ln.v * dt;
+    const sway = RM ? 0 : Math.sin(t * 1.2 + ln.ph) * (2 + dist * .004) + ln.v * .05;
+    let ex = bx, ey = by;
+    if (ln.grow < 1) { ex = lerp(ax, bx, ln.grow); ey = lerp(ay, by, ln.grow); }
+    const cv = curve(ax, ay, ex, ey, ln.s * (ln.grow < 1 ? ln.grow : 1), sway);
+    ln.p.setAttribute('d', cv.d); ln.sh.setAttribute('d', cv.d); ln.p2.setAttribute('d', cv.d);
+    if (ln.lg) ln.lg.setAttribute('transform', `translate(${cv.mid.x.toFixed(1)} ${(cv.mid.y + 4).toFixed(1)}) rotate(${(Math.sin(ln.ph) * 5 + sway * .6).toFixed(2)}) scale(${ln.lgScale.toFixed(3)})`);
+  }
+  // temp string
+  const T = S.temp;
+  if (T) {
+    const A = cards[T.a]; const ax = A.x, ay = A.y;
+    const tgt = T.hover ? cards[T.hover] : null;
+    const bx = tgt ? tgt.x : T.x, by = tgt ? tgt.y : T.y;
+    const dist = Math.hypot(bx - ax, by - ay);
+    const target = tgt ? Math.min(18 + dist * .11, 110) : Math.min(30 + dist * .16, 150);
+    if (T.pbx !== undefined) T.v += (Math.abs(bx - T.pbx) + Math.abs(by - T.pby)) * .6;
+    T.pbx = bx; T.pby = by;
+    T.v += (60 * (target - T.s) - 6 * T.v) * dt; T.s += T.v * dt;
+    const cv = curve(ax, ay, bx, by, T.s, 0);
+    T.p.setAttribute('d', cv.d); T.sh.setAttribute('d', cv.d); T.end.setAttribute('cx', bx); T.end.setAttribute('cy', by);
+  }
+  // snapping strings
+  for (let i = S.snaps.length - 1; i >= 0; i--) {
+    const sn = S.snaps[i]; sn.t += dt;
+    const f = sn.t, fall = 900 * f * f;
+    const mx = (sn.ax + sn.bx) / 2, my = (sn.ay + sn.by) / 2;
+    const e1x = lerp(mx, sn.ax, .25 + f * .6) - 30 * f, e1y = my + fall * .5 + 30 * f;
+    const e2x = lerp(mx, sn.bx, .25 + f * .6) + 30 * f, e2y = my + fall * .5 + 30 * f;
+    const c1 = curve(sn.ax, sn.ay, e1x, e1y, 30 + 200 * f, -10 * f), c2 = curve(sn.bx, sn.by, e2x, e2y, 30 + 200 * f, 10 * f);
+    sn.p1.setAttribute('d', c1.d); sn.p2.setAttribute('d', c2.d);
+    sn.g.setAttribute('opacity', clamp(1 - f / .7, 0, 1));
+    if (f > .75) { sn.g.remove(); S.snaps.splice(i, 1); }
+  }
+}
+
+/* ---------- particles ---------- */
+let crumbN = 0;
+function crumbs(x, y, n = 6, col) {
+  if (RM) n = 2;
+  for (let i = 0; i < n && crumbN < 50; i++) {
+    const d = document.createElement('div'); d.className = 'crumb'; crumbN++;
+    if (col) d.style.background = col;
+    d.style.left = x + 'px'; d.style.top = y + 'px'; board.appendChild(d);
+    const a = rand(0, Math.PI * 2), r = rand(14, 40);
+    gsap.fromTo(d, { x: 0, y: 0, rotate: 0, opacity: 1 }, { x: Math.cos(a) * r, y: Math.sin(a) * r + 24, rotate: rand(-180, 180), opacity: 0, duration: rand(.45, .8), ease: 'power2.out', onComplete: () => { d.remove(); crumbN--; } });
+  }
+}
+
+/* ---------- detective bubble ---------- */
+const bubble = $('#bubble'); let bubT = null, typeT = null;
+function say(html, ms) {
+  clearTimeout(bubT); clearInterval(typeT);
+  bubble.innerHTML = `<span class="who">鄭警官</span><span class="tx"></span>`;
+  const tx = bubble.querySelector('.tx');
+  bubble.classList.add('show'); $('#det').classList.remove('talk'); void $('#det').offsetWidth; $('#det').classList.add('talk');
+  // typewriter that respects tags
+  const tmp = document.createElement('div'); tmp.innerHTML = html; const plain = tmp.textContent;
+  let i = 0; const step = RM ? plain.length : 1;
+  tx.innerHTML = '';
+  typeT = setInterval(() => {
+    i = Math.min(plain.length, i + step);
+    if (i >= plain.length) { tx.innerHTML = html; clearInterval(typeT); }
+    else { tx.textContent = plain.slice(0, i); if (i % 2 === 0) SFX.type(); }
+  }, 26);
+  bubT = setTimeout(() => bubble.classList.remove('show'), ms || Math.max(3600, plain.length * 120 + 1400));
+}
+$('#det').innerHTML = `<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#cdb894"/><path d="M8 64 C10 50 20 44 32 44 C44 44 54 50 56 64Z" fill="#5a5048"/><path d="M26 44 L32 56 L38 44Z" fill="#f2efe4"/><path d="M30 46 l2 12 l2 -12z" fill="#8a1a1a"/>
+<rect x="27" y="36" width="10" height="9" fill="#d9a882"/><ellipse cx="32" cy="28" rx="12" ry="13" fill="#e2b48e"/><path d="M19 22 C20 12 44 12 45 22 L45 18 C44 10 20 10 19 18Z" fill="#3a3530"/>
+<path d="M14 21 h36 l-3 -3 h-30z" fill="#4a4038"/><path d="M20 18 C20 8 44 8 44 18Z" fill="#5a4e44"/><rect x="20" y="15" width="24" height="3" fill="#2a2420"/>
+<path d="M25 28 h5 M34 28 h5" stroke="#222" stroke-width="1.8" stroke-linecap="round"/><path d="M25 25.5 l5 1 M39 25.5 l-5 1" stroke="#3a3530" stroke-width="1.4"/>
+<path d="M26 34 q6 -3 12 0 q-6 1 -12 0z" fill="#5a4a40"/><path d="M29 38 h6" stroke="#8a4a3a" stroke-width="1.2"/></svg>`;
+$('#det').addEventListener('click', () => { if (S && S.phase === 'play') giveHint(true); });
+
+/* ---------- HUD ---------- */
+function fmt(t) { t = Math.floor(t); return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); }
+function updHud() {
+  const pinned = Object.values(cards).filter(c => c.state === 'pinned').length;
+  $('#clock').textContent = `${fmt(S.time)} ・ 證物 ${pinned}/20`;
+  ['K1', 'K2', 'K3'].forEach(k => $('#chip' + k).classList.toggle('on', S.keys[k]));
+  $('#excl').textContent = `排除 ${S.excluded.size}/3`;
+  $('#credFill').style.width = S.cred + '%'; $('#credFill').classList.toggle('low', S.cred <= 40); $('#credNum').textContent = S.cred;
+  $('#accuse').classList.toggle('ready', S.keys.K1 && S.keys.K2 && S.keys.K3);
+  folderEl.querySelector('.cnt').textContent = S.folder.length ? `剩 ${S.folder.length} 張` : '已清空';
+  folderEl.classList.toggle('empty', !S.folder.length);
+  folderEl.classList.toggle('nudge', S.folder.length > 0 && S.tray.length === 0 && S.phase === 'play');
+}
+function setCred(d) {
+  S.cred = clamp(S.cred + d, 0, 100);
+  if (d < 0) { const c = $('#cred'); c.classList.remove('hit'); void c.offsetWidth; c.classList.add('hit'); }
+  updHud();
+  if (S.cred <= 0 && !S.ended) { S.ended = true; setTimeout(() => endGame('C', null, true), 1600); }
+}
+
+/* ---------- drawing cards from folder ---------- */
+function drawCard(forceId) {
+  if (!S.folder.length || S.tray.length >= 3) return false;
+  let id = forceId && S.folder.includes(forceId) ? forceId : S.folder[0];
+  S.folder.splice(S.folder.indexOf(id), 1);
+  const c = cards[id]; c.el.style.display = ''; measure(c);
+  c.state = 'tray'; c.el.classList.add('tray'); c.el.classList.remove('pinned');
+  S.tray.push(id); const slot = traySlot(S.tray.length - 1);
+  c.x = F.x + F.w / 2; c.y = F.y + 40; c.r = rand(-10, 10); c.s = .5;
+  bringFront(c);
+  folderEl.classList.remove('flip'); void folderEl.offsetWidth; folderEl.classList.add('flip');
+  SFX.draw();
+  gsap.to(c, { x: slot.x, y: slot.y, r: slot.r, s: L.cs, duration: RM ? .15 : .6, ease: 'back.out(1.4)' });
+  S.lastDraw = S.time;
+  updHud();
+  return true;
+}
+function relayoutTray() {
+  S.tray.forEach((id, i) => { const p = traySlot(i); gsap.to(cards[id], { x: p.x, y: p.y, r: p.r, duration: .3, ease: 'power2.out' }); });
+}
+function pinCard(c, x, y) {
+  const wasTray = c.state === 'tray';
+  if (wasTray) { S.tray.splice(S.tray.indexOf(c.id), 1); relayoutTray(); }
+  c.state = 'pinned'; c.el.classList.remove('tray'); c.el.classList.add('pinned');
+  if (x !== undefined) { c.x = x; c.y = y; }
+  c.s = L.cs; clampCard(c);
+  if (wasTray) c.r = rand(-4, 4);
+  const pin = c.el.querySelector('.pin'); pin.classList.remove('drop'); void pin.offsetWidth; pin.classList.add('drop');
+  c.swv += rand(-40, 40);
+  SFX.pin(); crumbs(c.x, c.y, 6);
+  bringFront(c);
+  updHud();
+  if (wasTray) onPinned();
+}
+function onPinned() {
+  const n = Object.values(cards).filter(c => c.state === 'pinned').length;
+  if (S.tut === 0 && n >= 1) { S.tut = 1; say(COARSE ? '很好。點卡片可以放大看細節；<b>長按</b>卡片可以移動位置。' : '很好。<b>點卡片</b>可以放大看細節，拖著卡片可以換位置。'); }
+  else if (S.tut === 1 && n >= 3) { S.tut = 2; say('現在，從卡片上的<b>圖釘</b>拉出紅線，連到你覺得相關的另一張卡。'); }
+}
+
+/* ---------- linking ---------- */
+function startString(c) {
+  const g = mk('g', {}, $('#gTemp'));
+  const sh = mk('path', { fill: 'none', stroke: '#000', 'stroke-opacity': .25, 'stroke-width': 3.5, transform: 'translate(3 7)' }, g);
+  const p = mk('path', { fill: 'none', stroke: '#c8141e', 'stroke-width': 3.4, 'stroke-linecap': 'round' }, g);
+  const end = mk('circle', { r: 6, fill: '#c8141e', stroke: '#7a0a10', 'stroke-width': 1.5 }, g);
+  S.temp = { a: c.id, x: c.x, y: c.y, s: 0, v: 0, g, sh, p, end, hover: null };
+  c.el.classList.add('src'); SFX.pull();
+}
+function moveString(x, y) {
+  const T = S.temp; if (!T) return;
+  T.x = x; T.y = y;
+  const h = hitCard(x, y, cards[T.a]);
+  const hid = h ? h.id : null;
+  if (hid !== T.hover) { if (T.hover) cards[T.hover].el.classList.remove('hot'); if (hid) { h.el.classList.add('hot'); SFX.pick(); } T.hover = hid; }
+}
+function cancelString() {
+  const T = S.temp; if (!T) return;
+  cards[T.a].el.classList.remove('src'); if (T.hover) cards[T.hover].el.classList.remove('hot');
+  const A = cards[T.a];
+  gsap.to(T, { x: A.x, y: A.y, duration: .18, onUpdate: () => { T.hover = null; }, onComplete: () => T.g.remove() });
+  S.temp = null; SFX.retract();
+  // keep animating removed temp: draw manually
+  const tmpT = T; const tick = () => { if (!tmpT.g.isConnected) return; const cv = curve(A.x, A.y, tmpT.x, tmpT.y, 20, 0); tmpT.p.setAttribute('d', cv.d); tmpT.sh.setAttribute('d', cv.d); tmpT.end.setAttribute('cx', tmpT.x); tmpT.end.setAttribute('cy', tmpT.y); requestAnimationFrame(tick); }; tick();
+}
+function endString() {
+  const T = S.temp; if (!T) return;
+  if (!T.hover) { cancelString(); return; }
+  const a = T.a, b = T.hover;
+  cards[a].el.classList.remove('src'); cards[b].el.classList.remove('hot');
+  T.g.remove(); S.temp = null;
+  tryLink(a, b, T.s);
+}
+function addLine(a, b, kind, label, s0) {
+  const ln = { a, b, kind, label, s: s0 || 20, v: 0, ph: rand(0, 6.28), grow: 1 };
+  makeLineEls(ln); S.lines.push(ln); return ln;
+}
+function snapLine(a, b) {
+  const A = cards[a], B = cards[b];
+  const g = mk('g', {}, $('#gTemp'));
+  const p1 = mk('path', { fill: 'none', stroke: '#c8141e', 'stroke-width': 3.2, 'stroke-linecap': 'round' }, g);
+  const p2 = mk('path', { fill: 'none', stroke: '#c8141e', 'stroke-width': 3.2, 'stroke-linecap': 'round' }, g);
+  S.snaps.push({ ax: A.x, ay: A.y, bx: B.x, by: B.y, t: 0, g, p1, p2 });
+  if (!RM) { board.classList.remove('shake'); void board.offsetWidth; board.classList.add('shake'); }
+  B.swv += 120; A.swv -= 80;
+}
+function tryLink(a, b, s0) {
+  const key = pk(a, b);
+  if (S.lines.some(l => pk(l.a, l.b) === key)) { say('這條已經連過了。你是在幫線加粗嗎？'); SFX.retract(); return; }
+  const r = REL[key];
+  const progress = () => { S.lastProgress = S.time; };
+  if (!r) {
+    snapLine(a, b); SFX.snap();
+    if (a === 'cat' || b === 'cat') say(CAT_SNARK[S.snarkI++ % CAT_SNARK.length]);
+    else if (S.tried.has(key)) say('同一條錯線又拉了一次。我開始欣賞你的毅力了。');
+    else say(SNARK[(S.snarkI++) % SNARK.length]);
+    S.tried.add(key); S.wrong++; setCred(-12);
+    return 'wrong';
+  }
+  progress();
+  if (r.kind === 'key') {
+    if (!S.keys[r.d]) {
+      S.keys[r.d] = true; addLine(a, b, 'key', DED[r.d].name, s0); SFX.twang(196); SFX.chime(); setCred(8);
+      const chip = $('#chip' + r.d); chip.classList.remove('pop'); void chip.offsetWidth; chip.classList.add('pop');
+      crumbs((cards[a].x + cards[b].x) / 2, (cards[a].y + cards[b].y) / 2 + 30, 8, '#e0333b');
+      const n = S.keys.K1 + S.keys.K2 + S.keys.K3;
+      const lines = KEY_SAY[r.d];
+      if (n === 3) say(lines[0] + ' 三條線都齊了——按右下角<b>「指認犯人」</b>吧。', 6000);
+      else say(lines[S.snarkI++ % 2]);
+      updHud(); return 'key';
+    } else {
+      addLine(a, b, 'support', DED[r.d].name + '+', s0); S.supports++; SFX.twang(220); setCred(2);
+      say(`補強證據。<b>${DED[r.d].name}</b>又多一條線撐著。`); return 'support';
+    }
+  }
+  if (r.kind === 'alibi') {
+    addLine(a, b, 'alibi', '不在場', s0); SFX.twang(262); SFX.alibi(); setCred(5);
+    S.excluded.add(r.s); cards[r.s].el.classList.add('excl'); say(r.say); updHud(); return 'alibi';
+  }
+  addLine(a, b, 'neutral', '相關', s0); SFX.twang(165); SFX.neutral(); say(r.say); return 'neutral';
+}
+
+/* ---------- hints ---------- */
+function giveHint(force) {
+  const missing = ['K1', 'K2', 'K3'].filter(k => !S.keys[k]);
+  if (!missing.length) { say('三條線都齊了。按<b>「指認犯人」</b>，別讓我等。'); return; }
+  const k = missing.find(k => !S.hinted[k]) || missing[0];
+  S.hinted[k] = 1; say(HINTS[k]);
+  S.lastProgress = S.time;
+}
+
+/* ---------- pointer input ---------- */
+let D = null;
+function toBoard(e) { const r = board.getBoundingClientRect(); return { x: (e.clientX - r.left) / L.scale, y: (e.clientY - r.top) / L.scale }; }
+board.addEventListener('pointerdown', e => {
+  if (!S || S.phase !== 'play') return;
+  if (e.isTrusted && demo.active) stopDemo();
+  ensureAudio();
+  if (D) return;
+  const p = toBoard(e);
+  if (e.target.closest('.folder')) { if (!drawCard()) { if (!S.folder.length) say('資料夾已經空了。答案就在板子上。'); else say('先把手上的證物釘好再抽。'); } return; }
+  const el = e.target.closest('.card'); if (!el) return;
+  const c = cards[el.dataset.id];
+  const touch = e.pointerType === 'touch';
+  const pinR = (touch ? 30 : 16) / L.scale;
+  const onPin = c.state === 'pinned' && (e.target.classList.contains('pin') || Math.hypot(p.x - c.x, p.y - c.y) < Math.max(pinR, 18));
+  D = { c, id: e.pointerId, sx: p.x, sy: p.y, ox: p.x - c.x, oy: p.y - c.y, touch, mode: 'pending', lx: p.x, lt: performance.now(), vx: 0 };
+  try { board.setPointerCapture(e.pointerId); } catch (_) { }
+  if (onPin) { D.mode = 'string'; startString(c); }
+  else if (touch && c.state === 'pinned') {
+    D.lp = setTimeout(() => { if (D && D.mode === 'pending') { beginCardDrag(); try { navigator.vibrate && navigator.vibrate(12); } catch (_) { } } }, 330);
+  }
+  e.preventDefault();
+});
+function beginCardDrag() {
+  const c = D.c; D.mode = 'card'; clearTimeout(D.lp);
+  c.lift = 1; c.el.classList.add('lift'); bringFront(c);
+  if (c.state === 'pinned') { c.el.classList.remove('pinned'); SFX.pick(); } else SFX.pick();
+  if (c.tween) c.tween.kill(); gsap.killTweensOf(c);
+}
+board.addEventListener('pointermove', e => {
+  if (!D || e.pointerId !== D.id) return;
+  const p = toBoard(e);
+  const d = Math.hypot(p.x - D.sx, p.y - D.sy) * L.scale;
+  if (D.mode === 'pending') {
+    if (!D.touch && d > 5) beginCardDrag();
+    else if (D.touch && d > 10) {
+      clearTimeout(D.lp);
+      if (D.c.state === 'pinned') { D.mode = 'string'; startString(D.c); }
+      else beginCardDrag();
+    }
+  }
+  if (D.mode === 'string') moveString(p.x, p.y);
+  if (D.mode === 'card') {
+    const now = performance.now(), dt = Math.max(1, now - D.lt);
+    D.vx = lerp(D.vx, (p.x - D.lx) / dt * 16, .4); D.lx = p.x; D.lt = now;
+    D.c.x = p.x - D.ox; D.c.y = p.y - D.oy;
+  }
+});
+function finishPointer(e, cancel) {
+  if (!D || (e && e.pointerId !== D.id)) return;
+  clearTimeout(D.lp);
+  const c = D.c;
+  if (D.mode === 'string') { if (cancel) cancelString(); else endString(); }
+  else if (D.mode === 'card') dropCard(c);
+  else if (D.mode === 'pending' && !cancel) openZoom(c.id);
+  D = null;
+}
+board.addEventListener('pointerup', e => finishPointer(e, false));
+board.addEventListener('pointercancel', e => finishPointer(e, true));
+function dropCard(c) {
+  c.lift = 0; c.el.classList.remove('lift');
+  const inFolder = c.x > F.x - 40 && c.y > F.y - 120 * L.cs;
+  if (c.state === 'tray' && inFolder) { relayoutTray(); SFX.pick(); return; }
+  pinCard(c);
+}
+
+/* ---------- zoom ---------- */
+let zoomId = null;
+function openZoom(id) {
+  const c = cards[id]; zoomId = id; S.phase = 'zoom';
+  const holder = $('#zoomCard'); holder.innerHTML = '';
+  const cl = c.el.cloneNode(true); cl.classList.remove('lift', 'tray', 'hot', 'src'); cl.style.cssText = ''; cl.style.position = 'relative';
+  const mob = innerWidth < 760;
+  const maxW = mob ? Math.min(innerWidth - 80, 300) : 330, maxH = mob ? innerHeight * .4 : innerHeight * .62;
+  const sc = Math.min(maxW / c.w, maxH / c.h, 2.6);
+  cl.style.transform = `scale(${sc})`; cl.style.transformOrigin = '0 0';
+  holder.style.width = c.w * sc + 'px'; holder.style.height = c.h * sc + 'px';
+  const inner = document.createElement('div'); inner.style.cssText = `position:absolute;left:0;top:0;transform:rotate(${(c.r * .3).toFixed(1)}deg)`;
+  inner.appendChild(cl); holder.appendChild(inner);
+  $('#zTy').textContent = TYPE_LABEL[c.data.type] + (c.data.suspect ? '・嫌疑人' : '');
+  $('#zTi').textContent = c.data.title; $('#zDe').innerHTML = c.data.detail;
+  const linked = S.lines.filter(l => l.a === id || l.b === id).map(l => `${cards[l.a === id ? l.b : l.a].data.title}（${l.label}）`);
+  $('#zLi').textContent = linked.length ? '已連線：' + linked.join('、') : (c.state === 'pinned' ? '還沒有連線。' : '');
+  $('#zPin').style.display = c.state === 'tray' ? '' : 'none';
+  $('#zoom').classList.add('show'); SFX.paper();
+}
+function closeZoom() { $('#zoom').classList.remove('show'); if (S.phase === 'zoom') S.phase = 'play'; }
+$('#zClose').onclick = closeZoom;
+$('#zoom').addEventListener('pointerdown', e => { if (e.target.id === 'zoom') closeZoom(); });
+$('#zPin').onclick = () => {
+  const c = cards[zoomId]; closeZoom();
+  // find a free spot
+  const spot = findSpot(c); gsap.to(c, { x: spot.x, y: spot.y, duration: RM ? .1 : .45, ease: 'power3.out', onComplete: () => pinCard(c) });
+};
+function findSpot(c) {
+  let best = null, bs = -1;
+  for (let i = 0; i < 60; i++) {
+    const x = rand(c.w * L.cs / 2 + 20, L.W - c.w * L.cs / 2 - 20), y = rand(20, L.H - c.h * L.cs - 20);
+    if (x > F.x - c.w * L.cs / 2 - 20 && y > F.y - 200 * L.cs - c.h) continue;
+    let md = 1e9; Object.values(cards).forEach(o => { if (o.state === 'pinned') md = Math.min(md, Math.hypot(o.x - x, (o.y - y) * 1.2)); });
+    if (md > bs) { bs = md; best = { x, y }; }
+  }
+  return best || { x: L.W / 2, y: L.H / 3 };
+}
+
+/* ---------- lineup / accuse ---------- */
+let selSus = null;
+function openLineup() {
+  if (!S || S.phase !== 'play') return;
+  ensureAudio(); S.phase = 'lineup'; selSus = null; $('#luGo').disabled = true;
+  const n = S.keys.K1 + S.keys.K2 + S.keys.K3;
+  $('#luWarn').innerHTML = n === 3 ? '時機、手法、動機三條線都成立了。選一個人。' : `關鍵線只成立了 ${n}/3 條——現在指認，證據可能撐不住。`;
+  const box = $('#suspects'); box.innerHTML = '';
+  SUSPECT_IDS.forEach(id => {
+    const b = document.createElement('button'); b.className = 'sus'; b.dataset.id = id;
+    b.innerHTML = `${ART[id]}<div class="nm">${SUS_NAME[id]}</div>${S.excluded.has(id) ? '<div class="ex">排除</div>' : ''}`;
+    b.onclick = () => { selSus = id; box.querySelectorAll('.sus').forEach(x => x.classList.toggle('sel', x === b)); $('#luGo').disabled = false; SFX.pick(); };
+    box.appendChild(b);
+  });
+  $('#lineup').classList.add('show'); SFX.paper();
+}
+$('#accuse').onclick = e => { if (S && S.phase === 'play') { if (demo.active) stopDemo(); openLineup(); } };
+$('#luBack').onclick = () => { $('#lineup').classList.remove('show'); S.phase = 'play'; };
+$('#luGo').onclick = () => accuse(selSus);
+function accuse(id) {
+  if (!id) return;
+  $('#lineup').classList.remove('show'); S.phase = 'accusing'; S.ended = true;
+  const bs = $('#bigStamp'); bs.classList.remove('go'); void bs.offsetWidth; bs.classList.add('go');
+  SFX.gavel();
+  const n = S.keys.K1 + S.keys.K2 + S.keys.K3;
+  const kind = id !== 'zhe' ? 'B' : (n === 3 ? 'A' : 'C');
+  setTimeout(() => { bs.classList.remove('go'); endGame(kind, id); }, 1300);
+}
+
+/* ---------- endings ---------- */
+const END_ART = {
+  A: `<g transform="rotate(-10 120 50)"><rect x="92" y="14" width="78" height="56" fill="#fffdf2" stroke="#d8cfb8"/><path d="M100 30h60M100 38h52M100 46h60M100 54h40" stroke="#5a5aa0" stroke-width="1.4"/><text x="100" y="25" font-size="9" fill="#c8141e" font-weight="700">黑糖檸檬磅蛋糕</text><circle cx="150" cy="58" r="5" fill="#6b3d1c" opacity=".5"/></g>
+      <ellipse cx="88" cy="134" rx="78" ry="9" fill="#0002"/>
+      <path d="M22 132 V92 C22 70 40 62 88 62 C136 62 154 70 154 92 V132Z" fill="#8a4f22"/><path d="M28 132 V96 C28 80 44 74 88 74 C132 74 148 80 148 96 V132Z" fill="#d9a35e"/>
+      <path d="M40 96 q12 8 24 0 t24 0 t24 0 t24 0" stroke="#b07a3a" stroke-width="3" fill="none" opacity=".6"/><path d="M36 112 q14 6 28 0 t28 0 t28 0 t24 0" stroke="#b07a3a" stroke-width="3" fill="none" opacity=".5"/>
+      <path d="M22 80 C30 66 60 60 88 60 C120 60 146 66 154 80 C150 88 146 84 142 92 C138 84 132 86 128 80 C120 88 114 82 108 86 C100 80 92 88 84 82 C76 90 68 82 60 86 C52 80 44 90 38 84 C32 90 26 84 22 80Z" fill="#fbf6ea"/>
+      <g><circle cx="60" cy="68" r="9" fill="#f6d84a" stroke="#e0b41a" stroke-width="2"/><path d="M60 59v18M51 68h18M54 62l12 12M66 62l-12 12" stroke="#fff4a8" stroke-width="1"/></g>
+      <g><circle cx="104" cy="66" r="9" fill="#f6d84a" stroke="#e0b41a" stroke-width="2"/><path d="M104 57v18M95 66h18M98 60l12 12M110 60l-12 12" stroke="#fff4a8" stroke-width="1"/></g>
+      <path d="M120 40 l8 -10 M128 46 l12 -6 M112 36 l2 -12" stroke="#e0b41a" stroke-width="2.5" stroke-linecap="round"/>`,
+  B: `<ellipse cx="95" cy="142" rx="60" ry="6" fill="#0002"/><path d="M45 150 C48 116 70 104 95 104 C120 104 142 116 145 150Z" fill="#5a5048"/><path d="M85 104 L95 126 L105 104Z" fill="#f2efe4"/><path d="M93 108 l2 22 l2 -22z" fill="#8a1a1a"/>
+      <ellipse cx="95" cy="72" rx="28" ry="31" fill="#e2b48e"/><path d="M58 54 h74 l-7 -7 h-60z" fill="#4a4038"/><path d="M70 48 C70 22 120 22 120 48Z" fill="#5a4e44"/><rect x="70" y="42" width="50" height="6" fill="#2a2420"/>
+      <path d="M80 88 q15 -6 30 0 q-15 3 -30 0z" fill="#5a4a40"/>
+      <path d="M62 92 C58 76 66 62 82 60 L116 58 C124 58 126 66 118 68 L96 70 L120 70 C128 70 128 78 120 79 L98 80 C92 88 78 98 62 92Z" fill="#d9a882" stroke="#b88a6a" stroke-width="1.5"/>
+      <text x="146" y="44" font-size="24" fill="#c8141e" font-weight="900">?!</text><path d="M150 60 q8 4 4 12 M160 54 q10 2 8 12" stroke="#7aa0d8" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+  C: `<rect x="40" y="40" width="110" height="80" rx="4" fill="#cfae72"/><rect x="40" y="30" width="44" height="14" rx="3" fill="#cfae72"/><rect x="40" y="52" width="110" height="68" rx="4" fill="#e3c68f"/>
+      <text x="95" y="102" font-size="40" text-anchor="middle" fill="#8a6a46" font-weight="900">?</text><path d="M20 130 q30 -12 60 0 t60 0 t40 0" stroke="#c8141e" stroke-width="2.5" fill="none" stroke-dasharray="6 5"/>`
+};
+function endGame(kind, who, credOut) {
+  if (S.phase === 'end') return;
+  S.phase = 'end'; demo.active = false; $('#demoTag').classList.remove('on'); $('#hand').classList.remove('on');
+  closeZoom(); $('#lineup').classList.remove('show');
+  const n = S.keys.K1 + S.keys.K2 + S.keys.K3;
+  const t = Math.floor(S.time);
+  let score = 0, title = '', text = '', stamp = '';
+  if (kind === 'A') {
+    score = 1000 + S.cred * 10 + S.excluded.size * 150 + S.supports * 50 + Math.max(0, 480 - t) * 2;
+    title = '真相大白'; stamp = '破案';
+    text = '阿哲低著頭，從外送箱底層拿出那張沾著黑糖粉的食譜卡：「我只是……想要一台自己的甜點車。」桂姐沉默了很久，最後說：「想學就來店裡學。用偷的，蛋糕會苦。」下週六，夜市 B-17 的招牌多了一行小字：<b>榕樹下咖啡 授權出品</b>。';
+  } else if (kind === 'B') {
+    score = 100 + n * 100 + S.excluded.size * 30;
+    title = '指錯人了'; stamp = '誤判';
+    const nm = SUS_NAME[who];
+    const why = { wen: '小雯哭著拿出票卡紀錄：那時她在捷運上。', meiling: '美玲把直播回放轉到 21:47：「看清楚，我在打蛋白。」', zhou: '周老師慢條斯理地翻開書法班簽到表：「年輕人，要看證據。」' }[who] || '';
+    text = `你指著${nm}大喊「就是你！」——${why}鄭警官揉了揉太陽穴：「……我先去買杯咖啡。」週日晚上，一台貼著閃電貼紙的甜點車在夜市開張了，招牌：黑糖檸檬磅蛋糕。`;
+  } else {
+    score = n * 150 + S.excluded.size * 50;
+    title = '證據不足'; stamp = '退件';
+    text = credOut ? '鄭警官把你的圖釘一顆一顆拔下來：「今天就到這裡吧。」案子被帶回局裡，食譜卡至今下落不明。桂姐只好重新試做，第十七次了，還是差了那麼一點點。'
+      : `你說對人了，但板子上只有 ${n} 條關鍵線，撐不起一份報告。阿哲聳聳肩：「證據呢？」鄭警官只能讓他走。食譜卡至今下落不明，桂姐重新試做到第十七次，還是差了一點點。`;
+  }
+  let grade = '';
+  if (kind === 'A') grade = score >= 2700 ? 'S' : score >= 2300 ? 'A' : 'B';
+  const best = save.best || 0; const nb = score > best;
+  if (nb) save.best = score;
+  if (!save.endings.includes(kind)) save.endings.push(kind);
+  writeSave(save);
+  $('#endTitle').innerHTML = title + (grade ? ` <span style="font-size:.6em;color:#c8141e">評價 ${grade}</span>` : '');
+  $('#endText').innerHTML = text;
+  $('#endStamp').textContent = stamp; $('#endStamp').style.color = $('#endStamp').style.borderColor = kind === 'A' ? '#c8141e' : kind === 'B' ? '#6a4a8a' : '#555';
+  $('#endArt').innerHTML = END_ART[kind];
+  $('#endStats').innerHTML = `<div><b>${score}</b>分數${nb ? '（新紀錄）' : ''}</div><div><b>${n}/3</b>關鍵線</div><div><b>${S.cred}</b>可信度</div><div><b>${fmt(t)}</b>用時</div>`;
+  setTimeout(() => { $('#end').classList.add('show'); kind === 'A' ? SFX.endA() : kind === 'B' ? SFX.endB() : SFX.endC(); }, 150);
+  refreshTitle();
+}
+
+/* ---------- game flow ---------- */
+function resetBoard() {
+  if (S) { S.lines.forEach(l => { l.g.remove(); l.lg && l.lg.remove(); }); S.snaps.forEach(s => s.g.remove()); if (S.temp) S.temp.g.remove(); }
+  $('#gTemp').innerHTML = ''; $('#gLines').innerHTML = ''; $('#gLabels').innerHTML = '';
+  Object.values(cards).forEach(c => { gsap.killTweensOf(c); c.state = 'folder'; c.el.style.display = 'none'; c.el.className = c.el.className.replace(/\b(pinned|tray|lift|excl|hot|src)\b/g, '').trim(); c.lift = 0; c.sw = 0; c.swv = 0; });
+  S = freshState();
+}
+function startGame(isDemo) {
+  ensureAudio();
+  resetBoard(); layout();
+  ['title', 'end', 'pause'].forEach(id => $('#' + id).classList.remove('show'));
+  S.phase = 'play'; D = null;
+  updHud();
+  if (isDemo) { setupDemo(); return; }
+  setTimeout(() => { if (S.phase === 'play') { drawCard(); } }, 500);
+  setTimeout(() => { if (S.phase === 'play') say('案發時間是週六晚上。資料夾裡的證物會陸續抽出來——<b>把卡片拖到軟木板上</b>釘好。', 6000); }, 700);
+}
+function pause(on) {
+  if (!S) return;
+  if (on && S.phase === 'play') { S.phase = 'paused'; $('#pause').classList.add('show'); if (demo.active) stopDemo(); if (D) finishPointer(null, true); }
+  else if (!on && S.phase === 'paused') { S.phase = 'play'; $('#pause').classList.remove('show'); }
+}
+$('#pauseBtn').onclick = () => pause(S && S.phase === 'play');
+$('#resumeBtn').onclick = () => pause(false);
+$('#restartBtn').onclick = () => startGame(false);
+$('#titleBtn').onclick = toTitle;
+$('#againBtn').onclick = () => startGame(false);
+$('#endTitleBtn').onclick = toTitle;
+$('#startBtn').onclick = () => startGame(false);
+$('#sndBtn').onclick = () => { ensureAudio(); setMuted(!AU.muted); };
+addEventListener('keydown', e => {
+  ensureAudio();
+  if (e.key === 'Escape') {
+    if ($('#zoom').classList.contains('show')) closeZoom();
+    else if ($('#lineup').classList.contains('show')) { $('#lineup').classList.remove('show'); S.phase = 'play'; }
+    else if (S && S.phase === 'play') pause(true); else if (S && S.phase === 'paused') pause(false);
+  }
+});
+document.addEventListener('visibilitychange', () => { if (document.hidden && S && S.phase === 'play' && !demo.active) pause(true); });
+function refreshTitle() {
+  const dots = $('#endDots').querySelectorAll('i');['A', 'B', 'C'].forEach((k, i) => dots[i].classList.toggle('on', save.endings.includes(k)));
+  $('#bestTxt').textContent = '最佳分數：' + (save.best ? save.best : '—');
+}
+function toTitle() {
+  resetBoard(); layout(); updHud();
+  ['end', 'pause', 'zoom', 'lineup'].forEach(id => $('#' + id).classList.remove('show'));
+  S.phase = 'title'; $('#title').classList.add('show'); refreshTitle();
+  // decorative board behind title
+  decorate();
+}
+function decorate() {
+  const pre = [['cctv', .2, .12], ['zhe', .45, .2], ['keynote', .7, .1], ['slip', .3, .55], ['post', .6, .52]];
+  pre.forEach(([id, nx, ny]) => { const c = cards[id]; c.el.style.display = ''; measure(c); c.state = 'pinned'; c.el.classList.add('pinned'); c.x = nx * L.W; c.y = ny * L.H; c.s = L.cs; c.r = rand(-5, 5); S.folder.splice(S.folder.indexOf(id), 1); });
+  addLine('cctv', 'zhe', 'key', null); addLine('slip', 'post', 'key', null); addLine('keynote', 'zhe', 'key', null);
+}
+
+/* ---------- demo mode ---------- */
+const demo = { active: false, driving: false };
+const hand = $('#hand');
+function b2s(x, y) { const r = board.getBoundingClientRect(); return { x: r.left + x * L.scale, y: r.top + y * L.scale }; }
+function handTo(sx, sy, ms) { return new Promise(res => gsap.to(handPos, { x: sx, y: sy, duration: ms / 1000, ease: 'power2.inOut', onUpdate: placeHand, onComplete: res })); }
+const handPos = { x: innerWidth / 2, y: innerHeight / 2 };
+function placeHand() { hand.style.transform = `translate(${handPos.x - 10}px, ${handPos.y - 4}px)`; }
+async function dragStringDemo(aId, bId, ms) {
+  const A = cards[aId], B = cards[bId]; let p = b2s(A.x, A.y);
+  await handTo(p.x, p.y, 500); if (!demo.active) return;
+  hand.classList.add('press'); startString(A); await sleep(150);
+  const o = { t: 0 };
+  await new Promise(res => gsap.to(o, { t: 1, duration: ms / 1000, ease: 'power1.inOut', onUpdate: () => {
+    if (!demo.active || !S.temp) return; const x = lerp(A.x, B.x, o.t), y = lerp(A.y, B.y, o.t) + Math.sin(o.t * Math.PI) * 60;
+    moveString(x, y); const s = b2s(x, y); handPos.x = s.x; handPos.y = s.y; placeHand();
+  }, onComplete: res }));
+  if (!demo.active) return;
+  moveString(B.x, B.y); await sleep(120); endString(); hand.classList.remove('press');
+}
+async function dragCardDemo(id, nx, ny, ms) {
+  const c = cards[id]; let p = b2s(c.x, c.y + 40);
+  await handTo(p.x, p.y, 450); if (!demo.active) return;
+  hand.classList.add('press'); c.lift = 1; c.el.classList.add('lift'); bringFront(c); SFX.pick();
+  const tx = nx * L.W, ty = ny * L.H;
+  await new Promise(res => gsap.to(c, { x: tx, y: ty, duration: ms / 1000, ease: 'power2.inOut', onUpdate: () => { const s = b2s(c.x, c.y + 40); handPos.x = s.x; handPos.y = s.y; placeHand(); }, onComplete: res }));
+  if (!demo.active) return;
+  c.lift = 0; c.el.classList.remove('lift'); pinCard(c); hand.classList.remove('press');
+}
+async function clickEl(el) {
+  const r = el.getBoundingClientRect(); await handTo(r.left + r.width / 2, r.top + r.height / 2, 500);
+  if (!demo.active) return false; hand.classList.add('press'); await sleep(140); hand.classList.remove('press'); return demo.active;
+}
+function setupDemo() {
+  demo.active = true; demo.driving = true; S.tut = 9;
+  $('#demoTag').classList.add('on');
+  const pre = [['box', .09, .07], ['cctv', .29, .07], ['slip', .49, .06], ['zhe', .66, .08], ['keynote', .1, .5], ['line', .3, .47], ['wen', .5, .5], ['meiling', .68, .48]];
+  if (L.mode === 'port') pre.splice(0, pre.length, ['box', .2, .05], ['cctv', .7, .05], ['slip', .16, .3], ['zhe', .55, .27], ['keynote', .85, .3], ['line', .2, .55], ['wen', .52, .52], ['meiling', .8, .55]);
+  pre.forEach(([id, nx, ny]) => { const c = cards[id]; c.el.style.display = ''; measure(c); S.folder.splice(S.folder.indexOf(id), 1); c.state = 'pinned'; c.el.classList.add('pinned'); c.x = nx * L.W; c.y = ny * L.H; c.s = L.cs; c.r = rand(-4, 4); clampCard(c); bringFront(c); });
+  S.keys.K1 = true; addLine('cctv', 'slip', 'key', '時機');
+  // keep post/stall next in the folder
+  S.folder = ['post', 'stall', ...S.folder.filter(x => x !== 'post' && x !== 'stall')];
+  updHud();
+  hand.classList.add('on'); handPos.x = innerWidth * .5; handPos.y = innerHeight * .6; placeHand();
+  runDemo();
+}
+async function runDemo() {
+  await sleep(700); if (!demo.active) return;
+  say('展示模式：看我示範一次怎麼<b>拉紅線</b>。');
+  await dragStringDemo('keynote', 'line', 1300); if (!demo.active) return;
+  await sleep(900); if (!demo.active) return;
+  if (!await clickEl(folderEl)) return; drawCard('post'); await sleep(350); drawCard('stall'); await sleep(650); if (!demo.active) return;
+  const port = L.mode === 'port';
+  await dragCardDemo('post', port ? .2 : .86, port ? .78 : .06, 700); if (!demo.active) return;
+  await dragCardDemo('stall', port ? .55 : .87, port ? .76 : .44, 700); if (!demo.active) return;
+  await sleep(200);
+  await dragStringDemo('post', 'stall', 900); if (!demo.active) return;
+  await sleep(1300); if (!demo.active) return;
+  await dragStringDemo('meiling', 'slip', 900); if (!demo.active) return;
+  await sleep(2200); if (!demo.active) return;
+  if (!await clickEl($('#accuse'))) return; demo.driving = true; openLineup(); await sleep(800); if (!demo.active) return;
+  const zb = $('#suspects .sus[data-id="zhe"]'); if (!await clickEl(zb)) return; zb.click(); await sleep(500);
+  if (!await clickEl($('#luGo'))) return; hand.classList.remove('on'); accuse('zhe');
+}
+function stopDemo() {
+  demo.active = false; demo.driving = false; hand.classList.remove('on', 'press'); $('#demoTag').classList.remove('on');
+  gsap.killTweensOf(handPos);
+  if (S && S.temp) cancelString();
+  Object.values(cards).forEach(c => { if (c.lift && (!D || D.c !== c)) { c.lift = 0; c.el.classList.remove('lift'); gsap.killTweensOf(c); if (c.state === 'tray') relayoutTray(); else pinCard(c); } });
+  if (S && S.phase === 'lineup') { $('#lineup').classList.remove('show'); S.phase = 'play'; }
+  if (S && S.phase === 'play') say('換你了。資料夾裡還有證物，<b>點資料夾</b>可以抽卡。');
+}
+addEventListener('pointerdown', e => { if (e.isTrusted && demo.active && !e.target.closest('#board')) { if (S.phase === 'lineup') { stopDemo(); } else if (!e.target.closest('button')) stopDemo(); } }, true);
+
+/* ---------- main loop ---------- */
+let last = performance.now(), tAcc = 0, tickAcc = 0, tickHi = false;
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now; tAcc += dt;
+  if (S) {
+    if (S.phase === 'play' || S.phase === 'zoom' || S.phase === 'lineup') {
+      S.time += S.phase === 'play' ? dt : dt;
+      tickAcc += dt; if (tickAcc >= 1) { tickAcc -= 1; tickHi = !tickHi; if (S.phase === 'play') SFX.tick(tickHi); updHud(); }
+    }
+    if (S.phase === 'play') {
+      // auto draw
+      if (S.folder.length && S.tray.length === 0 && !demo.active) { S.nextAuto -= dt; if (S.nextAuto <= 0) { drawCard(); S.nextAuto = DEMO ? .4 : 1.6; } }
+      else if (S.folder.length && S.tray.length < 3 && !demo.active && S.time - (S.lastDraw || 0) > 12) drawCard();
+      else S.nextAuto = Math.max(S.nextAuto, .8);
+      // hints
+      const pinned = Object.values(cards).filter(c => c.state === 'pinned').length;
+      if (pinned >= 8 && S.time - S.lastProgress > 50 && !demo.active) giveHint();
+    }
+    // card physics
+    for (const id in cards) {
+      const c = cards[id]; if (c.state === 'folder') continue;
+      let target = 0;
+      if (c.lift && D && D.c === c) target = clamp(-D.vx * 2.2, -18, 18);
+      c.swv += (120 * (target - c.sw) - 8 * c.swv) * dt; c.sw += c.swv * dt;
+      if (D && D.c === c && c.lift) D.vx *= .9;
+      renderCard(c);
+    }
+    updateLines(dt, tAcc);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- boot ---------- */
+buildCards(); setMuted(AU.muted);
+S = freshState();
+layout();
+addEventListener('resize', () => { layout(); });
+requestAnimationFrame(frame);
+if (DEMO) { startGame(true); }
+else toTitle();
+window.__g10 = { get S() { return S; }, cards, L, tryLink, drawCard, pinCard, accuse, openLineup, demo, startString, moveString, say, startGame };
+</script>
+</body>
+</html>

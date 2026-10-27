@@ -1,0 +1,1380 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>三分鐘的早晨</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fbf8f1; --paper2:#f1ece1; --ink:#141414; --ink2:#4a4a4a; --mute:#8b867c;
+  --verm:#d7361f;
+  --serif:"Noto Serif TC","Noto Serif CJK TC","Source Han Serif TC","Songti TC","PMingLiU",serif;
+  --hand:"LXGW WenKai TC","Kaiti TC","BiauKai","DFKai-SB","STKaiti","Noto Serif CJK TC",serif;
+  --dots:radial-gradient(circle,rgba(20,20,20,.20) 1px,transparent 1.35px);
+  --dotsD:radial-gradient(circle,rgba(20,20,20,.55) 1.3px,transparent 1.6px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;color:var(--ink);font-family:var(--serif);-webkit-tap-highlight-color:transparent}
+body{background:#e8e3d8;background-image:var(--dots);background-size:6px 6px;overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+.hidden{display:none!important}
+em.v{font-style:normal;color:var(--verm);font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+
+/* ---------- page ---------- */
+.page{max-width:1420px;margin:0 auto;height:100vh;height:100dvh;display:flex;flex-direction:column;gap:12px;padding:12px 16px 30px}
+.panel{background:var(--paper);border:4px solid var(--ink);position:relative;min-width:0}
+.topbar{display:flex;align-items:center;gap:14px;padding:6px 64px 6px 14px;flex:0 0 auto}
+.brand{font-weight:900;font-size:22px;letter-spacing:.08em;white-space:nowrap}
+.brand small{display:block;font-size:11px;font-weight:500;letter-spacing:.3em;color:var(--ink2)}
+.loopno{font-family:var(--hand);font-size:18px;white-space:nowrap;border-left:3px solid var(--ink);padding-left:14px}
+.loopno b{font-size:28px;font-family:var(--serif);font-weight:900}
+.clockbox{flex:1;display:flex;align-items:center;gap:12px;min-width:0}
+.digits{font-weight:900;font-size:34px;letter-spacing:.04em;font-variant-numeric:tabular-nums;line-height:1;white-space:nowrap;transition:transform .15s}
+.digits.hurry{animation:hurry .5s steps(2) infinite}
+@keyframes hurry{50%{transform:translateY(-1px) rotate(-1deg)}}
+.tbar{flex:1;height:14px;border:2.5px solid var(--ink);position:relative;background:var(--paper2);min-width:60px}
+.tbar i{position:absolute;left:0;top:0;bottom:0;background:var(--ink);background-image:repeating-linear-gradient(135deg,#141414 0 6px,#3b3b3b 6px 9px);transition:width .35s cubic-bezier(.2,.8,.2,1)}
+.tbar .mk{position:absolute;top:-7px;width:3px;height:24px;background:var(--verm);transform:translateX(-1px)}
+.tbar .mk.end{background:var(--ink);width:4px}
+.tbtn{border:3px solid var(--ink);background:var(--paper);padding:6px 12px;font-weight:700;font-size:15px;white-space:nowrap}
+.tbtn:hover{background:var(--ink);color:var(--paper)}
+#btnNote{display:none}
+.analog{width:42px;height:42px;flex:0 0 auto}
+
+.main{flex:1;min-height:0;display:flex;gap:12px}
+.colL{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px;min-height:0}
+.colR{flex:0 0 370px;display:flex;flex-direction:column;gap:12px;min-height:0}
+
+/* scene */
+.scenePanel{flex:0 0 auto;overflow:hidden}
+.sceneWrap{position:relative;background:#fff;background-image:var(--dots);background-size:7px 7px;border-bottom:3px solid var(--ink)}
+#scene{display:block;width:100%;height:clamp(220px,46vh,440px)}
+#scene.enter{animation:sceneIn .42s cubic-bezier(.2,.9,.25,1)}
+@keyframes sceneIn{0%{clip-path:inset(0 0 0 100%);transform:translateX(18px)}100%{clip-path:inset(0 0 0 0);transform:none}}
+.caption{position:absolute;left:-4px;top:-4px;background:var(--ink);color:var(--paper);padding:5px 12px 6px;font-weight:700;font-size:15px;letter-spacing:.06em;z-index:2}
+.caption small{opacity:.7;font-weight:500;margin-right:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;align-items:center;min-height:44px}
+.chips .lbl{font-size:12px;color:var(--ink2);margin-right:2px}
+.chip{border:2px solid var(--ink);background:var(--paper);padding:3px 10px;font-size:14px;font-family:var(--hand);position:relative;border-radius:2px}
+.chip.sel{background:var(--ink);color:var(--paper)}
+.chip.k::after{content:"";position:absolute;right:-4px;top:-4px;width:9px;height:9px;border-radius:50%;background:var(--verm);border:1.5px solid var(--paper)}
+.chip.exit{border-style:dashed}
+.chip.who{font-weight:700}
+
+/* svg hotspots */
+.hs{cursor:pointer;outline:none}
+.hs .hit{fill:rgba(255,255,255,0);stroke:transparent;stroke-width:3;stroke-dasharray:9 6}
+.hs:hover .hit,.hs:focus-visible .hit{stroke:#141414}
+.hs.sel .hit{stroke:#141414;stroke-width:4;animation:march .6s linear infinite}
+@keyframes march{to{stroke-dashoffset:-15}}
+.hs.known .k{stroke:var(--verm)!important}
+.hs.known .kf{fill:var(--verm)!important}
+
+/* dialog */
+.dlgPanel{flex:1 1 auto;min-height:180px;display:flex;flex-direction:column}
+.log{flex:1 1 auto;overflow-y:auto;padding:12px 14px 6px;display:flex;flex-direction:column;gap:10px;min-height:60px;scroll-behavior:smooth}
+.ln{max-width:94%;font-size:16px;line-height:1.6;animation:pop .32s cubic-bezier(.3,1.6,.5,1) both}
+.ln.old{animation:none;opacity:.55}
+@keyframes pop{0%{transform:scale(.85) translateY(6px);opacity:0}100%{transform:none;opacity:1}}
+.ln.narr{border:2.5px solid var(--ink);background:#fff;padding:6px 12px;align-self:flex-start;font-size:15px}
+.ln.narr .ts{font-weight:900;margin-right:8px;font-variant-numeric:tabular-nums}
+.ln.say{align-self:flex-start;background:#fff;border:2.5px solid var(--ink);border-radius:26px/22px;padding:9px 16px 9px;font-family:var(--hand);font-size:17px;position:relative;margin-left:8px}
+.ln.say::before{content:"";position:absolute;left:-11px;top:14px;width:16px;height:16px;background:#fff;border-left:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);transform:skewY(-30deg) rotate(10deg)}
+.ln.say .who{position:absolute;top:-12px;left:14px;background:var(--ink);color:var(--paper);font-family:var(--serif);font-size:11px;padding:1px 7px;font-weight:700;letter-spacing:.1em}
+.ln.think{align-self:flex-end;border:2.5px dashed var(--ink);border-radius:30px;background:#fff;padding:7px 16px;font-family:var(--hand);font-size:16px;color:var(--ink2)}
+.ln.sys{align-self:center;font-size:13px;color:var(--ink2);border-top:1.5px solid var(--ink2);border-bottom:1.5px solid var(--ink2);padding:3px 10px;text-align:center}
+.ln.tut{align-self:stretch;max-width:100%;background:var(--ink);color:var(--paper);padding:8px 12px;font-size:14px;line-height:1.7}
+.acts{border-top:3px solid var(--ink);padding:10px 12px 12px;background:var(--paper2);flex:0 0 auto}
+.acts h4{margin:0 0 8px;font-size:15px;display:flex;align-items:center;gap:8px}
+.acts h4 .tag{font-size:11px;font-weight:500;border:1.5px solid var(--ink);padding:0 5px}
+.acts .desc{font-size:13.5px;color:var(--ink2);margin:-2px 0 8px;line-height:1.5}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.act{border:3px solid var(--ink);background:#fff;padding:7px 12px 6px;text-align:left;display:flex;flex-direction:column;gap:1px;min-width:120px;position:relative;transition:transform .08s,box-shadow .08s;box-shadow:3px 3px 0 var(--ink)}
+.act:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.act:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.act b{font-size:15px;font-family:var(--hand)}
+.act i{font-style:normal;font-size:11.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.act .n{position:absolute;right:5px;top:3px;font-size:10px;color:var(--mute)}
+.act.ghost{background:transparent;box-shadow:none;border-width:2px;border-style:dashed}
+.act.key b{color:var(--verm)}
+.act[disabled]{opacity:.45;pointer-events:none}
+.dial{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.wheel{display:flex;flex-direction:column;align-items:center;border:3px solid var(--ink);background:#fff;width:52px}
+.wheel button{border:0;background:transparent;width:100%;padding:2px 0;font-size:13px}
+.wheel button:hover{background:var(--ink);color:#fff}
+.wheel span{font-size:30px;font-weight:900;line-height:1.1;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);width:100%;text-align:center;font-variant-numeric:tabular-nums}
+
+/* map */
+.mapPanel{flex:0 0 auto;padding:6px 8px 4px}
+.mapPanel h3,.notePanel h3{margin:0;font-size:13px;letter-spacing:.2em}
+#map{width:100%;height:auto;display:block;max-height:210px;margin:0 auto}
+.mloc{cursor:pointer}
+.mloc rect{fill:#fff;stroke:#141414;stroke-width:3}
+.mloc:hover rect{fill:#efebe2}
+.mloc.cur rect{fill:url(#t1)}
+.mloc.sel rect{stroke-dasharray:8 5;stroke-width:4}
+.mloc text{font-family:var(--hand);font-size:14px;fill:#141414;pointer-events:none;paint-order:stroke;stroke:#fff;stroke-width:3px}
+.mloc text.me{fill:#fbf8f1;stroke:none;font-family:var(--serif);font-weight:900;font-size:13px}
+.mloc .cost{font-family:var(--serif);font-size:10px;fill:#555}
+
+/* notebook */
+.notePanel{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;background:#fffdf7;background-image:repeating-linear-gradient(transparent 0 27px,rgba(20,20,20,.10) 27px 28px);}
+.tabs{display:flex;border-bottom:3px solid var(--ink);flex:0 0 auto}
+.tab{flex:1;border:0;border-right:3px solid var(--ink);background:var(--paper2);padding:7px 4px;font-weight:700;font-size:14px;position:relative}
+.tab:last-child{border-right:0}
+.tab.on{background:var(--ink);color:var(--paper)}
+.tab .badge{position:absolute;top:2px;right:4px;background:var(--verm);color:#fff;font-size:10px;padding:0 4px;border-radius:8px}
+.nbody{flex:1;overflow-y:auto;padding:10px 12px 14px;font-family:var(--hand)}
+.nhead{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--serif);font-size:12px;color:var(--ink2);margin-bottom:6px}
+.clues{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.clues li{display:grid;grid-template-columns:28px 1fr;gap:4px 8px;font-size:15.5px;line-height:1.55}
+.clues li .no{font-family:var(--serif);font-weight:900;font-size:13px;border:2px solid var(--ink);height:24px;display:flex;align-items:center;justify-content:center;background:#fff}
+.clues li small{grid-column:2;font-size:11px;color:var(--mute);font-family:var(--serif);margin-top:-4px}
+.clues li.new{animation:inkIn .9s ease-out both}
+.clues li.derive .no{background:var(--verm);border-color:var(--verm);color:#fff}
+@keyframes inkIn{0%{opacity:0;transform:translateX(-10px)}40%{opacity:1}100%{opacity:1;transform:none}}
+.qs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.qs li{border:2px solid var(--ink);background:#fff;padding:7px 10px;font-size:15px;line-height:1.5}
+.qs li.next{border-width:3px;box-shadow:3px 3px 0 var(--ink)}
+.qs li .q::before{content:"？ ";font-weight:900;font-family:var(--serif)}
+.qs li .nx{font-family:var(--serif);font-size:11px;background:var(--ink);color:#fff;padding:0 6px;margin-left:6px;vertical-align:2px}
+.qs li button{border:0;background:transparent;font-family:var(--serif);font-size:12px;text-decoration:underline;color:var(--ink2);padding:2px 0}
+.qs li .h{font-size:14px;color:var(--ink2);border-top:1.5px dashed var(--ink2);margin-top:5px;padding-top:4px}
+.tl{width:100%;border-collapse:collapse;font-family:var(--serif);font-size:11px;table-layout:fixed}
+.tl th,.tl td{border:1px solid rgba(20,20,20,.35);text-align:center;padding:3px 0;height:24px}
+.tl th{font-weight:700;background:var(--paper2)}
+.tl td.o{font-family:var(--hand);font-size:12px;font-weight:700;background:#fff}
+.tl td.e{background-image:var(--dots);background-size:4px 4px}
+.tl td.now{box-shadow:inset 0 0 0 2px var(--ink)}
+.tl th.who{width:44px;text-align:left;padding-left:4px}
+.legend{font-size:12px;color:var(--ink2);margin-top:8px;line-height:1.6;font-family:var(--serif)}
+.endsrow{display:flex;gap:8px;margin-top:12px;font-family:var(--serif);font-size:12px}
+.endsrow span{border:2px solid var(--ink);padding:2px 8px;opacity:.35}
+.endsrow span.got{opacity:1;background:var(--ink);color:#fff}
+
+/* toast */
+#toast{position:fixed;left:50%;top:84px;transform:translateX(-50%);z-index:40;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;width:min(92vw,460px)}
+.toast{background:#fff;border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:8px 14px;font-family:var(--hand);font-size:15px;animation:toast 3.2s ease both;width:100%}
+.toast b{font-family:var(--serif);color:var(--verm);margin-right:6px}
+@keyframes toast{0%{opacity:0;transform:translateY(-14px) rotate(-2deg)}8%{opacity:1;transform:rotate(-1deg)}85%{opacity:1}100%{opacity:0;transform:translateY(-6px)}}
+
+/* overlays */
+.ov{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(232,227,216,.94);background-image:var(--dots);background-size:6px 6px;overflow-y:auto}
+.card{background:var(--paper);border:5px solid var(--ink);box-shadow:8px 8px 0 var(--ink);padding:26px 30px;max-width:640px;width:100%;position:relative}
+.bigbtn{border:4px solid var(--ink);background:var(--ink);color:var(--paper);font-weight:900;font-size:20px;padding:10px 26px;letter-spacing:.15em;box-shadow:4px 4px 0 #888;transition:transform .08s}
+.bigbtn:hover{transform:translate(-2px,-2px)}
+.bigbtn.alt{background:var(--paper);color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+
+/* title */
+#title .card{max-width:980px;display:grid;grid-template-columns:1.1fr 1fr;gap:0;padding:0;overflow:hidden}
+.tl-art{border-right:5px solid var(--ink);background:#fff;position:relative;min-height:420px}
+.tl-art svg{width:100%;height:100%;display:block;position:absolute;inset:0}
+.tl-txt{padding:30px 30px 26px;display:flex;flex-direction:column;gap:14px}
+.tl-txt h1{margin:0;font-size:54px;line-height:1.05;font-weight:900;letter-spacing:.04em}
+.tl-txt h1 span{display:block;font-size:15px;letter-spacing:.5em;font-weight:500;margin-bottom:10px;color:var(--ink2)}
+.tl-txt .one{font-family:var(--hand);font-size:20px;line-height:1.6;border-left:5px solid var(--verm);padding-left:12px;margin:0}
+.tl-txt ul{margin:0;padding-left:18px;font-size:14.5px;line-height:1.75;color:var(--ink2)}
+.tl-txt .meta{font-size:12.5px;color:var(--mute)}
+.stamp{display:inline-block;border:3px solid var(--verm);color:var(--verm);font-weight:900;padding:2px 10px;transform:rotate(-6deg);font-size:14px;letter-spacing:.1em}
+
+/* cutscene */
+#cut{align-items:flex-start;padding:16px}
+.cpage{max-width:1180px;width:100%;margin:auto;display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:14px;background:var(--paper);border:5px solid var(--ink);box-shadow:8px 8px 0 var(--ink)}
+.cpanel{border:4px solid var(--ink);background:#fff;position:relative;overflow:hidden;height:calc((100vh - 130px - (var(--rows) - 1) * 12px) / var(--rows));min-height:170px;opacity:0}
+.cpanel.show{animation:stamp .45s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes stamp{0%{opacity:0;transform:scale(1.08) rotate(-1deg)}100%{opacity:1;transform:none}}
+.cpanel svg{position:absolute;inset:0;width:100%;height:100%}
+.cpanel .cap{position:absolute;left:-4px;top:-4px;background:#fff;border:3px solid var(--ink);padding:4px 10px;font-size:14px;max-width:70%;line-height:1.45;z-index:2}
+.cpanel .bub{position:absolute;background:#fff;border:3px solid var(--ink);border-radius:50%/44%;padding:10px 18px;font-family:var(--hand);font-size:18px;line-height:1.4;z-index:2;text-align:center;max-width:60%}
+
+.cpanel.black{background:var(--ink);display:flex;align-items:center;justify-content:center}
+.cpanel.black p{color:#fff;font-weight:900;font-size:clamp(26px,3.6vw,44px);letter-spacing:.2em;margin:0;text-align:center;line-height:1.5;white-space:nowrap}
+.cpanel.black p small{white-space:normal}
+.cpanel.black p small{display:block;font-size:14px;letter-spacing:.1em;font-weight:500;opacity:.75}
+.cfoot{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;color:var(--ink2)}
+.cfoot .bigbtn{font-size:17px;padding:8px 20px}
+
+/* ending */
+#ending .card{max-width:620px;text-align:center}
+#ending h2{font-size:15px;letter-spacing:.4em;margin:0 0 4px;color:var(--ink2)}
+#ending h1{font-size:44px;margin:0 0 10px;font-weight:900}
+#ending .epi{font-family:var(--hand);font-size:18px;line-height:1.8;margin:6px 0 16px}
+#ending .stats{display:flex;justify-content:center;gap:24px;margin:10px 0 18px;font-size:13px;color:var(--ink2)}
+#ending .stats b{display:block;font-size:30px;color:var(--ink);font-weight:900}
+
+/* flip */
+#flip{position:fixed;inset:0;z-index:70;perspective:1800px;pointer-events:none;overflow:hidden}
+.leaf{position:absolute;inset:0;transform-origin:0 50%;background:var(--paper);border-left:6px solid var(--ink);backface-visibility:hidden;transform:rotateY(-180deg)}
+.leaf::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,0) 30%);animation:shade .5s ease-out forwards}
+.leaf.ghost{background-image:var(--dots);background-size:7px 7px}
+.leaf.ghost::before{content:"";position:absolute;inset:6% 6%;border:5px solid rgba(20,20,20,.5);box-shadow:inset 0 0 0 0 transparent;background:linear-gradient(transparent 49%,rgba(20,20,20,.5) 49% 51%,transparent 51%),linear-gradient(90deg,transparent 59%,rgba(20,20,20,.5) 59% 61%,transparent 61%)}
+.leaf.go{animation:leafIn .5s cubic-bezier(.45,.05,.3,1) forwards}
+@keyframes leafIn{from{transform:rotateY(-180deg)}to{transform:rotateY(0)}}
+@keyframes shade{to{opacity:0}}
+.leaf.final{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px}
+.leaf.final .ch{font-size:15px;letter-spacing:.6em;color:var(--ink2)}
+.leaf.final .no{font-size:clamp(60px,12vw,120px);font-weight:900;line-height:1}
+.leaf.final .tm{font-family:var(--hand);font-size:22px}
+.leaf.final .sub{font-size:14px;color:var(--ink2);font-family:var(--hand)}
+#flip.out{animation:flipOut .5s ease-in forwards}
+@keyframes flipOut{to{opacity:0;transform:translateX(-30px)}}
+
+/* fixed chrome */
+#snd{position:fixed;top:20px;right:max(26px,calc((100vw - 1420px)/2 + 26px));z-index:80;width:40px;height:40px;border:3px solid var(--ink);background:var(--paper);display:flex;align-items:center;justify-content:center;padding:0}
+#snd svg{width:24px;height:24px}
+#back{position:fixed;left:12px;bottom:7px;z-index:80;font-size:12px;color:var(--ink2);text-decoration:none;background:rgba(251,248,241,.9);padding:1px 6px}
+#back:hover{color:var(--ink);text-decoration:underline}
+
+.shake{animation:shake .45s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-7px)}40%,60%{transform:translateX(7px)}}
+.demoTag{font-size:11px;border:2px solid var(--verm);color:var(--verm);padding:0 6px;font-weight:900;letter-spacing:.1em}
+
+/* ---------- mobile ---------- */
+@media (max-width:860px){
+  .page{height:auto;min-height:100dvh;padding:8px 10px 40px;gap:10px}
+  .topbar{gap:8px;padding:6px 54px 10px 10px;position:sticky;top:0;z-index:20}
+  .brand,.analog{display:none}
+  .loopno{border:0;padding:0;font-size:14px}
+  .loopno b{font-size:20px}
+  .digits{font-size:25px}
+  .clockbox{position:static}
+  .tbar{position:absolute;left:-4px;right:-4px;bottom:-4px;height:7px;border-width:2px;min-width:0}
+  .tbar .mk{top:-3px;height:9px}
+  #snd{top:12px;right:16px}
+  body{position:relative}
+  #back{position:absolute;bottom:8px}
+  #toast{top:auto;bottom:24px}
+  #map{max-width:300px}
+  #btnNote{display:block}
+  .tbtn{padding:4px 9px;font-size:13px}
+  .main{flex-direction:column}
+  .colR{flex:0 0 auto}
+  #scene{height:auto;aspect-ratio:800/420}
+  .dlgPanel{min-height:0}
+  .log{max-height:32vh;min-height:110px}
+  .cpanel{height:auto;aspect-ratio:5/3}
+  .ln{font-size:15px}
+  .notePanel{min-height:340px}
+  #title .card{grid-template-columns:1fr}
+  .tl-art{min-height:220px;border-right:0;border-bottom:5px solid var(--ink)}
+  .tl-txt{padding:20px}
+  .tl-txt h1{font-size:40px}
+  .cpanel{grid-column:1/-1!important}
+  .card{padding:20px}
+  #ending h1{font-size:34px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="t1" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><circle cx="3.5" cy="3.5" r="1.05" fill="#141414"/></pattern>
+    <pattern id="t2" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><circle cx="2.5" cy="2.5" r="1.4" fill="#141414"/></pattern>
+    <pattern id="t3" width="4.5" height="4.5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4.5" height="4.5" fill="#141414"/><circle cx="2.25" cy="2.25" r="1.2" fill="#fbf8f1"/></pattern>
+    <pattern id="tH" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="6" stroke="#141414" stroke-width="1.5"/></pattern>
+    <pattern id="tV" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="#d7361f"/><circle cx="2.5" cy="2.5" r="1" fill="#f08a73"/></pattern>
+  </defs>
+</svg>
+
+<div class="page" id="page">
+  <header class="panel topbar">
+    <div class="brand">三分鐘的早晨<small>THREE-MINUTE MORNING</small></div>
+    <div class="loopno">第 <b id="loopNo">1</b> 輪</div>
+    <div class="clockbox">
+      <svg class="analog" id="analog" viewBox="0 0 44 44"></svg>
+      <div class="digits" id="digits">7:00:00</div>
+      <div class="tbar" id="tbar" title="7:00 → 7:03"><i id="tfill"></i></div>
+    </div>
+    <button class="tbtn" id="btnNote">筆記本</button>
+    <button class="tbtn" id="btnPause" title="暫停（Esc）">暫停</button>
+  </header>
+  <div class="main">
+    <div class="colL">
+      <section class="panel scenePanel">
+        <div class="sceneWrap">
+          <div class="caption" id="caption"></div>
+          <svg id="scene" viewBox="0 0 800 420" preserveAspectRatio="xMidYMid meet" role="img" aria-label="場景"></svg>
+        </div>
+        <div class="chips" id="chips"></div>
+      </section>
+      <section class="panel dlgPanel">
+        <div class="log" id="log" aria-live="polite"></div>
+        <div class="acts" id="acts"></div>
+      </section>
+    </div>
+    <div class="colR">
+      <section class="panel mapPanel">
+        <h3>公寓剖面圖・點選移動</h3>
+        <svg id="map" viewBox="0 0 300 236"></svg>
+      </section>
+      <section class="panel notePanel" id="notebook">
+        <div class="tabs">
+          <button class="tab on" data-tab="clues">線索<span class="badge hidden" id="badgeClues"></span></button>
+          <button class="tab" data-tab="qs">還不知道的事</button>
+          <button class="tab" data-tab="tl">時間表</button>
+        </div>
+        <div class="nbody" id="nbody"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- title -->
+<div class="ov" id="title">
+  <div class="card">
+    <div class="tl-art"><svg id="titleArt" viewBox="0 0 500 460" preserveAspectRatio="xMidYMid slice"></svg></div>
+    <div class="tl-txt">
+      <h1><span>時間迴圈・敘事解謎</span>三分鐘的<br>早晨</h1>
+      <p class="one">鬧鐘響了。三分鐘後，樓下會發生一場誤會。<br>世界會忘記一切——但你不會。</p>
+      <ul>
+        <li>點畫面中的<b>物件與人物</b>來行動；每個動作都會花掉幾秒。</li>
+        <li>只有你行動時，時間才會往前走。7:03 一到，一切重來。</li>
+        <li>學到的事會寫進<b>筆記本</b>，並以<em class="v">朱紅</em>標出；卡關就看「還不知道的事」。</li>
+        <li>鍵盤：數字鍵選行動、Esc 暫停。手機直式也能玩。</li>
+      </ul>
+      <div class="row">
+        <button class="bigbtn" id="btnStart">開始</button>
+        <button class="bigbtn alt hidden" id="btnNew">從頭開始</button>
+      </div>
+      <div class="meta" id="titleMeta">約 10–20 分鐘・有兩種以上的結局・自動存檔</div>
+    </div>
+  </div>
+</div>
+
+<!-- pause -->
+<div class="ov hidden" id="pause">
+  <div class="card" style="max-width:420px;text-align:center">
+    <h2 style="margin:0 0 6px;font-size:30px;letter-spacing:.3em">暫停</h2>
+    <p style="font-family:var(--hand);color:var(--ink2);margin:0 0 18px">秒針停在半空中。</p>
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:stretch">
+      <button class="bigbtn" id="pResume">繼續</button>
+      <button class="bigbtn alt" id="pGiveup">放棄這一輪（直接迎接 7:03）</button>
+      <button class="bigbtn alt" id="pTitle">回到標題</button>
+    </div>
+  </div>
+</div>
+
+<div class="ov hidden" id="cut"></div>
+<div class="ov hidden" id="ending"></div>
+<div id="flip" class="hidden"></div>
+
+<button id="snd" aria-label="聲音開關" title="聲音開關"></button>
+<a id="back" href="../index.html">← 遊戲櫃</a>
+
+<script>
+(()=>{
+'use strict';
+/* =========================================================
+   基本設定
+   ========================================================= */
+const Q = new URLSearchParams(location.search);
+const DEMO = Q.get('demo') === '1';
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SPEED = DEMO ? 0.55 : 1;           // 展示模式加快動畫
+const T_END = 180;                       // 7:03:00
+const SKEY = 'g15_three_minute_morning_v1';
+const $ = s => document.querySelector(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms * SPEED));
+const fmtT = t => { t = Math.max(0, Math.min(T_END, t)); const m = Math.floor(t / 60), s = t % 60; return `7:0${m}:${String(s).padStart(2, '0')}`; };
+const fmt = s => s.replace(/\*(.+?)\*/g, '<em class="v">$1</em>');
+
+/* =========================================================
+   存檔（知識保留）
+   ========================================================= */
+function freshSave(){ return { v:1, loop:1, k:{}, korder:[], obs:{gm:{},ll:{},kai:{},cat:{}}, end:{}, actions:0, started:false, sound:true, hints:{} }; }
+let S = freshSave();
+function loadSave(){ try { const s = JSON.parse(localStorage.getItem(SKEY)); if (s && s.v === 1) return Object.assign(freshSave(), s); } catch(e){} return null; }
+function persist(){ if (DEMO) return; try { localStorage.setItem(SKEY, JSON.stringify(S)); } catch(e){} }
+function wipeSave(){ try { localStorage.removeItem(SKEY); } catch(e){} }
+
+/* =========================================================
+   聲音（Web Audio 合成）
+   ========================================================= */
+const AU = {
+  ctx:null, master:null, noise:null, on:true,
+  init(){
+    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+    try {
+      const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+      this.ctx = new C();
+      const comp = this.ctx.createDynamicsCompressor();
+      this.master = this.ctx.createGain(); this.master.gain.value = this.on ? 0.7 : 0;
+      this.master.connect(comp); comp.connect(this.ctx.destination);
+      const len = this.ctx.sampleRate; const b = this.ctx.createBuffer(1, len, len); const d = b.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      this.noise = b;
+    } catch(e){ this.ctx = null; }
+  },
+  set(on){ this.on = on; if (this.master) this.master.gain.setTargetAtTime(on ? 0.7 : 0, this.ctx.currentTime, 0.05); },
+  ok(){ return this.ctx && this.on && this.ctx.state === 'running'; },
+  tone(type, f, t, dur, peak, f2, att = 0.005){
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + att); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + 0.05);
+  },
+  nz(t, dur, peak, ftype, freq, q = 1, freq2){
+    const c = this.ctx, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = this.noise; s.loop = true; f.type = ftype; f.frequency.setValueAtTime(freq, t); f.Q.value = q;
+    if (freq2) f.frequency.exponentialRampToValueAtTime(freq2, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f); f.connect(g); g.connect(this.master); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.05);
+  },
+  // 鬧鐘：兩個三角波（1046/1568Hz）＋方波鈴舌，四連打 ×3 組
+  alarm(){ if (!this.ok()) return; const t0 = this.ctx.currentTime + 0.02;
+    for (let b = 0; b < 3; b++) for (let k = 0; k < 5; k++) { const t = t0 + b * 0.62 + k * 0.085;
+      this.tone('triangle', 1046, t, 0.07, 0.16); this.tone('triangle', 1568, t, 0.06, 0.08); this.tone('square', 2093, t, 0.02, 0.025); } },
+  // 腳步：帶通雜訊 + 低頻 sine 敲擊
+  steps(n = 2, stair = false){ if (!this.ok()) return; const t0 = this.ctx.currentTime + 0.01;
+    for (let i = 0; i < n; i++) { const t = t0 + i * (stair ? 0.17 : 0.24);
+      this.nz(t, 0.08, 0.32, 'bandpass', (stair ? 520 : 360) + Math.random() * 140, 1.8);
+      this.tone('sine', stair ? 130 : 95, t, 0.07, 0.22, 60); } },
+  // 翻頁：高通雜訊掃頻 700→5200Hz
+  flip(i = 0){ if (!this.ok()) return; const t = this.ctx.currentTime + 0.01;
+    this.nz(t, 0.32, 0.22, 'highpass', 700 + i * 200, 0.7, 5200); this.tone('sine', 80, t + 0.24, 0.12, 0.12, 50); },
+  // 滴答：短促高通雜訊 + 高音 sine；最後 30 秒音高提高
+  tick(hurry = false, soft = false){ if (!this.ok()) return; const t = this.ctx.currentTime + 0.005; const p = soft ? 0.35 : 1;
+    this.nz(t, 0.018, 0.22 * p, 'highpass', hurry ? 5200 : 3600, 0.8); this.tone('sine', hurry ? 2400 : 1750, t, 0.03, 0.05 * p); },
+  // 寫字聲＋小鈴（得到線索）
+  clue(){ if (!this.ok()) return; const t0 = this.ctx.currentTime + 0.01;
+    for (let i = 0; i < 6; i++) this.nz(t0 + i * 0.045 + Math.random() * 0.01, 0.035, 0.1, 'bandpass', 1800 + Math.random() * 1600, 2.2);
+    this.tone('sine', 1046, t0 + 0.32, 0.5, 0.12); this.tone('sine', 1568, t0 + 0.42, 0.6, 0.1); },
+  click(){ if (!this.ok()) return; this.nz(this.ctx.currentTime + 0.002, 0.025, 0.12, 'bandpass', 1300, 1.5); },
+  knock(){ if (!this.ok()) return; const t0 = this.ctx.currentTime + 0.01;
+    for (let i = 0; i < 3; i++) { const t = t0 + i * 0.16; this.tone('sine', 170, t, 0.09, 0.35, 120); this.nz(t, 0.04, 0.14, 'bandpass', 900, 2); } },
+  shout(){ if (!this.ok()) return; const t = this.ctx.currentTime + 0.01;
+    this.tone('sine', 140, t, 0.6, 0.6, 40); this.nz(t, 0.35, 0.3, 'lowpass', 900, 0.7, 200); this.tone('sawtooth', 220, t, 0.25, 0.05, 110); },
+  bulb(){ if (!this.ok()) return; const t = this.ctx.currentTime + 0.01;
+    this.nz(t, 0.03, 0.3, 'highpass', 2500); this.tone('sine', 60, t + 0.05, 0.6, 0.05); this.tone('sine', 880, t + 0.05, 0.4, 0.05, 1320); },
+  melody(good){ if (!this.ok()) return; const t0 = this.ctx.currentTime + 0.05;
+    const notes = good ? [523,659,784,880,1046,880,784,1046,1175,1318] : [440,523,587,523,440,392,440];
+    notes.forEach((f, i) => { const t = t0 + i * 0.2; this.tone('triangle', f, t, 0.5, 0.12); this.tone('sine', f / 2, t, 0.6, 0.05); }); }
+};
+
+/* =========================================================
+   世界資料
+   ========================================================= */
+const LOCS = {
+  room:{name:'我的房間', tag:'3F・3A', adj:['hall']},
+  hall:{name:'三樓走廊', tag:'3F', adj:['room','stair']},
+  stair:{name:'樓梯間', tag:'3F↕1F', adj:['hall','top','lobby']},
+  top:{name:'四樓・房東家門口', tag:'4F', adj:['stair']},
+  lobby:{name:'一樓騎樓・信箱', tag:'1F', adj:['stair']}
+};
+const CHAR = { gm:'秋月婆婆', ll:'周伯', kai:'小凱', cat:'麻糬', me:'我' };
+const POSCODE = { room:'房', hall:'廊', stair:'梯', top:'四', lobby:'騎', home:'3B', home4:'4F', nest:'窩', street:'街' };
+
+const CLUES = {
+  event:   '7:03，樓下。周伯大喊「*小偷！*」，抓住了送報的*小凱*。小凱丟下東西逃走了。',
+  mailbox: '7:02:30，小凱打開的是 *3B——秋月婆婆的信箱*，拿出一個紅色信封。',
+  suspect: '周伯認定公寓裡有人*偷信*：3B 的電費單不見了。他今天要親自*埋伏*抓人。',
+  hiding:  '7:02:10 以後，周伯*躲在騎樓柱子後面*盯著信箱。',
+  nest:    '信是*麻糬*叼走的！樓梯底下的紙箱窩裡有 *3B 的電費單*。麻糬 *7:01:00* 前都窩在裡面。',
+  codehint:'婆婆說：她的信箱密碼是*老伴的生日*。',
+  birthday:'走廊花台上的老照片背面寫著：「阿誠 *八月十五日* 生」。',
+  code:    '推理：3B 信箱密碼 ＝ 老伴生日 ＝ *0815*。',
+  gift:    '3B 信箱裡有*溫熱的飯糰*、*一個紅包*，和字條：「給送報的孩子：*畢業快樂*。——3B」',
+  secret:  '每天偷偷替小凱準備早餐的，是*秋月婆婆*。她不敢當面給，怕孩子不好意思。',
+  lastday: '今天是小凱*最後一天送報*，下禮拜他就要去台中念書了。',
+  light:   '*樓梯間的燈壞了*。婆婆眼睛不好，不敢摸黑下樓。',
+  bulb:    '我的書桌抽屜裡有*一顆備用燈泡*。',
+  scam:    '就算婆婆親手交給小凱，周伯還是會誤會成*「騙老人家的錢」*——得先打消他的疑心。'
+};
+const CLUE_COUNT = Object.keys(CLUES).length;
+
+const QUESTIONS = [
+  { id:'q_event', on:k=>!k.event, q:'7:03 樓下會發生什麼事？', h:'到處看看就好，時間一到你就會知道。想看清楚的話，7:03 前待在一樓騎樓。' },
+  { id:'q_mail', on:k=>k.event && !k.mailbox, q:'小凱為什麼會被當成小偷？', h:'7:02:30 左右人在一樓騎樓，看小凱打開了哪一格信箱。' },
+  { id:'q_sus', on:k=>k.event && !k.suspect, q:'周伯為什麼一口咬定有小偷？', h:'7:01:40 以前到四樓敲周伯的門；或看看一樓的公告欄。' },
+  { id:'q_nest', on:k=>k.suspect && !k.nest, q:'3B 不見的信，到底跑去哪了？', h:'麻糬嘴邊常黏著紙屑。牠的窩在樓梯間的紙箱裡——但 7:01 以前牠窩在裡面，不讓人碰。' },
+  { id:'q_codehint', on:k=>(k.mailbox||k.suspect) && !k.codehint, q:'3B 的信箱要怎麼打開？', h:'問信箱的主人——對門的秋月婆婆（7:02 前在家，敲門就好）。' },
+  { id:'q_bday', on:k=>k.codehint && !k.birthday, q:'婆婆老伴的生日是哪一天？', h:'三樓走廊、婆婆家門口的花台上，擺著一張老照片。' },
+  { id:'q_gift', on:k=>k.code && !k.gift, q:'3B 信箱裡到底裝了什麼？', h:'到一樓用 0815 打開 3B 信箱。要趕在 7:02:30 小凱拿走之前。' },
+  { id:'q_secret', on:k=>k.gift && !k.secret, q:'字條署名「3B」——是誰在照顧小凱？', h:'帶著這件事去問秋月婆婆。' },
+  { id:'q_last', on:k=>k.secret && !k.lastday, q:'為什麼偏偏是今天放紅包？', h:'7:02 以後到一樓跟小凱聊聊，或看看他的腳踏車。' },
+  { id:'q_tell', on:k=>k.secret && k.lastday && !k.light, q:'怎麼讓婆婆親手把紅包交給小凱？', h:'把「今天是最後一天」告訴婆婆。小凱 7:02 才到，但婆婆走到樓下要 45 秒——要早點說。' },
+  { id:'q_bulb', on:k=>k.light && !k.bulb, q:'樓梯間的燈要怎麼修？', h:'翻翻你自己房間的書桌抽屜。' },
+  { id:'q_final', on:(k,e)=>k.nest && k.secret && k.lastday && k.light && k.bulb && !e.good, q:'把所有事湊進同一個早晨。', h:'參考順序：拿燈泡 → 換樓梯燈 → 告訴婆婆（最晚 7:02:15）→ 7:01 後搜紙箱拿電費單 → 給周伯看（四樓、樓梯間、騎樓都可以）→ 7:03 在樓下等。' },
+  { id:'q_normal', on:(k,e)=>e.normal && !e.good && !(k.nest && k.secret && k.lastday && k.light && k.bulb), q:'誤會雖然沒發生，可是……還有更好的早晨嗎？', h:'婆婆其實很想親口說些什麼。去弄清楚她為什麼不敢下樓。' },
+];
+
+/* =========================================================
+   世界狀態（每輪重置）
+   ========================================================= */
+let W = null;
+function freshWorld(){
+  return { t:0, loc:'room', items:{bulb:false,bill:false,gift:false}, lightFixed:false, giftInBox:true, boxOpen:false,
+    landlordSuspicious:true, grandmaDepart:null, kaiGotGift:false, kaiOpened:false, kaiTookFromBox:false,
+    flags:{}, log:[], sel:null, dial:[0,0,0,0], mode:'idle', visited:{room:true}, actions:0 };
+}
+
+// --- 角色位置 ---
+function posGm(t){
+  const d = W.grandmaDepart;
+  if (d && t >= d.t) {
+    const dt = t - d.t;
+    if (d.from === 'stair') return dt < 30 ? 'stair' : 'lobby';
+    return dt < 15 ? 'hall' : dt < 45 ? 'stair' : 'lobby';
+  }
+  if (t < 120) return 'home';
+  if (t < 150) return 'hall';
+  return 'stair';
+}
+function posOf(c, t){
+  switch (c) {
+    case 'gm': return posGm(t);
+    case 'll': return t < 100 ? 'home4' : t < 130 ? 'stair' : 'lobby';
+    case 'cat': return t < 60 ? 'nest' : t < 120 ? 'hall' : 'lobby';
+    case 'kai': return t < 60 ? 'away' : t < 120 ? 'street' : 'lobby';
+  }
+}
+function visibleAt(c, loc, t = W.t){ const p = posOf(c, t); return p === loc || (p === 'nest' && loc === 'stair'); }
+
+// --- 路徑 ---
+function route(a, b){
+  if (a === b) return [];
+  const prev = {[a]:null}, q = [a];
+  while (q.length) { const x = q.shift(); for (const y of LOCS[x].adj) if (!(y in prev)) { prev[y] = x; q.push(y); } }
+  const p = []; let c = b; while (c !== a) { p.unshift(c); c = prev[c]; } return p;
+}
+
+// --- 知識 ---
+let fresh = [];
+function learn(id){
+  if (S.k[id]) return false;
+  S.k[id] = S.loop; S.korder.push(id); fresh.push(id);
+  if (S.k.codehint && S.k.birthday && !S.k.code) { S.k.code = S.loop; S.korder.push('code'); fresh.push('code'); }
+  persist(); return true;
+}
+function observe(c, p, t){ const b = Math.min(17, Math.floor(t / 10)); S.obs[c][b] = POSCODE[p] || '?'; }
+
+/* =========================================================
+   世界時間軸：每一秒的事件
+   ========================================================= */
+function happen(loc, text){ if (W.loc === loc) W.pending.push({k:'narr', ts:fmtT(W.t), text}); }
+function worldTick(t){
+  // 觀察記錄
+  for (const c of ['gm','ll','kai','cat']) if (visibleAt(c, W.loc, t)) observe(c, posOf(c, t), t);
+  const gmDep = W.grandmaDepart;
+  if (t === 60) { happen('stair', '麻糬伸了個懶腰，從紙箱裡鑽出來，往三樓走廊晃過去了。'); happen('hall', '麻糬從樓梯間晃了過來，在 3B 門口蹭來蹭去。'); }
+  if (t === 100) { happen('top', '四樓的鐵門「嘎」一聲打開，周伯趿著拖鞋往樓下走。'); happen('stair', '周伯從四樓走下來，嘴裡念著：「今天一定抓到你……」'); }
+  if (t === 120) {
+    happen('lobby', '「嘰——」腳踏車煞車聲。送報的*小凱*到了。'); happen('lobby', '麻糬跳上信箱頂，尾巴垂下來晃啊晃。');
+    happen('hall', '麻糬往樓下跑走了。');
+    if (!gmDep) happen('hall', '3B 的門開了。秋月婆婆提著澆水壺出來，慢慢替花台澆水。');
+  }
+  if (t === 130) {
+    happen('stair', '周伯走下一樓去了。');
+    if (W.loc === 'lobby') { if (W.landlordSuspicious) { W.pending.push({k:'narr', ts:fmtT(t), text:'周伯閃身*躲到柱子後面*，眼睛死盯著信箱。'}); learn('hiding'); } else W.pending.push({k:'narr', ts:fmtT(t), text:'周伯走到騎樓，靠著柱子打了個呵欠，等報紙。'}); }
+  }
+  if (t === 150 && !gmDep) { happen('hall', '婆婆放下澆水壺，走到樓梯間的窗口，往下看。'); happen('stair', '秋月婆婆走過來，靠在窗口往樓下張望，像在等誰。'); }
+  if (gmDep) {
+    const dt = t - gmDep.t;
+    if (gmDep.from !== 'stair' && dt === 15) happen('stair', '婆婆扶著扶手，一階一階往下走。燈光照著她的腳邊。');
+    const arrive = gmDep.from === 'stair' ? 30 : 45;
+    if (dt === arrive) { happen('lobby', '秋月婆婆扶著扶手走下樓了。她手裡緊緊抓著外套口袋。'); if (W.loc === 'lobby' && W.items.gift) { W.items.gift = false; W.giftInBox = true; W.pending.push({k:'narr', ts:fmtT(t), text:'你把紅包還給了婆婆。她對你點點頭。'}); } }
+  }
+  if (t === 150) {
+    const gmHere = posGm(t) === 'lobby';
+    if (!W.kaiGotGift && !gmHere) {
+      W.kaiOpened = true; W.kaiTookFromBox = W.giftInBox; W.giftInBox = false; W.boxOpen = false;
+      if (W.loc === 'lobby') { W.pending.push({k:'narr', ts:fmtT(t), text: W.kaiTookFromBox ? '小凱左右看了看，轉開 *3B 的信箱*，拿出一個*紅色信封*和一包東西。' : '小凱轉開 *3B 的信箱*——裡面空空的。他愣住了。'}); learn('mailbox'); }
+    }
+  }
+}
+
+/* =========================================================
+   行動
+   ========================================================= */
+const COST = { move:10, look:5, take:5, talk:10, fix:10, dial:5, wait:10, give:10 };
+let busy = false;
+
+function L(k, text, who){ return {k, text, who}; }
+
+function hsAvail(){ return buildScene(W.loc).hs.map(h => h.id); }
+
+function actionsFor(id){
+  const t = W.t, k = S.k, a = [];
+  const add = (key, label, cost, fn, extra = {}) => a.push({ key, label, cost, fn, ...extra });
+  if (id.startsWith('go:')) {
+    const dest = id.slice(3), r = route(W.loc, dest);
+    if (r.length) add('go', `走去${LOCS[dest].name}`, r.length * COST.move, null, { move: r });
+    return a;
+  }
+  switch (id) {
+    /* ---------- 房間 ---------- */
+    case 'clock': add('look', '看鬧鐘', COST.look, () => [L('think', S.loop === 1 ? '鬧鐘指著七點整，秒針吵得要命。……奇怪，這一幕好像在哪裡看過。' : `又是七點整。這是第 ${S.loop} 次了。鬧鐘好像只會把我送回這個早晨——除非，這個早晨「對了」。`)]); break;
+    case 'drawer':
+      if (!W.items.bulb) add('take', '拿出燈泡', COST.take, () => { W.items.bulb = true; learn('bulb'); return [L('narr', '抽屜裡有*一顆備用燈泡*、一支沒水的原子筆、去年的發票。你把燈泡放進口袋。')]; }, { key2: k.light });
+      else add('look', '翻抽屜', COST.look, () => [L('narr', '只剩原子筆和發票了。燈泡在你口袋裡。')]);
+      break;
+    case 'window': add('look', '往窗外看', COST.look, () => {
+      const out = [];
+      if (t < 60) out.push(L('narr', '巷子空蕩蕩的。對面早餐店剛拉開鐵門，蒸籠冒著白煙。'));
+      else if (t < 120) { out.push(L('narr', '巷口有一台載滿報紙的腳踏車，慢慢騎過來——是送報的*小凱*。')); observe('kai', 'street', t); }
+      else { out.push(L('narr', '小凱的腳踏車停在騎樓下。')); observe('kai', 'lobby', t); }
+      if (t >= 130) { observe('ll', 'lobby', t); if (W.landlordSuspicious) { out.push(L('narr', '騎樓柱子後面露出半顆光頭——是*周伯*。他在躲什麼？')); learn('hiding'); } else out.push(L('narr', '周伯站在騎樓下伸懶腰。')); }
+      return out; }); break;
+    case 'bed': add('look', '看看床', COST.look, () => [L('think', S.loop > 3 ? '被子還是溫的。每一次醒來都是同一個溫度。' : '被子還是溫的……再睡一下好像也不錯。不行，樓下會出事。')]); break;
+    case 'cal': add('look', '看月曆', COST.look, () => [L('narr', '十月十五日，星期四。月曆上什麼都沒寫——今天應該是很普通的一天才對。')]); break;
+
+    /* ---------- 走廊 ---------- */
+    case 'door3b':
+      if (posGm(t) === 'home') talkTopics('gm', a, true);
+      else add('look', '看看 3B 的門', COST.look, () => [L('narr', W.grandmaDepart ? '門關著。婆婆已經下樓了。' : '門半掩著，屋裡飄出海苔的香味。')]);
+      break;
+    case 'photo': add('look', '看照片', COST.look, () => { learn('birthday'); return [L('narr', '一張泛黃的合照：年輕的婆婆，旁邊是一個笑得很開的男人。翻到背面——「阿誠 *八月十五日* 生」。')]; }); break;
+    case 'plants': add('look', '看盆栽', COST.look, () => [L('narr', '婆婆種的九層塔和薄荷。土有點乾——她大概等一下就會出來澆水。')]); break;
+
+    /* ---------- 樓梯間 ---------- */
+    case 'lamp':
+      if (W.lightFixed) add('look', '看燈', COST.look, () => [L('narr', '燈亮著。樓梯每一階都看得清清楚楚。')]);
+      else {
+        add('look', '看燈', COST.look, () => [L('narr', '燈泡燒壞了。樓梯間只剩窗口那一點光，*很暗*，階梯邊緣都看不清。')]);
+        if (W.items.bulb) add('fix', '換上燈泡', COST.fix, () => { W.lightFixed = true; W.items.bulb = false; AU.bulb(); return [L('narr', '你踮腳轉下舊燈泡，換上新的。「喀。」——樓梯間一下子亮了起來。')]; }, { key2: true });
+      }
+      break;
+    case 'nest':
+      if (posOf('cat', t) === 'nest') add('look', '靠近紙箱', COST.look, () => [L('narr', '紙箱裡有一團橘色的毛——*麻糬*。牠對你「哈——」地哈氣，不讓你靠近。'), L('think', '牠應該不會一直窩在這裡吧。')]);
+      else if (!W.items.bill && !W.flags.billTaken) add('take', '翻紙箱', COST.take, () => { W.items.bill = true; W.flags.billTaken = true; learn('nest'); return [L('narr', '紙箱裡墊著舊毛巾，底下壓著好幾封被咬過的信……*3B 的電費單*也在裡面！你把電費單收進口袋。'), L('think', '原來偷信的是麻糬。')]; }, { key2: k.suspect });
+      else add('look', '看紙箱', COST.look, () => [L('narr', '只剩一條舊毛巾，還有幾根橘色的貓毛。')]);
+      break;
+    case 'swin': add('look', '從窗口往下看', COST.look, () => {
+      const out = [L('narr', '從這扇窗看得到騎樓的一角，正好對著那排信箱。')];
+      if (t >= 120) { out.push(L('narr', '小凱正把報紙一份份塞進信箱。')); observe('kai', 'lobby', t); }
+      if (t >= 130 && W.landlordSuspicious) { out.push(L('narr', '柱子後面躲著*周伯*。')); learn('hiding'); observe('ll', 'lobby', t); }
+      if (t >= 150 && W.kaiOpened) { out.push(L('narr', '小凱手上拿著從 *3B 信箱*拿出來的東西。')); learn('mailbox'); }
+      return out; }); break;
+
+    /* ---------- 四樓 ---------- */
+    case 'door4f':
+      if (posOf('ll', t) === 'home4') talkTopics('ll', a, true);
+      else add('look', '看看門', COST.look, () => [L('narr', '鐵門鎖著。周伯已經下樓了。')]);
+      break;
+    case 'orchid': add('look', '看蘭花', COST.look, () => [L('narr', '周伯養的蝴蝶蘭，每片葉子都擦得發亮。這個人認真起來，很難講得通。')]); break;
+    case 'couplet': add('look', '看春聯', COST.look, () => [L('narr', '褪色的春聯：「出入平安」。邊角被風吹得翹起來了。')]); break;
+
+    /* ---------- 一樓 ---------- */
+    case 'mail':
+      add('look', '看信箱', COST.look, () => [L('narr', '一整面鐵信箱。*3B* 那格掛著一個四位數的轉盤鎖。')]);
+      if (W.boxOpen && W.giftInBox) {
+        add('take', '拿走紅包', COST.take, () => { W.items.gift = true; W.giftInBox = false; return [L('narr', '你把紅包和飯糰拿出來。'), L('think', '……可是這是要給小凱的。')]; });
+      } else if (!W.boxOpen) add('dial', '轉 3B 的密碼鎖', COST.dial, null, { dial:true, key2: !!k.code });
+      break;
+    case 'board': add('look', '看公告欄', COST.look, () => { learn('suspect'); return [L('narr', '公告欄上貼著一張手寫紙：「近日有人*偷拿信件*（3B 電費單等），*抓到一律報警*！——房東 周」')]; }); break;
+    case 'bike': add('look', '看腳踏車', COST.look, () => { learn('lastday'); return [L('narr', '車籃裡有一張折起來的單子：「配送交接——*明日起由新人接手*」。龍頭上綁著一條寫著「加油」的毛巾。')]; }); break;
+    case 'gate': add('look', '看看巷子', COST.look, () => [L('narr', t < 120 ? '巷子很安靜。遠遠聽得到腳踏車鈴聲。' : '早餐店老闆在喊：「蘿蔔糕好了喔——」')]); break;
+
+    /* ---------- 角色 ---------- */
+    case 'gm': talkTopics('gm', a, false); break;
+    case 'll': talkTopics('ll', a, false); break;
+    case 'kai': talkTopics('kai', a, false); break;
+    case 'cat': add('look', '摸摸麻糬', COST.look, () => [L('narr', W.loc === 'lobby' ? '麻糬蹲在信箱頂上，尾巴掃來掃去，像在監視什麼。' : '麻糬蹭你的腳踝，*嘴邊黏著一點白色紙屑*。'), L('say', '喵。', 'cat')]); break;
+  }
+  return a;
+}
+
+function talkTopics(who, a, knock){
+  const t = W.t, k = S.k, it = W.items;
+  const add = (key, label, fn, extra = {}) => a.push({ key, label, cost: COST.talk, fn, knock, ...extra });
+  if (who === 'gm') {
+    const pos = posGm(t);
+    if (W.grandmaDepart) { add('talk', '跟婆婆說話', () => [L('say', pos === 'lobby' ? '我下來了。……心臟跳得好快呢。' : '我這就下去，你別擔心。', 'gm')]); return; }
+    add('talk', knock ? '敲門打招呼' : '打招呼', () => { const first = !W.flags.gmHi; W.flags.gmHi = true;
+      return first ? [L('say', '唉唷，3A 的孩子，今天這麼早？我等一下要出來*澆花*。要不要吃個飯糰？我今天多捏了一個。', 'gm'), L('think', '多捏了一個飯糰……要給誰？')] : [L('say', '早啊。今天天氣真好。', 'gm')]; });
+    if (k.mailbox || k.suspect) add('talk2', '問她信箱的事', () => { learn('codehint'); return [L('say', '信箱？我記性不好，那個鎖的密碼啊，就用*我老伴的生日*。……你問這個做什麼？', 'gm')]; }, { key2: !k.codehint });
+    if (k.gift) add('talk3', '「信箱裡的飯糰是妳放的吧？」', () => { learn('secret'); return [L('say', '……被你發現啦。那個送報的孩子，每天天沒亮就出門，瘦巴巴的。我就每天多捏一個飯糰。*你別跟人家講*，他會不好意思。', 'gm')]; }, { key2: !k.secret });
+    if (k.lastday && k.secret) add('talk4', '「小凱今天是最後一天送報了。」', () => {
+      if (W.lightFixed) {
+        W.grandmaDepart = { t: W.t, from: pos === 'stair' ? 'stair' : 'hall' };
+        return [L('say', '最後一天……？那、那我得*親手*拿給他才行。', 'gm'), L('narr', pos === 'stair' ? '婆婆扶著亮起來的扶手，往樓下走去。' : '婆婆抓起外套，扶著牆往樓梯走去。')];
+      }
+      learn('light');
+      return [L('say', '最後一天啊……我也想下去送送他。可是*樓梯間的燈壞了*好幾天，我眼睛不好，暗暗的，我不敢走。', 'gm')];
+    }, { key2: true });
+  }
+  if (who === 'll') {
+    if (W.landlordSuspicious) {
+      add('talk', knock ? '敲門' : '跟周伯說話', () => { learn('suspect');
+        if (knock) return [L('say', '誰啊，一大早的！……喔，3A 的。跟你說，最近有人在*偷信*！3B 婆婆的電費單都不見了。今天我要親自下去*埋伏*，抓到就送警察局！', 'll')];
+        if (W.loc === 'lobby') return [L('say', '噓！小聲點！我在抓*偷信賊*。你站旁邊點，別擋到我。', 'll')];
+        return [L('say', '別擋路，我要下去抓那個*偷信賊*。', 'll')]; });
+      if (it.bill) add('talk2', '拿出電費單：「信是貓叼走的。」', () => { W.landlordSuspicious = false;
+        return [L('say', '……3B 的電費單？在麻糬的窩裡？……這隻死貓！害我差點冤枉人。', 'll'), L('say', '好啦好啦，不抓了。我拿個報紙就好。', 'll')]; }, { key2: true });
+      else if (k.nest) add('talk2', '「信是貓叼走的。」', () => [L('say', '貓？你說貓就貓？*證據*呢？', 'll'), L('think', '得把紙箱裡的電費單拿來給他看。')]);
+    } else add('talk', '跟周伯說話', () => [L('say', '早啦。那隻貓我回頭再跟牠算帳。', 'll')]);
+  }
+  if (who === 'kai') {
+    add('talk', '跟小凱打招呼', () => { learn('lastday'); return [L('say', W.kaiOpened ? '啊，早……我、我要走了。' : '早！欸，你住 3A 對吧？跟你說，*今天是我最後一天送報*，下禮拜要去台中念書了。', 'kai')]; });
+    if (k.mailbox && !W.kaiOpened) add('talk2', '「你為什麼會開 3B 的信箱？」', () => [L('say', '……那是有人留給我的早餐。字條上只寫「3B」，還叫我不要問是誰。我、我沒有偷東西喔。', 'kai')]);
+    if (it.gift && !W.kaiGotGift) add('give', '把紅包交給小凱', () => { W.kaiGotGift = true; it.gift = false;
+      return [L('narr', '「這是 3B 要給你的。」'), L('say', '……紅包？「畢業快樂」……', 'kai'), L('say', '幫我……跟 3B 說謝謝。', 'kai')]; }, { key2: true, cost: COST.give });
+  }
+}
+
+/* --- 執行一個行動 --- */
+async function perform(act){
+  if (busy || W.mode !== 'idle') return;
+  busy = true; AU.click();
+  S.actions++; W.actions++;
+  fresh = []; W.pending = [];
+  if (act.move) {
+    let ended = false;
+    for (const nxt of act.move) {
+      const from = W.loc; W.loc = nxt; W.visited[nxt] = true;
+      AU.steps(3, nxt === 'stair' || from === 'stair');
+      ended = await advance(COST.move);
+      renderScene(true);
+      if (ended) break;
+    }
+    if (ended) { busy = false; return; }
+    W.sel = null;
+    const who = ['gm','ll','kai','cat'].filter(c => visibleAt(c, W.loc));
+    pushLog([L('sys', `${fmtT(W.t)}・來到${LOCS[W.loc].name}${who.length ? '。這裡有：' + who.map(c => CHAR[c]).join('、') : ''}`), ...W.pending]);
+  } else {
+    if (act.knock) AU.knock();
+    const ended = await advance(act.cost);
+    if (ended) { busy = false; return; }
+    const out = act.fn ? act.fn() : [];
+    pushLog([...(out || []), ...W.pending]);
+  }
+  persist();
+  afterLearn();
+  busy = false;
+  renderAll();
+}
+
+async function advance(sec){
+  const t0 = W.t, t1 = Math.min(T_END, W.t + sec);
+  for (let t = t0 + 1; t <= t1; t++) { W.t = t; worldTick(t); }
+  // 動畫：時鐘一格一格跳
+  const steps = Math.min(sec, 10), dur = (DEMO ? 18 : 34) * sec;
+  for (let i = 1; i <= steps; i++) {
+    const tt = Math.round(t0 + (t1 - t0) * i / steps);
+    renderClock(tt); AU.tick(tt >= 150);
+    await sleep(dur / steps);
+  }
+  renderClock(W.t);
+  if (W.t >= T_END) { await morningEvent(); return true; }
+  return false;
+}
+
+/* =========================================================
+   7:03 判定
+   ========================================================= */
+function resolve(){
+  const gmHere = posGm(T_END) === 'lobby';
+  if (gmHere) return W.landlordSuspicious ? 'scam' : 'good';
+  if (W.landlordSuspicious && W.kaiOpened) return 'thief';
+  return W.kaiGotGift ? 'handed' : 'calm';
+}
+
+async function morningEvent(){
+  W.mode = 'event';
+  const out = resolve();
+  fresh = [];
+  pushLog(W.pending || []);
+  if (out === 'thief' || out === 'scam') {
+    learn('event');
+    if (W.loc === 'lobby' || W.loc === 'stair') learn('mailbox');
+    if (out === 'scam') learn('scam');
+    if (W.loc === 'lobby' && W.landlordSuspicious) learn('hiding');
+  }
+  persist();
+  if (!RM) { $('#page').classList.remove('shake'); void $('#page').offsetWidth; $('#page').classList.add('shake'); }
+  if (out === 'thief' || out === 'scam') AU.shout();
+  await sleep(500);
+  await showCut(out);
+  if (out === 'good' || out === 'calm' || out === 'handed') {
+    S.end[out === 'good' ? 'good' : 'normal'] = true; persist();
+    showEnding(out);
+  } else {
+    const newly = fresh.slice();
+    await flipTo(S.loop + 1);
+    newly.forEach((id, i) => setTimeout(() => toast(id), 300 + i * 500));
+  }
+}
+
+/* =========================================================
+   SVG 繪圖：角色
+   ========================================================= */
+const PAPER = '#fbf8f1';
+const st = (w = 3) => `stroke="#141414" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
+const F = (d, tone, w = 3, cls = '') => `<path d="${d}" fill="${PAPER}"/><path class="${cls}" d="${d}" fill="${tone ? `url(#${tone})` : 'none'}" ${st(w)}/>`;
+const G = (x, y, s, flip, inner) => `<g transform="translate(${x} ${y}) scale(${flip ? -s : s} ${s})">${inner}</g>`;
+
+function grandma(o){
+  const m = o.mood || 'calm';
+  const face = m === 'shock' ? `<circle cx="-7" cy="-95" r="1.8" fill="#141414"/><circle cx="7" cy="-95" r="1.8" fill="#141414"/><ellipse cx="0" cy="-84" rx="3.2" ry="4.2" fill="#fff" ${st(2)}/>`
+    : m === 'sad' ? `<path d="M-11 -99 l6 2 M11 -99 l-6 2" ${st(2)}/><path d="M-4 -83 q4 -3 8 0" fill="none" ${st(2)}/>`
+    : `<path d="M-4 -85 q4 4 8 0" fill="none" ${st(2)}/>`;
+  const can = o.can ? `<g transform="translate(30 -42)"><path d="M0 0 h22 v18 h-22z" fill="url(#t2)" ${st(2.5)}/><path d="M22 4 l16 -10" ${st(3)}/><path d="M2 0 q9 -12 18 0" fill="none" ${st(2.5)}/></g>` : '';
+  const arm = o.give ? `<path d="M18 -72 Q40 -66 48 -60" fill="none" ${st(3.5)}/><circle cx="50" cy="-60" r="4" fill="#fff" ${st(2.5)}/>` : `<path d="M20 -72 Q34 -52 28 -36" fill="none" ${st(3.5)}/>`;
+  return G(o.x, o.y, o.s || 1, o.flip, `
+    <ellipse cx="-11" cy="-3" rx="9" ry="4" fill="#141414"/><ellipse cx="11" cy="-3" rx="9" ry="4" fill="#141414"/>
+    <path d="M-9 -5 L-9 -20 M9 -5 L9 -20" ${st(4)}/>
+    ${F('M-30 -18 Q-33 -58 -21 -80 Q0 -88 21 -80 Q33 -58 30 -18 Z', 't1')}
+    <path d="M0 -84 L0 -18 M-6 -60 h2 M-6 -44 h2" fill="none" ${st(2)}/>
+    <path d="M-20 -72 Q-34 -52 -26 -36" fill="none" ${st(3.5)}/>${arm}
+    <circle cx="0" cy="-96" r="19" fill="#fff" ${st(3)}/>
+    <path d="M-19 -98 Q-19 -118 0 -117 Q19 -118 19 -98 Q10 -108 0 -106 Q-10 -108 -19 -98Z" fill="url(#t3)" ${st(2.5)}/>
+    <circle cx="0" cy="-121" r="8" fill="url(#t3)" ${st(2.5)}/>
+    <circle cx="-7" cy="-95" r="5.5" fill="none" ${st(2)}/><circle cx="7" cy="-95" r="5.5" fill="none" ${st(2)}/><path d="M-1.5 -95 h3" ${st(2)}/>
+    ${face}${can}`);
+}
+function kai(o){
+  const m = o.mood || 'calm';
+  const face = m === 'shock' ? `<circle cx="6" cy="-128" r="2" fill="#141414"/><ellipse cx="9" cy="-117" rx="3" ry="4" fill="#fff" ${st(2)}/><path d="M18 -140 l5 -8 M22 -136 l8 -4" ${st(2)}/>`
+    : m === 'moved' ? `<path d="M2 -129 q4 3 8 0" fill="none" ${st(2)}/><path d="M6 -125 v6" stroke="#141414" stroke-width="1.5" stroke-dasharray="2 2"/><path d="M4 -118 q4 3 8 0" fill="none" ${st(2)}/>`
+    : `<circle cx="7" cy="-128" r="2" fill="#141414"/><path d="M4 -118 q5 4 9 0" fill="none" ${st(2)}/>`;
+  const armR = o.reach ? `<path d="M18 -104 L46 -92" ${st(4)}/>` : `<path d="M19 -104 L26 -76" ${st(4)}/>`;
+  const env = o.env ? `<rect x="40" y="-102" width="16" height="22" class="kf" fill="#d7361f" ${st(2.5)} transform="rotate(12 48 -91)"/>` : '';
+  return G(o.x, o.y, o.s || 1, o.flip, `
+    <path d="M-12 -2 h12 M4 -2 h12" ${st(6)}/>
+    <path d="M-7 -4 L-6 -42 M9 -4 L7 -42" ${st(4)}/>
+    ${F('M-15 -40 L-17 -64 L17 -64 L15 -40 L3 -40 L0 -50 L-3 -40 Z', 't2')}
+    ${F('M-17 -63 L-20 -106 Q0 -114 20 -106 L17 -63 Z', null)}
+    <path d="M-16 -106 L14 -66" ${st(3)}/>${F('M6 -76 h20 v16 h-20 Z', 't3', 2.5)}
+    <path d="M-19 -104 L-27 -74" ${st(4)}/>${armR}${env}
+    <circle cx="0" cy="-127" r="17" fill="#fff" ${st(3)}/>
+    <path d="M-17 -131 Q-15 -147 2 -147 Q18 -147 17 -131 Z" fill="#141414" ${st(2.5)}/><path d="M12 -133 L32 -131" ${st(4)}/>
+    <path d="M-16 -128 l-3 6 M-14 -124 l-2 6" ${st(2)}/>
+    ${face}`);
+}
+function landlord(o){
+  const m = o.mood || 'grump';
+  const brow = m === 'angry' ? `<path d="M-12 -136 l9 4 M12 -136 l-9 4" ${st(3)}/>` : m === 'sheep' ? `<path d="M-12 -133 l9 -2 M12 -133 l-9 -2" ${st(2.5)}/>` : `<path d="M-12 -134 h9 M3 -134 h9" ${st(3)}/>`;
+  const mouth = m === 'angry' ? `<path d="M-8 -114 h16 v7 h-16z" fill="#141414" ${st(2)}/>` : m === 'yawn' ? `<ellipse cx="0" cy="-112" rx="5" ry="7" fill="#141414"/>` : m === 'sheep' ? `<path d="M-5 -112 q5 4 10 0" fill="none" ${st(2)}/>` : `<path d="M-6 -111 h12" ${st(2.5)}/>`;
+  const paper = o.paper ? `<g transform="translate(30 -74) rotate(-20)"><rect x="0" y="0" width="12" height="40" fill="#fff" ${st(2.5)}/><path d="M2 8 h8 M2 14 h8 M2 20 h8" ${st(1.5)}/></g>` : '';
+  const armR = o.point ? `<path d="M22 -102 Q40 -100 56 -108" ${st(5)}/><path d="M56 -108 l10 -4" ${st(4)}/>` : o.scratch ? `<path d="M22 -102 Q30 -128 14 -146" ${st(5)}/>` : `<path d="M22 -102 Q36 -84 30 -62" ${st(5)}/>`;
+  return G(o.x, o.y, o.s || 1, o.flip, `
+    <path d="M-20 -2 h14 M6 -2 h14" ${st(6)}/>
+    ${F('M-18 -2 L-15 -48 L-1 -48 L-4 -2 Z', 't3')}${F('M4 -2 L1 -48 L15 -48 L18 -2 Z', 't3')}
+    ${F('M-24 -46 Q-36 -80 -20 -108 L20 -108 Q36 -80 24 -46 Z', null)}
+    <path d="M-12 -108 L-10 -92 M12 -108 L10 -92" ${st(2)}/><path d="M-18 -60 q18 8 36 0" fill="none" ${st(2)}/>
+    <path d="M-22 -102 Q-36 -84 -30 -62" ${st(5)}/>${armR}${paper}
+    <circle cx="0" cy="-126" r="21" fill="#fff" ${st(3)}/>
+    <path d="M-21 -128 q-2 -10 4 -14 M21 -128 q2 -10 -4 -14" fill="none" ${st(3)}/><path d="M-20 -134 l-4 -2 M20 -134 l4 -2" ${st(2)}/>
+    <rect x="-14" y="-131" width="11" height="8" fill="none" ${st(2.2)}/><rect x="3" y="-131" width="11" height="8" fill="none" ${st(2.2)}/><path d="M-3 -128 h6" ${st(2)}/>
+    ${brow}<path d="M-9 -118 q9 -4 18 0" fill="none" ${st(3.5)}/>${mouth}`);
+}
+function landlordPeek(x, y, s = 1){
+  return G(x, y, s, false, `<circle cx="0" cy="0" r="21" fill="#fff" ${st(3)}/><path d="M-21 -2 q-2 -10 4 -14" fill="none" ${st(3)}/>
+    <rect x="-14" y="-5" width="11" height="8" fill="none" ${st(2.2)}/><rect x="3" y="-5" width="11" height="8" fill="none" ${st(2.2)}/>
+    <path d="M-12 -10 l9 4 M12 -10 l-9 4" ${st(3)}/><path d="M-6 12 h12" ${st(2.5)}/><path d="M-26 22 q4 -8 10 -6" fill="none" ${st(4)}/>`);
+}
+function cat(o){
+  const m = o.mood || 'awake';
+  const eyes = m === 'sleep' ? `<path d="M14 -30 q3 2 6 0 M24 -30 q3 2 6 0" fill="none" ${st(2)}/>` : m === 'hiss' ? `<path d="M13 -32 l6 3 M31 -32 l-6 3" ${st(2.2)}/><path d="M18 -22 l4 -3 l4 3" fill="none" ${st(2)}/>` : `<circle cx="17" cy="-30" r="2" fill="#141414"/><circle cx="27" cy="-30" r="2" fill="#141414"/>`;
+  return G(o.x, o.y, o.s || 1, o.flip, `
+    <path d="M-26 -12 q-22 -4 -18 -26" fill="none" ${st(4)}/>
+    ${F('M-28 -2 Q-32 -30 0 -32 Q26 -32 28 -2 Z', null)}
+    <path d="M-20 -20 q8 -8 16 0 q-8 4 -16 0Z" fill="url(#t2)" stroke="none"/>
+    <path d="M10 -36 L12 -50 L19 -40 M28 -40 L33 -50 L35 -35" fill="${PAPER}" ${st(2.5)}/>
+    <circle cx="22" cy="-29" r="14" fill="#fff" ${st(3)}/><path d="M10 -36 L12 -48 L18 -40Z M26 -40 L33 -48 L34 -35Z" fill="url(#t2)" ${st(2.5)}/>
+    ${eyes}<path d="M21 -25 l1 1 l1 -1" ${st(1.5)}/>`);
+}
+function envelope(x, y, r = 0, s = 1){ return `<g transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><rect x="-14" y="-20" width="28" height="40" fill="#d7361f" ${st(2.5)}/><path d="M-14 -20 L0 -6 L14 -20" fill="none" stroke="#fbf8f1" stroke-width="2"/><circle cx="0" cy="6" r="6" fill="none" stroke="#fbf8f1" stroke-width="2"/></g>`; }
+function riceball(x, y, s = 1){ return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 -18 Q16 6 14 12 Q0 16 -14 12 Q-16 6 0 -18Z" fill="#fff" ${st(2.5)}/><rect x="-8" y="2" width="16" height="11" fill="#141414"/></g>`; }
+function burst(cx, cy, rx, ry, text, fs = 46){ let d = ''; const n = 22; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, r = i % 2 ? 0.78 : 1.08; d += (i ? 'L' : 'M') + (cx + Math.cos(a) * rx * r).toFixed(1) + ' ' + (cy + Math.sin(a) * ry * r).toFixed(1); }
+  return `<path d="${d}Z" fill="#fff" ${st(4)}/><text x="${cx}" y="${cy + fs * .36}" text-anchor="middle" font-family="Noto Serif TC,Noto Serif CJK TC,serif" font-weight="900" font-size="${fs}">${text}</text>`; }
+function speed(cx, cy, n = 28, r0 = 90, r1 = 400){ let s = ''; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2 + (i % 3) * 0.05, ra = r0 + (i % 4) * 14; s += `<path d="M${cx + Math.cos(a) * ra} ${cy + Math.sin(a) * ra} L${cx + Math.cos(a) * r1} ${cy + Math.sin(a) * r1}" stroke="#141414" stroke-width="${1 + (i % 3)}"/>`; } return s; }
+function bigClock(x, y, r, sec){ let s = `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" ${st(5)}/>`;
+  for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; s += `<path d="M${x + Math.sin(a) * r * .82} ${y - Math.cos(a) * r * .82} L${x + Math.sin(a) * r * .94} ${y - Math.cos(a) * r * .94}" ${st(i % 3 ? 3 : 6)}/>`; }
+  const ha = (7 + 3 / 60) / 12 * Math.PI * 2, ma = (3 + sec / 60) / 60 * Math.PI * 2, sa = sec / 60 * Math.PI * 2;
+  s += `<path d="M${x} ${y} L${x + Math.sin(ha) * r * .5} ${y - Math.cos(ha) * r * .5}" ${st(8)}/><path d="M${x} ${y} L${x + Math.sin(ma) * r * .78} ${y - Math.cos(ma) * r * .78}" ${st(5)}/>`;
+  s += `<path d="M${x} ${y} L${x + Math.sin(sa) * r * .86} ${y - Math.cos(sa) * r * .86}" stroke="#d7361f" stroke-width="3"/><circle cx="${x}" cy="${y}" r="6" fill="#141414"/>`;
+  return s; }
+
+/* =========================================================
+   場景
+   ========================================================= */
+function hs(id, label, art, hit, extra = {}){ return { id, label, art, hit, ...extra }; }
+function wall(){ return `<rect width="800" height="420" fill="${PAPER}"/>`; }
+function exitSign(x, y, txt, w = 120){ return `<g><rect x="${x}" y="${y}" width="${w}" height="34" fill="#141414"/><text x="${x + w / 2}" y="${y + 23}" text-anchor="middle" fill="#fbf8f1" font-size="17" font-weight="700" font-family="Noto Serif TC,serif">${txt}</text></g>`; }
+
+function buildScene(loc){
+  const t = W.t, k = S.k, out = { bg:'', hs:[], fg:'' };
+  if (loc === 'room') {
+    out.bg = wall() + `<rect y="360" width="800" height="60" fill="url(#t1)"/><path d="M0 360 H800" ${st(3)}/>
+      <g><rect x="372" y="54" width="70" height="86" fill="#fff" ${st(2.5)}/><rect x="372" y="54" width="70" height="20" fill="#141414"/><text x="407" y="69" fill="#fff" font-size="12" text-anchor="middle" font-family="serif">10 月</text><text x="407" y="118" font-size="36" font-weight="900" text-anchor="middle" font-family="Noto Serif TC,serif">15</text></g>`;
+    const outside = t < 60 ? '' : t < 120 ? G(80 + (t - 60) * 2.2, 236, .32, false, `<circle cx="-20" cy="-14" r="13" fill="none" ${st(4)}/><circle cx="20" cy="-14" r="13" fill="none" ${st(4)}/><path d="M-20 -14 L0 -30 L20 -14 M0 -30 L0 -60" ${st(4)}/><circle cx="0" cy="-74" r="12" fill="#fff" ${st(4)}/><path d="M-12 -80 Q0 -94 12 -80Z" fill="#141414"/>`) : '';
+    out.hs.push(hs('window', '窗戶', `<rect x="70" y="50" width="240" height="190" fill="#fff"/><rect x="70" y="150" width="240" height="90" fill="url(#t1)" opacity=".7"/><path d="M90 150 V90 h40 v60 M150 150 v-40 h50 v40 M220 150 v-70 h60 v70" fill="url(#t2)" ${st(2)}/><path d="M70 236 H310" ${st(2)}/>${outside}
+      <rect x="70" y="50" width="240" height="190" fill="none" class="k" ${st(5)}/><path d="M190 50 V240 M70 145 H310" ${st(4)}/><path d="M70 46 Q100 120 76 250 L60 250 L60 46Z" fill="url(#tH)" ${st(2.5)}/>`, [56, 40, 270, 214], { clue: 'hiding' }));
+    out.hs.push(hs('bed', '床', `${F('M30 300 h330 v62 h-330z', null)}${F('M40 278 h80 v26 h-80z', null)}${F('M110 282 Q220 262 360 286 L360 330 Q240 344 110 330 Z', 't1')}<path d="M30 362 v20 M360 362 v20" ${st(5)}/>`, [24, 262, 345, 124]));
+    out.hs.push(hs('drawer', '書桌抽屜', `<path d="M470 250 h230 v14 h-230z" fill="#141414"/><path d="M482 264 v110 M690 264 v110" ${st(5)}/>${F('M560 264 h120 v58 h-120z', null, 3, 'k')}<circle cx="620" cy="293" r="5" fill="#141414"/>${W.items.bulb ? '' : ''}`, [548, 256, 144, 76], { clue: 'bulb' }));
+    const ring = t < 3 ? `<path d="M480 196 l-12 -8 M480 214 l-16 0 M566 196 l12 -8 M566 214 l16 0" ${st(3)}/>` : '';
+    out.hs.push(hs('clock', '鬧鐘', `<circle cx="508" cy="200" r="11" fill="url(#t3)" ${st(2.5)}/><circle cx="538" cy="200" r="11" fill="url(#t3)" ${st(2.5)}/><circle cx="523" cy="222" r="26" fill="#fff" ${st(3.5)}/><path d="M523 222 v-18 M523 222 l-10 8" ${st(3)}/><path d="M506 246 l-6 6 M540 246 l6 6" ${st(3)}/>${ring}`, [486, 182, 76, 76]));
+    out.hs.push(hs('cal', '月曆', '', [366, 48, 82, 98]));
+    out.hs.push(hs('go:hall', '→ 走廊', `${F('M720 90 h70 v270 h-70z', 't1')}<circle cx="732" cy="236" r="5" fill="#141414"/><text x="755" y="120" text-anchor="middle" font-size="16" font-weight="700">3A</text>${exitSign(690, 30, '走廊 →', 100)}`, [684, 26, 112, 340], { exit: true }));
+  }
+  if (loc === 'hall') {
+    out.bg = wall() + `<path d="M0 0 L330 140 H470 L800 0 Z" fill="url(#t1)"/><path d="M0 420 L330 250 H470 L800 420Z" fill="url(#t2)" opacity=".5"/>
+      <path d="M0 0 L330 140 M800 0 L470 140 M0 420 L330 250 M800 420 L470 250" ${st(3)}/><rect x="330" y="140" width="140" height="110" fill="none" ${st(3)}/>
+      <circle cx="400" cy="58" r="14" fill="#fff" ${st(2.5)}/><path d="M400 30 v14" ${st(2)}/><path d="M380 80 l-8 8 M420 80 l8 8 M400 82 v10" ${st(2)}/>`;
+    out.hs.push(hs('go:stair', '→ 樓梯間', `<rect x="350" y="160" width="100" height="90" fill="url(#t3)" ${st(3)}/><path d="M352 248 h22 v-16 h22 v-16 h22 v-16 h30" fill="none" stroke="#fbf8f1" stroke-width="3"/>${exitSign(340, 104, '樓梯間', 120)}`, [334, 100, 132, 150], { exit: true }));
+    out.hs.push(hs('go:room', '→ 我的房間', `${F('M50 112 L170 152 L170 334 L50 384 Z', 't1')}<text x="110" y="168" text-anchor="middle" font-size="18" font-weight="900" transform="skewY(18)" dy="-35">3A</text><circle cx="150" cy="250" r="5" fill="#141414"/>`, [40, 104, 140, 290], { exit: true }));
+    const gmHome = posGm(t) === 'home';
+    out.hs.push(hs('door3b', '3B 的門', `${F('M640 152 L752 110 L752 384 L640 334 Z', 't2', 3, 'k')}<rect x="680" y="160" width="40" height="20" fill="#fff" ${st(2)} transform="skewY(-20) translate(0 245)"/><text x="700" y="180" text-anchor="middle" font-size="15" font-weight="900" transform="skewY(-20) translate(0 245)">3B</text><circle cx="656" cy="250" r="5" fill="#141414"/>${gmHome && !W.grandmaDepart ? '<path d="M760 200 q14 -10 0 -20 M770 210 q20 -20 0 -40" fill="none" stroke="#141414" stroke-width="2" stroke-dasharray="3 4"/>' : ''}`, [632, 104, 130, 288], { clue: 'secret' }));
+    out.hs.push(hs('plants', '盆栽', `${F('M490 300 h42 l-6 36 h-30z', 't2')}<path d="M500 300 q-12 -30 4 -40 M512 300 q4 -36 18 -40 M520 300 q14 -20 22 -24" fill="none" ${st(2.5)}/>`, [480, 252, 66, 90]));
+    out.hs.push(hs('photo', '花台上的照片', `<path d="M538 336 h90 v8 h-90z M546 344 v40 M620 344 v40" ${st(3)}/>${F('M560 280 h50 v56 h-50z', null, 3, 'k')}<rect x="566" y="286" width="38" height="44" fill="url(#t1)"/><circle cx="578" cy="300" r="5" fill="#fff" ${st(1.5)}/><circle cx="592" cy="298" r="5" fill="#fff" ${st(1.5)}/>`, [550, 272, 70, 70], { clue: 'birthday' }));
+    if (visibleAt('cat', 'hall')) out.hs.push(hs('cat', '麻糬', cat({x:300, y:400, s:1.1}), [262, 344, 92, 64], { who: true }));
+    if (visibleAt('gm', 'hall')) out.hs.push(hs('gm', '秋月婆婆', grandma({x:470, y:404, s:1.25, can: !W.grandmaDepart}), [424, 236, 110, 176], { who: true }));
+  }
+  if (loc === 'stair') {
+    let steps = 'M60 420'; for (let i = 0; i < 9; i++) steps += ` v-30 h52`;
+    out.bg = wall() + `<path d="${steps} V420 Z" fill="url(#t1)"/><path d="${steps}" fill="none" ${st(4)}/><path d="M80 330 L560 60" ${st(4)}/><path d="M100 380 v-40 M200 330 v-50 M300 270 v-50 M400 214 v-50 M500 160 v-50" ${st(2.5)}/>`;
+    out.hs.push(hs('lamp', '樓梯燈', `<path d="M600 30 v24" ${st(3)}/><path d="M584 54 h32 l-6 12 h-20z" fill="#141414"/><circle cx="600" cy="78" r="13" fill="${W.lightFixed ? '#fff' : 'url(#t2)'}" ${st(3)} class="k"/>${W.lightFixed ? '<path d="M600 104 v18 M578 98 l-12 12 M622 98 l12 12 M570 80 h-18 M630 80 h18" stroke="#141414" stroke-width="3" stroke-linecap="round"/>' : '<path d="M594 72 l12 12 M606 72 l-12 12" stroke="#fbf8f1" stroke-width="2.5"/>'}`, [560, 24, 80, 104], { clue: 'light' }));
+    const catIn = posOf('cat', t) === 'nest';
+    out.hs.push(hs('nest', '樓梯底下的紙箱', `${F('M90 342 h130 v62 h-130z', 't1', 3, 'k')}<path d="M90 342 l-18 -22 M220 342 l20 -20" ${st(3)}/><text x="155" y="386" text-anchor="middle" font-size="15" font-weight="700">水果</text>${catIn ? cat({x:150, y:352, s:.9, mood: 'hiss'}) : (W.flags.billTaken ? '' : '<rect x="120" y="332" width="22" height="14" fill="#fff" stroke="#141414" stroke-width="2" transform="rotate(-12 131 339)"/>')}`, [62, 296, 186, 112], { clue: 'nest' }));
+    out.hs.push(hs('swin', '樓梯間的窗', `<rect x="650" y="140" width="110" height="110" fill="#fff" ${st(4)}/><path d="M705 140 v110 M650 195 h110" ${st(3)}/><rect x="654" y="200" width="47" height="46" fill="url(#t1)"/>`, [640, 130, 130, 130], { clue: 'hiding' }));
+    out.hs.push(hs('go:top', '↑ 四樓', exitSign(420, 6, '↑ 四樓', 110), [414, 2, 122, 42], { exit: true }));
+    out.hs.push(hs('go:lobby', '↓ 一樓騎樓', exitSign(630, 370, '↓ 一樓', 120), [624, 364, 132, 46], { exit: true }));
+    out.hs.push(hs('go:hall', '← 三樓走廊', exitSign(10, 30, '← 三樓走廊', 150), [4, 24, 162, 46], { exit: true }));
+    if (visibleAt('ll', 'stair')) out.hs.push(hs('ll', '周伯', landlord({x:380, y:206, s:1.05, flip:true}), [328, 40, 110, 172], { who: true }));
+    if (visibleAt('gm', 'stair')) { const d = W.grandmaDepart; out.hs.push(hs('gm', '秋月婆婆', d ? grandma({x:250, y:300, s:1.15}) : grandma({x:600, y:404, s:1.2}), d ? [204, 140, 96, 164] : [556, 240, 96, 168], { who: true })); }
+    if (!W.lightFixed) out.fg = `<rect width="800" height="420" fill="url(#t2)" opacity=".38" pointer-events="none"/><rect width="800" height="420" fill="#141414" opacity=".12" pointer-events="none"/>`;
+    else out.bg += `<path d="M600 92 L420 420 H780 Z" fill="#fff" opacity=".5"/>`;
+  }
+  if (loc === 'top') {
+    out.bg = wall() + `<rect y="370" width="800" height="50" fill="url(#t2)" opacity=".6"/><path d="M0 370 H800" ${st(3)}/>`;
+    const llHome = posOf('ll', t) === 'home4';
+    out.hs.push(hs('door4f', '周伯家的門', `${F('M320 76 h170 v294 h-170z', 't1')}<path d="M330 86 v274 M350 86 v274 M370 86 v274 M390 86 v274 M410 86 v274 M430 86 v274 M450 86 v274 M470 86 v274" stroke="#141414" stroke-width="2"/><path d="M320 200 h170" ${st(4)}/><rect x="372" y="44" width="66" height="26" fill="#fff" ${st(2.5)}/><text x="405" y="63" text-anchor="middle" font-size="15" font-weight="900">4F 周</text><circle cx="470" cy="230" r="6" fill="#fff" ${st(2.5)}/>${llHome ? '<path d="M500 140 q10 6 0 14 M508 132 q18 14 0 30" fill="none" stroke="#141414" stroke-width="2" stroke-dasharray="3 4"/>' : ''}`, [312, 38, 186, 336]));
+    out.hs.push(hs('couplet', '春聯', `${F('M282 80 h28 v200 h-28z', 't2')}${F('M500 80 h28 v200 h-28z', 't2')}`, [276, 74, 258, 212]));
+    out.hs.push(hs('orchid', '蘭花', `${F('M600 330 h60 l-8 40 h-44z', 't2')}<path d="M630 330 q-30 -10 -40 -40 M630 330 q30 -16 40 -30 M630 330 q4 -60 -8 -100" fill="none" ${st(3)}/><circle cx="620" cy="226" r="9" fill="#fff" ${st(2.5)}/><circle cx="640" cy="248" r="9" fill="#fff" ${st(2.5)}/>`, [578, 210, 104, 164]));
+    out.hs.push(hs('shoes', '', `${F('M110 300 h130 v70 h-130z', 't1')}<path d="M110 334 h130" ${st(3)}/><ellipse cx="148" cy="326" rx="18" ry="6" fill="#141414"/><ellipse cx="196" cy="326" rx="18" ry="6" fill="#141414"/>`, [0, 0, 0, 0], { deco: true }));
+    out.hs.push(hs('go:stair', '↓ 樓梯間', exitSign(20, 20, '↓ 樓梯間', 130), [14, 14, 142, 46], { exit: true }));
+  }
+  if (loc === 'lobby') {
+    out.bg = wall() + `<rect x="580" y="0" width="220" height="420" fill="#fff"/><path d="M580 330 H800" ${st(2)}/><rect x="610" y="140" width="170" height="120" fill="url(#t1)" ${st(2.5)}/><path d="M620 140 l20 -30 h120 l20 30" fill="url(#tH)" ${st(2.5)}/><path d="M650 120 q-6 -20 4 -30 M690 118 q-6 -22 4 -34" fill="none" stroke="#141414" stroke-width="2" stroke-dasharray="4 4"/>
+      <rect y="380" width="800" height="40" fill="url(#t2)" opacity=".5"/><path d="M0 380 H800" ${st(3)}/>`;
+    const boxes = [['4F',40,90],['3A',105,90],['3B',170,90],['2A',235,90],['2B',40,150],['1A',105,150],['1B',170,150],['管理',235,150]];
+    let mb = `<rect x="34" y="84" width="268" height="128" fill="#141414"/>`;
+    boxes.forEach(([n, x, y]) => { const is3b = n === '3B'; mb += `<rect x="${x}" y="${y}" width="60" height="54" fill="${is3b && W.boxOpen ? '#141414' : '#fff'}" ${st(2)} ${is3b ? 'class="k"' : ''}/><path d="M${x + 12} ${y + 14} h36" ${st(3)}/><text x="${x + 30}" y="${y + 44}" text-anchor="middle" font-size="13" font-weight="700" ${is3b && W.boxOpen ? 'fill="#fff"' : ''}>${n}</text>${is3b ? `<circle cx="${x + 50}" cy="${y + 36}" r="6" fill="url(#t2)" ${st(2)}/>` : ''}`; });
+    if (W.boxOpen && W.giftInBox) mb += envelope(200, 117, -8, .7);
+    out.hs.push(hs('mail', '3B 信箱', mb, [28, 78, 280, 140], { clue: 'gift' }));
+    out.hs.push(hs('board', '公告欄', `<rect x="330" y="96" width="120" height="96" fill="url(#tH)" ${st(3)}/><rect x="346" y="108" width="88" height="72" fill="#fff" ${st(2)} class="k"/><text x="390" y="130" text-anchor="middle" font-size="15" font-weight="900">公告</text><path d="M356 144 h68 M356 156 h56 M356 168 h64" ${st(2)}/>`, [324, 90, 132, 108], { clue: 'suspect' }));
+    out.hs.push(hs('go:stair', '↑ 樓梯間', exitSign(326, 30, '↑ 樓梯間', 130), [320, 24, 142, 46], { exit: true }));
+    out.hs.push(hs('gate', '巷子', '', [600, 100, 190, 180]));
+    const pillar = `<rect x="490" y="0" width="64" height="380" fill="url(#t1)" ${st(3.5)}/>`;
+    out.bg += '';
+    out.pillar = pillar;
+    if (visibleAt('kai', 'lobby')) {
+      out.hs.push(hs('bike', '小凱的腳踏車', `<circle cx="640" cy="372" r="30" fill="none" ${st(4)}/><circle cx="750" cy="372" r="30" fill="none" ${st(4)}/><path d="M640 372 L680 320 L740 320 L750 372 M680 320 L700 372 L740 320 M740 320 l6 -24 h18" fill="none" ${st(4)}/><rect x="606" y="296" width="54" height="30" fill="#fff" ${st(3)} class="k"/><path d="M612 304 h42 M612 312 h42" ${st(2)}/>`, [596, 284, 194, 128], { clue: 'lastday' }));
+      out.hs.push(hs('kai', '小凱', kai({x:330, y:392, s:1.15, flip:true, env: W.kaiOpened && W.kaiTookFromBox, reach: W.kaiOpened && W.kaiTookFromBox}), [280, 210, 104, 190], { who: true }));
+    }
+    if (visibleAt('cat', 'lobby')) out.hs.push(hs('cat', '麻糬', cat({x:110, y:84, s:.85, mood:'awake'}), [70, 40, 80, 48], { who: true }));
+    if (visibleAt('ll', 'lobby')) out.hs.push(hs('ll', '周伯', W.landlordSuspicious ? landlordPeek(560, 150, 1.1) : landlord({x:470, y:392, s:1.15, paper:true, mood:'yawn', flip:true}), W.landlordSuspicious ? [530, 116, 70, 74] : [430, 220, 100, 180], { who: true }));
+    if (visibleAt('gm', 'lobby')) out.hs.push(hs('gm', '秋月婆婆', grandma({x:240, y:392, s:1.15, mood:'calm'}), [196, 230, 92, 170], { who: true }));
+  }
+  return out;
+}
+
+/* =========================================================
+   渲染
+   ========================================================= */
+let lastLoc = null;
+function renderScene(force){
+  const sc = buildScene(W.loc);
+  const k = S.k;
+  let s = sc.bg;
+  const ordered = [...sc.hs.filter(h => !h.who), ...sc.hs.filter(h => h.who)];
+  for (const h of ordered) {
+    if (W.loc === 'lobby' && h.id === 'gate') s += sc.pillar || '';
+    if (h.deco) { s += h.art; continue; }
+    const [x, y, w, hh] = h.hit;
+    s += `<g class="hs${h.clue && k[h.clue] ? ' known' : ''}${W.sel === h.id ? ' sel' : ''}" data-hs="${h.id}" tabindex="0" role="button" aria-label="${h.label}"><g>${h.art}</g><rect class="hit" x="${x}" y="${y}" width="${w}" height="${hh}" rx="6"/></g>`;
+  }
+  s += sc.fg || '';
+  const el = $('#scene');
+  el.innerHTML = s;
+  if (force && lastLoc !== W.loc && !RM) { el.classList.remove('enter'); void el.getBoundingClientRect(); el.classList.add('enter'); }
+  lastLoc = W.loc;
+  $('#caption').innerHTML = `<small>${LOCS[W.loc].tag}</small>${LOCS[W.loc].name}`;
+  // chips
+  const chips = ordered.filter(h => !h.deco && h.label);
+  $('#chips').innerHTML = `<span class="lbl">這裡有：</span>` + chips.map(h => `<button class="chip${h.exit ? ' exit' : ''}${h.who ? ' who' : ''}${W.sel === h.id ? ' sel' : ''}${h.clue && k[h.clue] ? ' k' : ''}" data-hs="${h.id}">${h.label}</button>`).join('');
+}
+
+function renderClock(t){
+  $('#digits').textContent = fmtT(t);
+  $('#digits').classList.toggle('hurry', t >= 150 && t < T_END && !RM);
+  $('#tfill').style.width = (t / T_END * 100) + '%';
+  const ma = (t / 60) / 60 * 360, sa = (t % 60) * 6, ha = 210 + t / 3600 * 30;
+  const p = (a, r) => `${22 + Math.sin(a * Math.PI / 180) * r} ${22 - Math.cos(a * Math.PI / 180) * r}`;
+  $('#analog').innerHTML = `<circle cx="22" cy="22" r="19" fill="#fff" stroke="#141414" stroke-width="3"/><path d="M22 22 L${p(ha, 10)}" stroke="#141414" stroke-width="3.5" stroke-linecap="round"/><path d="M22 22 L${p(ma, 15)}" stroke="#141414" stroke-width="2.5" stroke-linecap="round"/><path d="M22 22 L${p(sa, 16)}" stroke="#141414" stroke-width="1.2"/><circle cx="22" cy="22" r="2" fill="#141414"/>`;
+}
+
+function renderTop(){
+  $('#loopNo').textContent = S.loop;
+  renderClock(W.t);
+  const mk = [];
+  if (S.k.nest) mk.push([60, '7:01:00 麻糬離開紙箱']);
+  if (S.k.suspect) mk.push([100, '7:01:40 周伯下樓']);
+  if (S.k.lastday) mk.push([120, '7:02:00 小凱抵達']);
+  if (S.k.mailbox) mk.push([150, '7:02:30 小凱打開 3B 信箱']);
+  $('#tbar').querySelectorAll('.mk').forEach(e => e.remove());
+  for (const [t, label] of mk) { const m = document.createElement('span'); m.className = 'mk'; m.style.left = (t / T_END * 100) + '%'; m.title = label; $('#tbar').appendChild(m); }
+}
+
+function pushLog(lines){
+  for (const l of lines) if (l) W.log.push(l);
+  renderLog(lines.length);
+}
+function renderLog(nNew = 0){
+  const el = $('#log');
+  const show = W.log.slice(-14);
+  el.innerHTML = show.map((l, i) => {
+    const old = i < show.length - nNew ? ' old' : '';
+    if (l.k === 'say') return `<div class="ln say${old}"><span class="who">${CHAR[l.who] || ''}</span>${fmt(l.text)}</div>`;
+    if (l.k === 'narr') return `<div class="ln narr${old}">${l.ts ? `<span class="ts">${l.ts}</span>` : ''}${fmt(l.text)}</div>`;
+    return `<div class="ln ${l.k}${old}">${fmt(l.text)}</div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function labelFor(id){ const h = buildScene(W.loc).hs.find(h => h.id === id); return h ? h.label : ''; }
+
+function renderActs(){
+  const el = $('#acts');
+  if (W.mode === 'dial') {
+    el.innerHTML = `<h4>3B 信箱的轉盤鎖 <span class="tag">四位數</span></h4>
+      <div class="dial">${W.dial.map((d, i) => `<div class="wheel"><button data-dial="${i}" data-dir="1" aria-label="第${i + 1}位加一">▲</button><span>${d}</span><button data-dial="${i}" data-dir="-1" aria-label="第${i + 1}位減一">▼</button></div>`).join('')}
+      <button class="act" id="dialTry"><b>轉轉看</b><i>5 秒 → ${fmtT(W.t + COST.dial)}</i></button><button class="act ghost" id="dialCancel"><b>算了</b><i>不花時間</i></button></div>
+      ${S.k.code ? '<p class="desc" style="margin-top:8px">筆記本：密碼是 <em class="v">0815</em>。</p>' : '<p class="desc" style="margin-top:8px">不知道密碼……要亂試嗎？</p>'}`;
+    return;
+  }
+  let acts = [], head = '', desc = '';
+  if (W.sel) {
+    acts = actionsFor(W.sel);
+    head = W.sel.startsWith('go:') ? `移動：${LOCS[W.sel.slice(3)].name}` : labelFor(W.sel);
+    if (!acts.length) { W.sel = null; }
+  }
+  if (!W.sel) { head = '要做什麼？'; desc = '點畫面裡的東西或人物，或「這裡有」的名稱。要去別的地方，點公寓剖面圖。'; }
+  acts.push({ key:'wait', label:'等待', cost: COST.wait, fn: () => [L('think', W.t >= 150 ? '秒針的聲音變得好大聲。' : '……（你靜靜地等了一會兒）')], ghost:true });
+  W._acts = acts;
+  el.innerHTML = `<h4>${head}${W.sel && W.sel.startsWith('go:') ? '' : ''}</h4>${desc ? `<p class="desc">${desc}</p>` : ''}<div class="btns">${acts.map((a, i) => `<button class="act${a.ghost ? ' ghost' : ''}${a.key2 ? ' key' : ''}" data-ai="${i}"><span class="n">${i + 1}</span><b>${a.label}</b><i>${a.cost} 秒 → ${fmtT(W.t + a.cost)}${W.t + a.cost >= T_END ? '（7:03！）' : ''}</i></button>`).join('')}</div>`;
+}
+
+function renderMap(){
+  const R = { top:[10,10,200,52,'四樓・房東家'], room:[10,90,96,62,'我的房間'], hall:[114,90,96,62,'三樓走廊'], lobby:[10,172,200,58,'一樓騎樓'], stair:[220,10,72,220,'樓梯間'] };
+  let s = `<rect x="2" y="2" width="296" height="232" fill="none" stroke="#141414" stroke-width="1" stroke-dasharray="3 4"/><text x="110" y="166" text-anchor="middle" font-size="10" fill="#777" font-family="serif">（二樓）</text>`;
+  for (const [id, [x, y, w, h, n]] of Object.entries(R)) {
+    const cur = W.loc === id, r = route(W.loc, id), sel = W.sel === 'go:' + id;
+    s += `<g class="mloc${cur ? ' cur' : ''}${sel ? ' sel' : ''}" data-go="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/>`;
+    if (id === 'stair') { s += `<path d="M228 220 h12 v-14 h12 v-14 h12 v-14 h12 v-14 h12" fill="none" stroke="#141414" stroke-width="2"/><text x="${x + w / 2}" y="60" text-anchor="middle" writing-mode="tb" letter-spacing="4">${n}</text>`; }
+    else s += `<text x="${x + 8}" y="${y + 22}">${n}</text>`;
+    if (!cur) s += `<text class="cost" x="${id === 'stair' ? x + w / 2 : x + w - 6}" y="${id === 'stair' ? y + h - 46 : y + h - 8}" text-anchor="${id === 'stair' ? 'middle' : 'end'}">${r.length * 10} 秒</text>`;
+    if (cur) { const cx = id === 'stair' ? x + w / 2 : x + w - 22, cy = id === 'stair' ? y + 140 : y + h / 2 + 4; s += `<circle cx="${cx}" cy="${cy}" r="13" fill="#141414"/><text x="${cx}" y="${cy + 5}" text-anchor="middle" class="me">我</text>`; }
+    s += `</g>`;
+  }
+  $('#map').innerHTML = s;
+}
+
+let tab = 'clues', newClueBadge = 0, hintOpen = {};
+function renderNote(){
+  const k = S.k, b = $('#nbody');
+  document.querySelectorAll('.tab').forEach(e => e.classList.toggle('on', e.dataset.tab === tab));
+  const badge = $('#badgeClues'); badge.classList.toggle('hidden', !newClueBadge || tab === 'clues'); badge.textContent = '+' + newClueBadge;
+  if (tab === 'clues') {
+    newClueBadge = 0;
+    const n = S.korder.length;
+    b.innerHTML = `<div class="nhead"><span>線索 ${n} / ${CLUE_COUNT}</span><span>世界會忘記，筆記本不會。</span></div>` +
+      (n ? `<ol class="clues">${S.korder.map((id, i) => `<li class="${fresh.includes(id) ? 'new' : ''}${id === 'code' ? ' derive' : ''}"><span class="no">${id === 'code' ? '推' : String(i + 1).padStart(2, '0')}</span><span>${fmt(CLUES[id])}</span><small>第 ${k[id]} 輪</small></li>`).join('')}</ol>` : '<p style="color:#777">還是空白的。今天早上，好像有什麼事要發生。</p>') +
+      `<div class="endsrow"><span class="${S.end.normal ? 'got' : ''}">普通結局</span><span class="${S.end.good ? 'got' : ''}">好結局</span></div>`;
+  } else if (tab === 'qs') {
+    const list = QUESTIONS.filter(q => q.on(k, S.end));
+    b.innerHTML = `<div class="nhead"><span>還不知道的事・${list.length} 件</span><span>點「提示」看方向</span></div>` +
+      (list.length ? `<ul class="qs">${list.map((q, i) => `<li class="${i === 0 ? 'next' : ''}"><div class="q">${q.q}${i === 0 ? '<span class="nx">下一步</span>' : ''}</div>${hintOpen[q.id] ? `<div class="h">${q.h}</div>` : `<button data-hint="${q.id}">提示</button>`}</li>`).join('')}</ul>` : `<p>${S.end.good ? '這個早晨已經圓滿了。' : '……'}</p>`);
+  } else {
+    const rows = [['gm','婆婆'],['ll','周伯'],['kai','小凱'],['cat','麻糬']];
+    let h = '<div class="nhead"><span>親眼看到的行蹤（每格 10 秒）</span></div><table class="tl"><tr><th class="who"></th>';
+    for (let i = 0; i < 18; i += 3) h += `<th colspan="3">7:0${Math.floor(i / 6)}:${String(i % 6 * 10).padStart(2, '0')}</th>`;
+    h += '</tr>';
+    const nowB = Math.min(17, Math.floor(W.t / 10));
+    for (const [c, n] of rows) { h += `<tr><th class="who">${n}</th>`; for (let i = 0; i < 18; i++) { const v = S.obs[c][i]; h += `<td class="${v ? 'o' : 'e'}${i === nowB ? ' now' : ''}">${v || ''}</td>`; } h += '</tr>'; }
+    h += '</table><p class="legend">房＝我的房間　廊＝三樓走廊　梯＝樓梯間　四＝四樓　騎＝一樓騎樓<br>3B／4F＝在自己家　窩＝紙箱窩　街＝巷子裡<br>粗框是現在的時間。同一個人每一輪都照同樣的時間表走——除非你改變了什麼。</p>';
+    b.innerHTML = h;
+  }
+}
+
+function renderAll(){ renderTop(); renderScene(false); renderActs(); renderMap(); renderNote(); }
+
+function afterLearn(){
+  if (!fresh.length) return;
+  newClueBadge += fresh.length;
+  fresh.forEach((id, i) => setTimeout(() => toast(id), i * 450));
+}
+function toast(id){
+  AU.clue();
+  const d = document.createElement('div'); d.className = 'toast';
+  d.innerHTML = `<b>筆記本＋1</b>${fmt(CLUES[id])}`;
+  $('#toast').appendChild(d); setTimeout(() => d.remove(), 3300);
+}
+
+/* =========================================================
+   過場（漫畫分格）
+   ========================================================= */
+function lobbyBG(){ let s = `<rect width="400" height="240" fill="#fff"/><rect y="200" width="400" height="40" fill="url(#t1)"/><path d="M0 200 H400" ${st(2.5)}/><rect x="10" y="40" width="130" height="80" fill="#141414"/>`;
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) s += `<rect x="${14 + i * 31}" y="${44 + j * 37}" width="28" height="33" fill="#fff" ${st(1.5)}/>`; return s; }
+function stairBG(lit){ let p = 'M0 240'; for (let i = 0; i < 7; i++) p += ' v-30 h60'; return `<rect width="400" height="240" fill="#fff"/><path d="${p} V240Z" fill="url(#t1)"/><path d="${p}" fill="none" ${st(3)}/>${lit ? '<path d="M330 10 L180 240 H400 V60Z" fill="#fff" opacity=".6"/><circle cx="340" cy="26" r="12" fill="#fff" stroke="#141414" stroke-width="3"/><path d="M340 46 v10 M322 40 l-8 8 M358 40 l8 8" stroke="#141414" stroke-width="2.5"/>' : '<rect width="400" height="240" fill="url(#t2)" opacity=".3"/>'}`; }
+const CUTS = {
+  thief: () => [
+    { span:3, svg: lobbyBG() + kai({x:220, y:210, s:1.05, flip:true, reach:true, env:W.kaiTookFromBox}) + cat({x:40, y:40, s:.6}), cap: W.kaiTookFromBox ? '7:02:30　小凱打開 3B 的信箱，拿出一個紅色信封。' : '7:02:30　小凱打開 3B 的信箱——裡面是空的。' },
+    { span:3, svg: `<rect width="400" height="240" fill="#fff"/>${speed(220, 130, 40, 70, 420)}` + landlord({x:250, y:250, s:1.25, mood:'angry', point:true}) + burst(110, 80, 100, 62, '小偷！', 46) },
+    { span:4, svg: `<rect width="400" height="240" fill="#fff"/><path d="M0 0 L400 240 M80 0 L400 180 M0 60 L320 240" stroke="#141414" stroke-width="1.5" opacity=".5"/>` + kai({x:180, y:240, s:1.3, mood:'shock'}) + (W.kaiTookFromBox ? envelope(300, 190, 40, 1) : '') + `<rect x="40" y="200" width="40" height="12" fill="#fff" ${st(2)} transform="rotate(-20 60 206)"/><rect x="300" y="214" width="44" height="12" fill="#fff" ${st(2)} transform="rotate(14 322 220)"/>`, bub:{ text: W.kaiTookFromBox ? '我、我沒有……' : '我什麼都沒拿……！', x:56, y:10 }, cap:'報紙散了一地。' },
+    { span:2, black:true, text:'鈴——', small:'小凱騎上車，再也沒有回頭。' }
+  ],
+  scam: () => [
+    { span:3, svg: lobbyBG() + grandma({x:150, y:210, s:1.05, give:true}) + kai({x:270, y:210, s:1.05, flip:true}) + envelope(205, 140, 10, .8), cap:'7:02:50　婆婆把紅包塞進小凱手裡。' },
+    { span:3, svg: `<rect width="400" height="240" fill="#fff"/>${speed(200, 120, 36, 70, 420)}` + landlord({x:290, y:250, s:1.25, mood:'angry', point:true}) + burst(140, 78, 132, 60, '騙老人家的錢！', 30) },
+    { span:4, svg: lobbyBG() + grandma({x:130, y:210, s:1.05, mood:'shock'}) + kai({x:300, y:210, s:1.05, mood:'shock'}), bub:{ text:'不是的，阿周，不是的……', x:4, y:6 }, cap:'小凱把紅包推回去，騎車走了。' },
+    { span:2, black:true, text:'鈴——', small:'周伯還是誤會了。' }
+  ],
+  good: () => [
+    { span:2, svg: stairBG(true) + grandma({x:150, y:150, s:.95}), cap:'燈亮著。婆婆扶著扶手，一階一階走下樓。' },
+    { span:4, svg: lobbyBG() + grandma({x:170, y:220, s:1, give:true}) + kai({x:290, y:220, s:1, flip:true, mood:'shock'}) + envelope(222, 160, 8, .75) + riceball(206, 190, .75), bub:{ text:'孩子，畢業快樂。飯糰還熱的。', x:2, y:22 } },
+    { span:3, svg: `<rect width="400" height="240" fill="#fff"/><g opacity=".5">${speed(200, 120, 30, 110, 420)}</g>` + kai({x:200, y:250, s:1.3, mood:'moved', env:true, reach:true}), bub:{ text:'原來……每天的早餐，是婆婆？', x:52, y:8 } },
+    { span:3, svg: lobbyBG() + landlord({x:200, y:214, s:1.05, mood:'sheep', scratch:true}) + cat({x:320, y:214, s:.9, mood:'sleep'}), bub:{ text:'咳……信是貓叼走的啦。', x:50, y:6 }, cap:'7:03:01——秒針，第一次走過了七點零三分。' }
+  ],
+  calm: () => [
+    { span:3, svg: lobbyBG() + landlord({x:250, y:214, s:1.05, mood:'yawn', paper:true}), cap:'周伯拿著報紙，打了個大大的呵欠。' },
+    { span:3, svg: lobbyBG() + kai({x:210, y:214, s:1.05, env:true, reach:true}), cap:'小凱拿出紅包，愣了一下，朝樓上鞠了個躬。' },
+    { span:3, svg: stairBG(W.lightFixed) + `<rect x="250" y="40" width="110" height="100" fill="#fff" ${st(4)}/>` + grandma({x:305, y:200, s:.9}), cap:'樓梯間的窗口，婆婆輕輕揮了揮手。他沒有看見。' },
+    { span:3, svg: `<rect width="400" height="240" fill="#fff"/>` + bigClock(200, 120, 92, 1), cap:'7:03:01　誤會沒有發生。' }
+  ],
+  handed: () => [
+    { span:3, svg: lobbyBG() + kai({x:260, y:214, s:1.05, flip:true}) + `<path d="M0 150 Q80 140 150 132" ${st(14)} stroke="#141414"/><path d="M0 150 Q80 140 150 132" stroke="#fff" stroke-width="8" fill="none"/>` + envelope(165, 128, 80, .8), bub:{ text:'這是 3B 要給你的。', x:4, y:6 } },
+    { span:3, svg: `<rect width="400" height="240" fill="#fff"/>` + kai({x:200, y:250, s:1.3, mood:'moved', env:true, reach:true}), bub:{ text:'……幫我跟 3B 說謝謝。', x:50, y:8 } },
+    { span:3, svg: stairBG(W.lightFixed) + `<rect x="250" y="40" width="110" height="100" fill="#fff" ${st(4)}/>` + grandma({x:305, y:200, s:.9}), cap:'婆婆在樓梯間的窗口，看著腳踏車騎遠。' },
+    { span:3, svg: `<rect width="400" height="240" fill="#fff"/>` + bigClock(200, 120, 92, 1), cap:'7:03:01　誤會沒有發生。' }
+  ]
+};
+
+let cutResolve = null, cutAll = null;
+function showCut(type){
+  return new Promise(async res => {
+    W.mode = 'cut';
+    const panels = CUTS[type]();
+    const el = $('#cut'); el.classList.remove('hidden');
+    const label = { thief:'7:03　誤會', scam:'7:03　又一次誤會', good:'7:03', calm:'7:03', handed:'7:03' }[type];
+    const rows = Math.ceil(panels.reduce((a, p) => a + p.span, 0) / 6);
+    el.innerHTML = `<div class="cpage" style="--rows:${rows}">${panels.map(p => p.black
+      ? `<div class="cpanel black" style="grid-column:span ${p.span}"><p>${p.text}<small>${p.small || ''}</small></p></div>`
+      : `<div class="cpanel" style="grid-column:span ${p.span}"><svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice">${p.svg}</svg>${p.cap ? `<div class="cap">${p.cap}</div>` : ''}${p.bub ? `<div class="bub ${p.bub.cls || ''}" style="left:${p.bub.x}%;top:${p.bub.y}%">${p.bub.text}</div>` : ''}</div>`).join('')}
+      <div class="cfoot"><span>${label}・第 ${S.loop} 輪</span><button class="bigbtn hidden" id="cutNext">${['thief','scam'].includes(type) ? '翻回第一頁 ▸' : '繼續 ▸'}</button></div></div>`;
+    el.scrollTop = 0;
+    const ps = [...el.querySelectorAll('.cpanel')];
+    let skip = false;
+    cutAll = () => { skip = true; };
+    for (let i = 0; i < ps.length; i++) {
+      ps[i].classList.add('show');
+      if (i === 1 && ['thief','scam'].includes(type)) AU.shout(); else AU.flip(i);
+      if (i === ps.length - 1 && ['thief','scam'].includes(type)) AU.alarm();
+      if (!skip) await sleep(type === 'good' ? 1100 : 900);
+      if (window.innerWidth < 860 && !skip) ps[i].scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'center' });
+    }
+    if (type === 'good') AU.melody(true); else if (type !== 'thief' && type !== 'scam') AU.melody(false);
+    const b = $('#cutNext'); b.classList.remove('hidden'); b.focus({ preventScroll:true });
+    b.onclick = () => { AU.click(); el.classList.add('hidden'); cutAll = null; res(); };
+  });
+}
+
+/* =========================================================
+   翻頁（重來）
+   ========================================================= */
+async function flipTo(n){
+  const f = $('#flip'); f.classList.remove('hidden', 'out');
+  const newly = S.korder.length;
+  f.innerHTML = (RM ? '' : '<div class="leaf ghost"></div><div class="leaf ghost"></div><div class="leaf ghost"></div>') +
+    `<div class="leaf final"><div class="ch">CHAPTER</div><div class="no">第 ${n} 輪</div><div class="tm">7:00:00</div><div class="sub">世界重置了。筆記本裡有 ${newly} 條線索。</div></div>`;
+  const leaves = [...f.querySelectorAll('.leaf')];
+  if (RM) { leaves[0].style.transform = 'none'; }
+  else for (let i = 0; i < leaves.length; i++) { leaves[i].classList.add('go'); AU.flip(i); await sleep(i < leaves.length - 1 ? 150 : 520); }
+  startLoop(n, true);
+  AU.alarm();
+  await sleep(900);
+  f.classList.add('out');
+  await sleep(500);
+  f.classList.add('hidden'); f.innerHTML = '';
+}
+
+/* =========================================================
+   流程
+   ========================================================= */
+function startLoop(n, quiet){
+  S.loop = n; S.started = true; persist();
+  W = freshWorld(); W.pending = [];
+  lastLoc = null; hintOpen = {};
+  const intro = [];
+  if (n === 1) {
+    intro.push(L('narr', '「鈴——鈴——鈴——」'), L('narr', '七點整。老鬧鐘吵得整個房間都在震。'));
+    intro.push(L('tut', '點畫面裡的東西或人物來行動（手機可以點下方的名稱）。每個動作都要花幾秒，上方的時鐘會往前走——<b>只有你行動時，時間才會前進</b>。7:03，樓下會發生一件事。'));
+  } else {
+    intro.push(L('narr', '「鈴——鈴——鈴——」'), L('narr', '又是七點整。世界什麼都不記得了。'), L('think', `第 ${n} 次。……可是，筆記本裡的字還在。`));
+    if (DEMO && n === 3 && !S.flags_demo) { intro.push(L('sys', '展示模式：從第 3 輪開始，筆記本已有兩條線索。看看右邊「還不知道的事」。')); S.flags_demo = true; }
+  }
+  W.log = []; pushLog(intro);
+  if (!quiet) AU.alarm();
+  W.mode = 'idle';
+  renderAll();
+  renderScene(true);
+}
+
+function showEnding(type){
+  W.mode = 'ending';
+  const el = $('#ending'); el.classList.remove('hidden');
+  const good = type === 'good';
+  const epi = good
+    ? '婆婆第一次親口對小凱說了「畢業快樂」。<br>周伯把電費單還給婆婆，順手買了一袋貓飼料。<br>鬧鐘再也沒有在七點整響第二次。'
+    : type === 'handed'
+      ? '紅包送到了，謝謝也說了——只是隔了一個人。<br>婆婆一直不知道，那句謝謝有沒有送到她心裡。'
+      : '誤會沒有發生，小凱平平安安地騎走了。<br>只是有些話，終究沒有說出口。';
+  const art = good ? `<svg viewBox="0 0 460 170" style="width:100%;max-width:440px;display:block;margin:0 auto 10px;border:4px solid #141414;background:#fff"><rect y="140" width="460" height="30" fill="url(#t1)"/><path d="M0 140 H460" ${st(3)}/>${grandma({x:110, y:150, s:.85, give:true})}${envelope(158, 100, 8, .6)}${kai({x:210, y:150, s:.8, flip:true, mood:'moved'})}${landlord({x:310, y:150, s:.8, mood:'sheep', scratch:true})}${cat({x:400, y:150, s:.8, mood:'sleep'})}</svg>`
+      : `<svg viewBox="0 0 460 170" style="width:100%;max-width:440px;display:block;margin:0 auto 10px;border:4px solid #141414;background:#fff"><rect width="460" height="170" fill="url(#t1)" opacity=".5"/>${bigClock(230, 85, 68, 1)}</svg>`;
+  el.innerHTML = `<div class="card">${art}<h2>${good ? '好結局' : '普通結局'}</h2><h1>${good ? '早安，小凱' : '平靜的早晨'}</h1><p class="epi">${epi}</p>
+    <div class="stats"><div><b>${S.loop}</b>輪</div><div><b>${S.korder.length}/${CLUE_COUNT}</b>線索</div><div><b>${S.actions}</b>個行動</div></div>
+    ${good ? '' : '<p style="font-size:14px;color:#555;margin:0 0 16px">筆記本還在。也許，還有更好的早晨。</p>'}
+    <div class="row" style="justify-content:center">${good ? '' : '<button class="bigbtn" id="eAgain">再過一次這個早晨</button>'}<button class="bigbtn ${good ? '' : 'alt'}" id="eTitle">回到標題</button></div>
+    <div class="endsrow" style="justify-content:center"><span class="${S.end.normal ? 'got' : ''}">普通結局</span><span class="${S.end.good ? 'got' : ''}">好結局</span></div></div>`;
+  const again = $('#eAgain');
+  if (again) again.onclick = async () => { AU.click(); el.classList.add('hidden'); await flipTo(S.loop + 1); };
+  $('#eTitle').onclick = () => { AU.click(); el.classList.add('hidden'); toTitle(); };
+}
+
+function toTitle(){
+  W && (W.mode = 'title');
+  $('#title').classList.remove('hidden');
+  const has = S.started && (S.loop > 1 || S.korder.length);
+  $('#btnStart').textContent = has ? `繼續（第 ${S.loop} 輪）` : '開始';
+  $('#btnNew').classList.toggle('hidden', !has);
+  $('#titleMeta').innerHTML = (has ? `筆記本：${S.korder.length} / ${CLUE_COUNT} 條線索・` : '') + '約 10–20 分鐘・兩種以上的結局・自動存檔' + (DEMO ? '　<span class="demoTag">DEMO</span>' : '');
+}
+
+function pause(on){
+  if (!W || ['title','cut','ending'].includes(W.mode)) return;
+  if (on && W.mode !== 'idle' && W.mode !== 'dial') return;
+  $('#pause').classList.toggle('hidden', !on);
+  W.paused = on;
+}
+
+/* =========================================================
+   互動
+   ========================================================= */
+function select(id){
+  if (busy || !W || (W.mode !== 'idle')) return;
+  AU.click();
+  W.sel = (W.sel === id && !id.startsWith('go:')) ? null : id;
+  renderScene(false); renderActs(); renderMap();
+}
+
+document.addEventListener('pointerdown', () => AU.init(), { passive:true });
+document.addEventListener('keydown', () => AU.init());
+
+$('#scene').addEventListener('click', e => { const g = e.target.closest('.hs'); if (g) select(g.dataset.hs); });
+$('#scene').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('.hs')) { e.preventDefault(); select(e.target.closest('.hs').dataset.hs); } });
+$('#chips').addEventListener('click', e => { const b = e.target.closest('[data-hs]'); if (b) select(b.dataset.hs); });
+$('#map').addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'); if (!g || !W || W.mode !== 'idle' || busy) return;
+  const id = g.dataset.go; if (id === W.loc) return;
+  if (W.sel === 'go:' + id) { const a = actionsFor('go:' + id)[0]; if (a) perform(a); }
+  else select('go:' + id);
+});
+$('#acts').addEventListener('click', e => {
+  const b = e.target.closest('[data-ai]');
+  if (b && W._acts) { const a = W._acts[+b.dataset.ai]; if (!a) return;
+    if (a.dial) { W.mode = 'dial'; AU.click(); renderActs(); return; }
+    perform(a); return; }
+  const d = e.target.closest('[data-dial]');
+  if (d) { const i = +d.dataset.dial; W.dial[i] = (W.dial[i] + (+d.dataset.dir) + 10) % 10; AU.tick(false); renderActs(); return; }
+  if (e.target.closest('#dialCancel')) { W.mode = 'idle'; AU.click(); renderActs(); return; }
+  if (e.target.closest('#dialTry')) { W.mode = 'idle'; tryDial(); }
+});
+async function tryDial(){
+  const code = W.dial.join('');
+  await perform({ key:'dial', cost: COST.dial, fn: () => {
+    if (code !== '0815') return [L('narr', `「${code}」……喀、喀。轉盤卡住了——*不對*。`)];
+    W.boxOpen = true;
+    if (!W.giftInBox) return [L('narr', '喀啦。3B 的信箱開了——裡面空空的。')];
+    learn('gift');
+    return [L('narr', '喀啦。3B 的信箱開了。'), L('narr', '裡面有*一顆還溫溫的飯糰*、*一個紅包*，和一張字條：「給送報的孩子：*畢業快樂*。——3B」')];
+  }});
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => { AU.click(); tab = t.dataset.tab; renderNote(); }));
+$('#nbody').addEventListener('click', e => { const h = e.target.closest('[data-hint]'); if (h) { AU.click(); hintOpen[h.dataset.hint] = true; renderNote(); } });
+$('#btnNote').addEventListener('click', () => { AU.click(); $('#notebook').scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'start' }); });
+$('#btnPause').addEventListener('click', () => pause(true));
+$('#pResume').addEventListener('click', () => { AU.click(); pause(false); });
+$('#pGiveup').addEventListener('click', async () => { AU.click(); pause(false); if (busy || W.mode !== 'idle') return; busy = true; W.pending = []; fresh = []; await advance(T_END - W.t); busy = false; });
+$('#pTitle').addEventListener('click', () => { AU.click(); pause(false); toTitle(); });
+$('#cut').addEventListener('click', e => { if (!e.target.closest('#cutNext') && cutAll) cutAll(); });
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (!$('#pause').classList.contains('hidden')) pause(false); else if (W && W.mode === 'dial') { W.mode = 'idle'; renderActs(); } else pause(true); return; }
+  if (!W || W.mode !== 'idle' || W.paused || busy || !$('#title').classList.contains('hidden')) return;
+  if (/^[1-9]$/.test(e.key) && W._acts) { const a = W._acts[+e.key - 1]; if (a) { e.preventDefault(); if (a.dial) { W.mode = 'dial'; renderActs(); } else perform(a); } }
+});
+
+$('#btnStart').addEventListener('click', () => { AU.init(); $('#title').classList.add('hidden'); startLoop(S.started ? S.loop : 1); });
+$('#btnNew').addEventListener('click', () => { if (!confirm('要清除筆記本，從第一輪重新開始嗎？')) return; AU.init(); wipeSave(); const snd = S.sound; S = freshSave(); S.sound = snd; $('#title').classList.add('hidden'); startLoop(1); });
+
+// 聲音開關
+function renderSnd(){ $('#snd').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#141414"/>${S.sound ? '<path d="M16 9q2 3 0 6M18.5 6.5q4.5 5.5 0 11"/>' : '<path d="M16 9l6 6M22 9l-6 6"/>'}</svg>`; $('#snd').setAttribute('aria-pressed', S.sound ? 'true' : 'false'); }
+$('#snd').addEventListener('click', () => { AU.init(); S.sound = !S.sound; AU.set(S.sound); persist(); renderSnd(); AU.click(); });
+
+// 環境滴答聲：閒置時每秒一聲，最後 30 秒加快到每 0.5 秒
+let lastAmb = 0;
+setInterval(() => {
+  if (!W || W.mode !== 'idle' || W.paused || busy || document.hidden) return;
+  if (!$('#title').classList.contains('hidden')) return;
+  const now = performance.now(), per = W.t >= 150 ? 500 : 1000;
+  if (now - lastAmb >= per) { lastAmb = now; AU.tick(W.t >= 150, true); }
+}, 100);
+document.addEventListener('visibilitychange', () => { if (!AU.ctx) return; if (document.hidden) AU.ctx.suspend(); else if (S.sound) AU.ctx.resume(); });
+
+/* --- 標題插畫 --- */
+function titleArt(){
+  let s = `<rect width="500" height="460" fill="#fff"/><rect width="500" height="460" fill="url(#t1)" opacity=".55"/>`;
+  s += `<g opacity=".9">${speed(250, 200, 44, 150, 520)}</g>`;
+  s += `<circle cx="250" cy="200" r="150" fill="#fbf8f1" ${st(6)}/>`;
+  s += `<circle cx="165" cy="72" r="40" fill="url(#t3)" ${st(5)}/><circle cx="335" cy="72" r="40" fill="url(#t3)" ${st(5)}/><path d="M250 50 v-20 M226 30 h48" ${st(6)}/>`;
+  s += bigClock(250, 200, 128, 0).replace('<circle cx="250" cy="200" r="128" fill="#fff"', '<circle cx="250" cy="200" r="128" fill="#fff"');
+  s += `<path d="M150 340 l-30 40 M350 340 l30 40" ${st(8)}/>`;
+  s += `<path d="M90 120 l-30 -12 M84 160 l-34 0 M410 120 l30 -12 M416 160 l34 0" ${st(5)}/>`;
+  s += `<text x="250" y="436" text-anchor="middle" font-family="Noto Serif TC,serif" font-weight="900" font-size="34" letter-spacing="6">鈴——鈴——</text>`;
+  s += grandma({x:70, y:450, s:.9}) + cat({x:430, y:450, s:1});
+  $('#titleArt').innerHTML = s;
+}
+
+/* --- 開機 --- */
+const saved = loadSave();
+if (saved && !DEMO) S = saved;
+AU.on = S.sound;
+renderSnd(); titleArt();
+W = freshWorld(); W.pending = [];
+if (DEMO) {
+  S = freshSave(); S.sound = AU.on;
+  S.k = { event:1, mailbox:2 }; S.korder = ['event','mailbox']; S.started = true;
+  S.obs.kai = {12:'騎',13:'騎',14:'騎',15:'騎',16:'騎',17:'騎'}; S.obs.ll = {13:'騎',14:'騎',15:'騎',16:'騎',17:'騎'};
+  $('#title').classList.add('hidden');
+  startLoop(3, true);
+  tab = 'qs'; renderNote();
+} else {
+  renderAll();
+  toTitle();
+}
+// 給自動化測試用的唯讀狀態
+window.__g15 = { get t(){ return W.t; }, get loc(){ return W.loc; }, get loop(){ return S.loop; }, get mode(){ return W.mode; }, get k(){ return Object.keys(S.k); }, get end(){ return S.end; }, get busy(){ return busy; } };
+})();
+</script>
+</body>
+</html>

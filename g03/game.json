@@ -1,0 +1,11 @@
+{
+  "title": "回聲",
+  "kind": "黑暗探索",
+  "desc": "全黑的地下車站，只能靠拍手的回聲看見牆。拍太多會被聽見。",
+  "tags": [
+    "canvas",
+    "audio"
+  ],
+  "tech": "Web Audio HRTF",
+  "time": "5 分"
+}

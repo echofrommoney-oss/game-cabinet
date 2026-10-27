@@ -1,0 +1,12 @@
+{
+  "title": "截稿前一小時",
+  "kind": "排版解謎",
+  "desc": "印刷廠一小時後收稿，排好六個雜誌版面再翻成一本書。",
+  "tags": [
+    "dom",
+    "long"
+  ],
+  "tech": "CSS Grid · GSAP",
+  "time": "15 分",
+  "long": true
+}
