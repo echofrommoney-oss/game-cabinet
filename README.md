@@ -14,9 +14,33 @@ g01/ … g15/              各遊戲
   index.html             遊戲本體
   game.json              遊戲資訊（總站卡片用）
   thumb.jpg              縮圖，建議 1200×750（可省略）
+  NOTES.md               開發紀錄：玩法、視覺、聲音、技術、取捨、測試、已知問題
 lib/                     共用函式庫（Three.js、Matter.js、cannon-es、GSAP）
+SPEC.md                  所有遊戲共同遵守的規格與測試流程
 scripts/build-games.mjs  掃描所有含 game.json 的資料夾，產生 games.json
 ```
+
+## 開發紀錄
+
+| # | 遊戲 | 紀錄 |
+|---|---|---|
+| 01 | 夜市撈金魚 | [g01/NOTES.md](g01/NOTES.md) |
+| 02 | 墨橋 | [g02/NOTES.md](g02/NOTES.md) |
+| 03 | 回聲 | [g03/NOTES.md](g03/NOTES.md) |
+| 04 | 字的戰爭 | [g04/NOTES.md](g04/NOTES.md) |
+| 05 | 大夜班 | [g05/NOTES.md](g05/NOTES.md) |
+| 06 | 折光 | [g06/NOTES.md](g06/NOTES.md) |
+| 07 | 紙上小島 | [g07/NOTES.md](g07/NOTES.md) |
+| 08 | 節拍公路 | [g08/NOTES.md](g08/NOTES.md) |
+| 09 | 陽台小盆栽 | [g09/NOTES.md](g09/NOTES.md) |
+| 10 | 證物牆 | [g10/NOTES.md](g10/NOTES.md) |
+| 11 | 桌上的貓 | [g11/NOTES.md](g11/NOTES.md) |
+| 12 | 截稿前一小時 | [g12/NOTES.md](g12/NOTES.md) |
+| 13 | 桌角對決 | [g13/NOTES.md](g13/NOTES.md) |
+| 14 | 連星 | [g14/NOTES.md](g14/NOTES.md) |
+| 15 | 三分鐘的早晨 | [g15/NOTES.md](g15/NOTES.md) |
+
+共同規格見 [SPEC.md](SPEC.md)。
 
 ## 新增一個遊戲
 
@@ -40,7 +64,7 @@ scripts/build-games.mjs  掃描所有含 game.json 的資料夾，產生 games.j
    - `tags` 用於總站篩選，已知標籤：`canvas`、`webgl`、`dom`、`svg`、`audio`、`long`；寫新標籤會自動多一顆篩選按鈕
    - `long: true` 會顯示「長篇」標記
    - 可加 `"order": 數字` 自訂排序，否則照資料夾名稱排
-4. （選用）放一張 `thumb.jpg`，沒有就顯示編號
+4. （選用）放一張 `thumb.jpg`，沒有就顯示編號；開發紀錄寫在 `NOTES.md`
 5. `git push`，GitHub Actions 會自動重建清單並部署，總站不用改
 
 ## 本機預覽
